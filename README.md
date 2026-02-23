@@ -11,7 +11,7 @@ The **Aegis API Gateway** is the core entrypoint of the compute layer within the
 
 ## 🔐 Security & DevSecOps Mandates
 * **No Plain-Text Secrets:** Secrets injected dynamically at runtime via Infisical. `.env` files are STRICTLY FORBIDDEN.
-* **Network Isolation:** Resides in the `aegis-core` namespace. Only allows ingress from `aegis-gateway` and strictly regulates egress solely to `aegis-data` and `kube-apiserver`. 
+* **Network Isolation:** Resides in the `aegis-core` namespace. Only allows ingress from `aegis-gateway` and strictly regulates egress solely to `aegis-data` and `kube-apiserver`.
 * **Authentication:** Mandates OIDC with PKCE validity checks for all incoming requests.
 
 ## 🐳 Kubernetes / Docker Deployment
