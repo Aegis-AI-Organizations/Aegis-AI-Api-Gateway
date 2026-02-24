@@ -6,7 +6,7 @@ COPY go.mod go.sum* ./
 RUN go mod download || true
 COPY . .
 # Build static binary with no debug info (-s -w) to reduce size
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/app . || echo "Build failed or no Go code"
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /go/bin/app ./cmd/api || echo "Build failed or no Go code"
 
 # Stage 2: Minimal Runtime (scratch is an empty image)
 FROM scratch
