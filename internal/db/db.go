@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"net/url"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -18,7 +19,8 @@ func Connect() (*sql.DB, error) {
 		return nil, fmt.Errorf("missing one or more required database environment variables")
 	}
 
-	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", user, password, host, dbname)
+	escapedPassword := url.QueryEscape(password)
+	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", user, escapedPassword, host, dbname)
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
