@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"go.temporal.io/sdk/client"
 )
 
@@ -36,7 +37,7 @@ func Start(database *sql.DB, tc client.Client) {
 	router := NewRouter(database, tc)
 
 	log.Println("🌍 Listening on :8080")
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	if err := http.ListenAndServe(":8080", middleware.CORS(router)); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
