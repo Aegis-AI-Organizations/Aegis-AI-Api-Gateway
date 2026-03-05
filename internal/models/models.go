@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type CreateScanRequest struct {
 	TargetImage string `json:"target_image"`
@@ -28,4 +31,12 @@ type Vulnerability struct {
 	TargetEndpoint string    `json:"target_endpoint"`
 	Description    string    `json:"description"`
 	DiscoveredAt   time.Time `json:"discovered_at"`
+}
+
+type Evidence struct {
+	ID              string          `json:"id"`
+	VulnerabilityID string          `json:"vulnerability_id"`
+	PayloadUsed     string          `json:"payload_used"`
+	LootData        json.RawMessage `json:"loot_data"`
+	CapturedAt      time.Time       `json:"captured_at"`
 }

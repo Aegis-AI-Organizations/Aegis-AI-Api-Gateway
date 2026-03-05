@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
@@ -27,6 +28,7 @@ func NewRouter(db *sql.DB, tc client.Client) *http.ServeMux {
 	mux.HandleFunc("GET /scans/{id}", h.GetScanByIDHandler)
 
 	mux.HandleFunc("GET /scans/{id}/vulnerabilities", h.GetVulnerabilitiesHandler)
+	mux.HandleFunc("GET /vulnerabilities/{id}/evidences", h.GetEvidencesHandler)
 
 	return mux
 }
@@ -36,8 +38,13 @@ func Start(database *sql.DB, tc client.Client) {
 
 	router := NewRouter(database, tc)
 
-	log.Println("🌍 Listening on :8080")
-	if err := http.ListenAndServe(":8080", middleware.CORS(router)); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("🌍 Listening on :%s", port)
+	if err := http.ListenAndServe(":"+port, middleware.CORS(router)); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
