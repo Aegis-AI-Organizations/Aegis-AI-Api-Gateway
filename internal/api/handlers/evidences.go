@@ -52,6 +52,11 @@ func (a *API) GetEvidencesHandler(w http.ResponseWriter, r *http.Request) {
 		evidences = append(evidences, e)
 	}
 
+	if err := rows.Err(); err != nil {
+		log.Printf("Row iteration error: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 	if evidences == nil {
 		evidences = []models.Evidence{}
 	}
