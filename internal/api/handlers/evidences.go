@@ -23,7 +23,7 @@ func (a *API) GetEvidencesHandler(w http.ResponseWriter, r *http.Request) {
 		WHERE vulnerability_id = $1
 		ORDER BY captured_at DESC
 	`
-	rows, err := a.DB.Query(query, vulnID)
+	rows, err := a.DB.QueryContext(r.Context(), query, vulnID)
 	if err != nil {
 		log.Printf("DB query error: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
