@@ -45,7 +45,7 @@ func (a *API) CreateScanHandler(w http.ResponseWriter, r *http.Request) {
 
 	options := client.StartWorkflowOptions{
 		ID:        workflowID,
-		TaskQueue: "PENTEST_TASK_QUEUE",
+		TaskQueue: "BRAIN_TASK_QUEUE",
 	}
 
 	we, err := a.TemporalClient.ExecuteWorkflow(context.Background(), options, "PentestWorkflow", scanID, req.TargetImage)
