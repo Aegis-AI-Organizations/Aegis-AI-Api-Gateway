@@ -30,6 +30,8 @@ func NewRouter(db *sql.DB, tc client.Client) *http.ServeMux {
 	mux.HandleFunc("GET /scans/{id}/vulnerabilities", h.GetVulnerabilitiesHandler)
 	mux.HandleFunc("GET /vulnerabilities/{id}/evidences", h.GetEvidencesHandler)
 
+	mux.HandleFunc("GET /scans/{id}/report", h.GetScanReportHandler)
+
 	return mux
 }
 

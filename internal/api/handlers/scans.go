@@ -156,3 +156,38 @@ func (a *API) GetScanByIDHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to encode response: %v", err)
 	}
 }
+
+// GetScanReportHandler handles GET /scans/{id}/report
+func (a *API) GetScanReportHandler(w http.ResponseWriter, r *http.Request) {
+	scanID := r.PathValue("id")
+	if scanID == "" {
+		http.Error(w, "scan id parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	query := `SELECT report_pdf FROM scans WHERE id = $1`
+
+	var pdfBytes []byte
+	err := a.DB.QueryRow(query, scanID).Scan(&pdfBytes)
+
+	if err == sql.ErrNoRows {
+		http.Error(w, "Scan not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		log.Printf("DB query error for report_pdf: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(pdfBytes) == 0 {
+		http.Error(w, "Report PDF not yet generated or is empty", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=\"scan_report_%s.pdf\"", scanID))
+
+	if _, err := w.Write(pdfBytes); err != nil {
+		log.Printf("Failed to write PDF response: %v", err)
+	}
+}
