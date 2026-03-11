@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"go.temporal.io/sdk/client"
@@ -160,7 +162,9 @@ func (a *API) GetScanByIDHandler(w http.ResponseWriter, r *http.Request) {
 // GetScanReportHandler handles GET /scans/{id}/report
 func (a *API) GetScanReportHandler(w http.ResponseWriter, r *http.Request) {
 	scanID := r.PathValue("id")
+	log.Printf("📥 Received report request for scan ID: %s", scanID)
 	if scanID == "" {
+		log.Printf("⚠️  Scan ID missing in request")
 		http.Error(w, "scan id parameter is required", http.StatusBadRequest)
 		return
 	}
@@ -180,14 +184,18 @@ func (a *API) GetScanReportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(pdfBytes) == 0 {
+		log.Printf("⚠️  Report PDF is empty for scan ID: %s", scanID)
 		http.Error(w, "Report PDF not yet generated or is empty", http.StatusNotFound)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/pdf")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=\"scan_report_%s.pdf\"", scanID))
+	log.Printf("📤 Sending report PDF (%d bytes) for scan ID: %s", len(pdfBytes), scanID)
 
-	if _, err := w.Write(pdfBytes); err != nil {
-		log.Printf("Failed to write PDF response: %v", err)
-	}
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"scan_report_%s.pdf\"", scanID))
+	w.Header().Set("Connection", "close")
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	http.ServeContent(w, r, "report.pdf", time.Now(), bytes.NewReader(pdfBytes))
+
+	log.Printf("✅ Drafted response for scan ID: %s", scanID)
 }
