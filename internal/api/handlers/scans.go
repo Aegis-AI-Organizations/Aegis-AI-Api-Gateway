@@ -112,6 +112,12 @@ func (a *API) GetScansHandler(w http.ResponseWriter, r *http.Request) {
 		scans = append(scans, s)
 	}
 
+	if err := rows.Err(); err != nil {
+		log.Printf("Row iteration error: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
 	if scans == nil {
 		scans = []models.Scan{}
 	}

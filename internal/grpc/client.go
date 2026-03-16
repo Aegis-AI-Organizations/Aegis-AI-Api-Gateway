@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v1"
 	"google.golang.org/grpc"
@@ -34,9 +35,45 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) Ping(ctx context.Context) (string, error) {
+	if c.PingService == nil {
+		return "", fmt.Errorf("ping service not initialized")
+	}
 	resp, err := c.PingService.Ping(ctx, &v1.PingRequest{})
 	if err != nil {
 		return "", err
 	}
 	return resp.Message, nil
+}
+
+func (c *Client) StartScan(ctx context.Context, image string) (string, error) {
+	if c.ScanService == nil {
+		return "", fmt.Errorf("scan service not initialized")
+	}
+	resp, err := c.ScanService.StartScan(ctx, &v1.StartScanRequest{TargetImage: image})
+	if err != nil {
+		return "", err
+	}
+	return resp.ScanId, nil
+}
+
+func (c *Client) GetScanStatus(ctx context.Context, scanID string) (string, error) {
+	if c.ScanService == nil {
+		return "", fmt.Errorf("scan service not initialized")
+	}
+	resp, err := c.ScanService.GetScanStatus(ctx, &v1.GetScanStatusRequest{ScanId: scanID})
+	if err != nil {
+		return "", err
+	}
+	return resp.Status, nil
+}
+
+func (c *Client) GetVulnerabilities(ctx context.Context, scanID string) ([]*v1.Vulnerability, error) {
+	if c.VulnerabilityService == nil {
+		return nil, fmt.Errorf("vulnerability service not initialized")
+	}
+	resp, err := c.VulnerabilityService.GetVulnerabilities(ctx, &v1.GetVulnerabilitiesRequest{ScanId: scanID})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Vulnerabilities, nil
 }
