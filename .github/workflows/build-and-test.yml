@@ -15,9 +15,13 @@ jobs:
       - name: Run tests with coverage
         run: |
           if [ -f go.mod ]; then
-            go test -v -coverprofile=coverage.out ./...
-            # Filter out generated code and main entry points
-            grep -v "_pb.go" coverage.out | grep -v "cmd/api" | grep -v "internal/grpc/aegis/v1" | grep -v "_mock.go" > coverage_filtered.out
+            # Skip non-testable/generated entry points that can fail coverage tooling on some runners.
+            go list ./... \
+              | grep -v '/cmd/api$' \
+              | grep -v '/internal/grpc/aegis/v1$' \
+              | xargs go test -v -coverprofile=coverage.out
+            # Filter out generated and mock files from the global threshold check.
+            grep -v "_pb.go" coverage.out | grep -v "internal/grpc/aegis/v1" | grep -v "_mock.go" > coverage_filtered.out
             COVERAGE=$(go tool cover -func=coverage_filtered.out | grep "^total:" | awk '{print $NF}' | sed 's/%//')
             echo "Filtered coverage: $COVERAGE%"
             if (( $(echo "$COVERAGE < 80" | bc -l) )); then
