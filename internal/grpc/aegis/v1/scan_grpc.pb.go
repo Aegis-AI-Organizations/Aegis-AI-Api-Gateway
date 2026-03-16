@@ -27,8 +27,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ScanServiceClient interface {
-	StartScan(ctx context.Context, in *ScanRequest, opts ...grpc.CallOption) (*ScanResponse, error)
-	GetScanStatus(ctx context.Context, in *GetScanRequest, opts ...grpc.CallOption) (*ScanStatusResponse, error)
+	StartScan(ctx context.Context, in *StartScanRequest, opts ...grpc.CallOption) (*StartScanResponse, error)
+	GetScanStatus(ctx context.Context, in *GetScanStatusRequest, opts ...grpc.CallOption) (*GetScanStatusResponse, error)
 }
 
 type scanServiceClient struct {
@@ -39,9 +39,9 @@ func NewScanServiceClient(cc grpc.ClientConnInterface) ScanServiceClient {
 	return &scanServiceClient{cc}
 }
 
-func (c *scanServiceClient) StartScan(ctx context.Context, in *ScanRequest, opts ...grpc.CallOption) (*ScanResponse, error) {
+func (c *scanServiceClient) StartScan(ctx context.Context, in *StartScanRequest, opts ...grpc.CallOption) (*StartScanResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ScanResponse)
+	out := new(StartScanResponse)
 	err := c.cc.Invoke(ctx, ScanService_StartScan_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -49,9 +49,9 @@ func (c *scanServiceClient) StartScan(ctx context.Context, in *ScanRequest, opts
 	return out, nil
 }
 
-func (c *scanServiceClient) GetScanStatus(ctx context.Context, in *GetScanRequest, opts ...grpc.CallOption) (*ScanStatusResponse, error) {
+func (c *scanServiceClient) GetScanStatus(ctx context.Context, in *GetScanStatusRequest, opts ...grpc.CallOption) (*GetScanStatusResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ScanStatusResponse)
+	out := new(GetScanStatusResponse)
 	err := c.cc.Invoke(ctx, ScanService_GetScanStatus_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -63,8 +63,8 @@ func (c *scanServiceClient) GetScanStatus(ctx context.Context, in *GetScanReques
 // All implementations must embed UnimplementedScanServiceServer
 // for forward compatibility.
 type ScanServiceServer interface {
-	StartScan(context.Context, *ScanRequest) (*ScanResponse, error)
-	GetScanStatus(context.Context, *GetScanRequest) (*ScanStatusResponse, error)
+	StartScan(context.Context, *StartScanRequest) (*StartScanResponse, error)
+	GetScanStatus(context.Context, *GetScanStatusRequest) (*GetScanStatusResponse, error)
 	mustEmbedUnimplementedScanServiceServer()
 }
 
@@ -75,10 +75,10 @@ type ScanServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedScanServiceServer struct{}
 
-func (UnimplementedScanServiceServer) StartScan(context.Context, *ScanRequest) (*ScanResponse, error) {
+func (UnimplementedScanServiceServer) StartScan(context.Context, *StartScanRequest) (*StartScanResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method StartScan not implemented")
 }
-func (UnimplementedScanServiceServer) GetScanStatus(context.Context, *GetScanRequest) (*ScanStatusResponse, error) {
+func (UnimplementedScanServiceServer) GetScanStatus(context.Context, *GetScanStatusRequest) (*GetScanStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetScanStatus not implemented")
 }
 func (UnimplementedScanServiceServer) mustEmbedUnimplementedScanServiceServer() {}
@@ -103,7 +103,7 @@ func RegisterScanServiceServer(s grpc.ServiceRegistrar, srv ScanServiceServer) {
 }
 
 func _ScanService_StartScan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ScanRequest)
+	in := new(StartScanRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -115,13 +115,13 @@ func _ScanService_StartScan_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: ScanService_StartScan_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ScanServiceServer).StartScan(ctx, req.(*ScanRequest))
+		return srv.(ScanServiceServer).StartScan(ctx, req.(*StartScanRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _ScanService_GetScanStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetScanRequest)
+	in := new(GetScanStatusRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func _ScanService_GetScanStatus_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: ScanService_GetScanStatus_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ScanServiceServer).GetScanStatus(ctx, req.(*GetScanRequest))
+		return srv.(ScanServiceServer).GetScanStatus(ctx, req.(*GetScanStatusRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

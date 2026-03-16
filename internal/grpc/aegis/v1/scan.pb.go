@@ -22,27 +22,27 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ScanRequest struct {
+type StartScanRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	TargetImage   string                 `protobuf:"bytes,1,opt,name=target_image,json=targetImage,proto3" json:"target_image,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ScanRequest) Reset() {
-	*x = ScanRequest{}
+func (x *StartScanRequest) Reset() {
+	*x = StartScanRequest{}
 	mi := &file_aegis_v1_scan_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ScanRequest) String() string {
+func (x *StartScanRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ScanRequest) ProtoMessage() {}
+func (*StartScanRequest) ProtoMessage() {}
 
-func (x *ScanRequest) ProtoReflect() protoreflect.Message {
+func (x *StartScanRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_aegis_v1_scan_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -54,19 +54,19 @@ func (x *ScanRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ScanRequest.ProtoReflect.Descriptor instead.
-func (*ScanRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use StartScanRequest.ProtoReflect.Descriptor instead.
+func (*StartScanRequest) Descriptor() ([]byte, []int) {
 	return file_aegis_v1_scan_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ScanRequest) GetTargetImage() string {
+func (x *StartScanRequest) GetTargetImage() string {
 	if x != nil {
 		return x.TargetImage
 	}
 	return ""
 }
 
-type ScanResponse struct {
+type StartScanResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ScanId        string                 `protobuf:"bytes,1,opt,name=scan_id,json=scanId,proto3" json:"scan_id,omitempty"`
 	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
@@ -75,20 +75,20 @@ type ScanResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ScanResponse) Reset() {
-	*x = ScanResponse{}
+func (x *StartScanResponse) Reset() {
+	*x = StartScanResponse{}
 	mi := &file_aegis_v1_scan_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ScanResponse) String() string {
+func (x *StartScanResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ScanResponse) ProtoMessage() {}
+func (*StartScanResponse) ProtoMessage() {}
 
-func (x *ScanResponse) ProtoReflect() protoreflect.Message {
+func (x *StartScanResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_aegis_v1_scan_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -100,53 +100,53 @@ func (x *ScanResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ScanResponse.ProtoReflect.Descriptor instead.
-func (*ScanResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use StartScanResponse.ProtoReflect.Descriptor instead.
+func (*StartScanResponse) Descriptor() ([]byte, []int) {
 	return file_aegis_v1_scan_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ScanResponse) GetScanId() string {
+func (x *StartScanResponse) GetScanId() string {
 	if x != nil {
 		return x.ScanId
 	}
 	return ""
 }
 
-func (x *ScanResponse) GetStatus() string {
+func (x *StartScanResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
 	return ""
 }
 
-func (x *ScanResponse) GetStartedAt() *timestamppb.Timestamp {
+func (x *StartScanResponse) GetStartedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.StartedAt
 	}
 	return nil
 }
 
-type GetScanRequest struct {
+type GetScanStatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ScanId        string                 `protobuf:"bytes,1,opt,name=scan_id,json=scanId,proto3" json:"scan_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetScanRequest) Reset() {
-	*x = GetScanRequest{}
+func (x *GetScanStatusRequest) Reset() {
+	*x = GetScanStatusRequest{}
 	mi := &file_aegis_v1_scan_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetScanRequest) String() string {
+func (x *GetScanStatusRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetScanRequest) ProtoMessage() {}
+func (*GetScanStatusRequest) ProtoMessage() {}
 
-func (x *GetScanRequest) ProtoReflect() protoreflect.Message {
+func (x *GetScanStatusRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_aegis_v1_scan_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -158,19 +158,19 @@ func (x *GetScanRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetScanRequest.ProtoReflect.Descriptor instead.
-func (*GetScanRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetScanStatusRequest.ProtoReflect.Descriptor instead.
+func (*GetScanStatusRequest) Descriptor() ([]byte, []int) {
 	return file_aegis_v1_scan_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetScanRequest) GetScanId() string {
+func (x *GetScanStatusRequest) GetScanId() string {
 	if x != nil {
 		return x.ScanId
 	}
 	return ""
 }
 
-type ScanStatusResponse struct {
+type GetScanStatusResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ScanId        string                 `protobuf:"bytes,1,opt,name=scan_id,json=scanId,proto3" json:"scan_id,omitempty"`
 	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
@@ -180,20 +180,20 @@ type ScanStatusResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ScanStatusResponse) Reset() {
-	*x = ScanStatusResponse{}
+func (x *GetScanStatusResponse) Reset() {
+	*x = GetScanStatusResponse{}
 	mi := &file_aegis_v1_scan_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ScanStatusResponse) String() string {
+func (x *GetScanStatusResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ScanStatusResponse) ProtoMessage() {}
+func (*GetScanStatusResponse) ProtoMessage() {}
 
-func (x *ScanStatusResponse) ProtoReflect() protoreflect.Message {
+func (x *GetScanStatusResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_aegis_v1_scan_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -205,33 +205,33 @@ func (x *ScanStatusResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ScanStatusResponse.ProtoReflect.Descriptor instead.
-func (*ScanStatusResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetScanStatusResponse.ProtoReflect.Descriptor instead.
+func (*GetScanStatusResponse) Descriptor() ([]byte, []int) {
 	return file_aegis_v1_scan_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *ScanStatusResponse) GetScanId() string {
+func (x *GetScanStatusResponse) GetScanId() string {
 	if x != nil {
 		return x.ScanId
 	}
 	return ""
 }
 
-func (x *ScanStatusResponse) GetStatus() string {
+func (x *GetScanStatusResponse) GetStatus() string {
 	if x != nil {
 		return x.Status
 	}
 	return ""
 }
 
-func (x *ScanStatusResponse) GetStartedAt() *timestamppb.Timestamp {
+func (x *GetScanStatusResponse) GetStartedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.StartedAt
 	}
 	return nil
 }
 
-func (x *ScanStatusResponse) GetCompletedAt() *timestamppb.Timestamp {
+func (x *GetScanStatusResponse) GetCompletedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CompletedAt
 	}
@@ -242,25 +242,25 @@ var File_aegis_v1_scan_proto protoreflect.FileDescriptor
 
 const file_aegis_v1_scan_proto_rawDesc = "" +
 	"\n" +
-	"\x13aegis/v1/scan.proto\x12\baegis.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"0\n" +
-	"\vScanRequest\x12!\n" +
-	"\ftarget_image\x18\x01 \x01(\tR\vtargetImage\"z\n" +
-	"\fScanResponse\x12\x17\n" +
+	"\x13aegis/v1/scan.proto\x12\baegis.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"5\n" +
+	"\x10StartScanRequest\x12!\n" +
+	"\ftarget_image\x18\x01 \x01(\tR\vtargetImage\"\x7f\n" +
+	"\x11StartScanResponse\x12\x17\n" +
 	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x129\n" +
 	"\n" +
-	"started_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\")\n" +
-	"\x0eGetScanRequest\x12\x17\n" +
-	"\ascan_id\x18\x01 \x01(\tR\x06scanId\"\xbf\x01\n" +
-	"\x12ScanStatusResponse\x12\x17\n" +
+	"started_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\"/\n" +
+	"\x14GetScanStatusRequest\x12\x17\n" +
+	"\ascan_id\x18\x01 \x01(\tR\x06scanId\"\xc2\x01\n" +
+	"\x15GetScanStatusResponse\x12\x17\n" +
 	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x129\n" +
 	"\n" +
 	"started_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
-	"\fcompleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt2\x92\x01\n" +
-	"\vScanService\x12:\n" +
-	"\tStartScan\x12\x15.aegis.v1.ScanRequest\x1a\x16.aegis.v1.ScanResponse\x12G\n" +
-	"\rGetScanStatus\x12\x18.aegis.v1.GetScanRequest\x1a\x1c.aegis.v1.ScanStatusResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v1b\x06proto3"
+	"\fcompleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt2\xa5\x01\n" +
+	"\vScanService\x12D\n" +
+	"\tStartScan\x12\x1a.aegis.v1.StartScanRequest\x1a\x1b.aegis.v1.StartScanResponse\x12P\n" +
+	"\rGetScanStatus\x12\x1e.aegis.v1.GetScanStatusRequest\x1a\x1f.aegis.v1.GetScanStatusResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v1b\x06proto3"
 
 var (
 	file_aegis_v1_scan_proto_rawDescOnce sync.Once
@@ -276,20 +276,20 @@ func file_aegis_v1_scan_proto_rawDescGZIP() []byte {
 
 var file_aegis_v1_scan_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_aegis_v1_scan_proto_goTypes = []any{
-	(*ScanRequest)(nil),           // 0: aegis.v1.ScanRequest
-	(*ScanResponse)(nil),          // 1: aegis.v1.ScanResponse
-	(*GetScanRequest)(nil),        // 2: aegis.v1.GetScanRequest
-	(*ScanStatusResponse)(nil),    // 3: aegis.v1.ScanStatusResponse
+	(*StartScanRequest)(nil),      // 0: aegis.v1.StartScanRequest
+	(*StartScanResponse)(nil),     // 1: aegis.v1.StartScanResponse
+	(*GetScanStatusRequest)(nil),  // 2: aegis.v1.GetScanStatusRequest
+	(*GetScanStatusResponse)(nil), // 3: aegis.v1.GetScanStatusResponse
 	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
 }
 var file_aegis_v1_scan_proto_depIdxs = []int32{
-	4, // 0: aegis.v1.ScanResponse.started_at:type_name -> google.protobuf.Timestamp
-	4, // 1: aegis.v1.ScanStatusResponse.started_at:type_name -> google.protobuf.Timestamp
-	4, // 2: aegis.v1.ScanStatusResponse.completed_at:type_name -> google.protobuf.Timestamp
-	0, // 3: aegis.v1.ScanService.StartScan:input_type -> aegis.v1.ScanRequest
-	2, // 4: aegis.v1.ScanService.GetScanStatus:input_type -> aegis.v1.GetScanRequest
-	1, // 5: aegis.v1.ScanService.StartScan:output_type -> aegis.v1.ScanResponse
-	3, // 6: aegis.v1.ScanService.GetScanStatus:output_type -> aegis.v1.ScanStatusResponse
+	4, // 0: aegis.v1.StartScanResponse.started_at:type_name -> google.protobuf.Timestamp
+	4, // 1: aegis.v1.GetScanStatusResponse.started_at:type_name -> google.protobuf.Timestamp
+	4, // 2: aegis.v1.GetScanStatusResponse.completed_at:type_name -> google.protobuf.Timestamp
+	0, // 3: aegis.v1.ScanService.StartScan:input_type -> aegis.v1.StartScanRequest
+	2, // 4: aegis.v1.ScanService.GetScanStatus:input_type -> aegis.v1.GetScanStatusRequest
+	1, // 5: aegis.v1.ScanService.StartScan:output_type -> aegis.v1.StartScanResponse
+	3, // 6: aegis.v1.ScanService.GetScanStatus:output_type -> aegis.v1.GetScanStatusResponse
 	5, // [5:7] is the sub-list for method output_type
 	3, // [3:5] is the sub-list for method input_type
 	3, // [3:3] is the sub-list for extension type_name
