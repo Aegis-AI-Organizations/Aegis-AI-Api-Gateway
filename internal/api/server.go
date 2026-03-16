@@ -9,15 +9,17 @@ import (
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	"go.temporal.io/sdk/client"
 )
 
-func NewRouter(db *sql.DB, tc client.Client) *http.ServeMux {
+func NewRouter(db *sql.DB, tc client.Client, gc *grpc.Client) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	h := &handlers.API{
 		DB:             db,
 		TemporalClient: tc,
+		GRPCClient:     gc,
 	}
 
 	mux.HandleFunc("GET /health", h.HealthHandler)
@@ -35,10 +37,10 @@ func NewRouter(db *sql.DB, tc client.Client) *http.ServeMux {
 	return mux
 }
 
-func Start(database *sql.DB, tc client.Client) {
+func Start(database *sql.DB, tc client.Client, gc *grpc.Client) {
 	fmt.Println("🌍 Aegis AI Web API Gateway HTTP Server starting...")
 
-	router := NewRouter(database, tc)
+	router := NewRouter(database, tc, gc)
 
 	port := os.Getenv("PORT")
 	if port == "" {

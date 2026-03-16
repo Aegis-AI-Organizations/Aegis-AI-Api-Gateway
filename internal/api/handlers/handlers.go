@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	"go.temporal.io/sdk/client"
 )
 
@@ -12,6 +13,7 @@ import (
 type API struct {
 	DB             *sql.DB
 	TemporalClient client.Client
+	GRPCClient     *grpc.Client
 }
 
 // HealthHandler returns a simple 200 OK status for Kubernetes liveness probes.
