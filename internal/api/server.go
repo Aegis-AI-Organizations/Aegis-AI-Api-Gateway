@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,15 +9,12 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
-	"go.temporal.io/sdk/client"
 )
 
-func NewRouter(db *sql.DB, tc client.Client, gc *grpc.Client) *http.ServeMux {
+func NewRouter(gc *grpc.Client) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	h := &handlers.API{
-		DB:             db,
-		TemporalClient: tc,
 		GRPCClient:     gc,
 	}
 
@@ -37,10 +33,10 @@ func NewRouter(db *sql.DB, tc client.Client, gc *grpc.Client) *http.ServeMux {
 	return mux
 }
 
-func Start(database *sql.DB, tc client.Client, gc *grpc.Client) {
+func Start(gc *grpc.Client) {
 	fmt.Println("🌍 Aegis AI Web API Gateway HTTP Server starting...")
 
-	router := NewRouter(database, tc, gc)
+	router := NewRouter(gc)
 
 	port := os.Getenv("PORT")
 	if port == "" {

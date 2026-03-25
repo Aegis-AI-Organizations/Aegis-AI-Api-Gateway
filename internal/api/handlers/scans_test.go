@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,51 +10,56 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
+	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"go.temporal.io/sdk/client"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type MockWorkflowRun struct {
+type MockScanServiceClient struct {
 	mock.Mock
 }
 
-func (m *MockWorkflowRun) GetID() string {
-	return "test-workflow-id"
+func (m *MockScanServiceClient) StartScan(ctx context.Context, in *v1.StartScanRequest, opts ...grpc.CallOption) (*v1.StartScanResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.StartScanResponse), args.Error(1)
 }
 
-func (m *MockWorkflowRun) GetRunID() string {
-	return "test-run-id"
+func (m *MockScanServiceClient) GetScanStatus(ctx context.Context, in *v1.GetScanStatusRequest, opts ...grpc.CallOption) (*v1.GetScanStatusResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetScanStatusResponse), args.Error(1)
 }
 
-func (m *MockWorkflowRun) Get(ctx context.Context, valuePtr interface{}) error {
-	return nil
+func (m *MockScanServiceClient) GetScanReport(ctx context.Context, in *v1.GetScanReportRequest, opts ...grpc.CallOption) (*v1.GetScanReportResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetScanReportResponse), args.Error(1)
 }
 
-func (m *MockWorkflowRun) GetWithOptions(ctx context.Context, valuePtr interface{}, options client.WorkflowRunGetOptions) error {
-	return nil
-}
-
-type MockTemporalClient struct {
-	client.Client
-	mock.Mock
-}
-
-func (m *MockTemporalClient) ExecuteWorkflow(ctx context.Context, options client.StartWorkflowOptions, workflow interface{}, args ...interface{}) (client.WorkflowRun, error) {
-	callArgs := m.Called(ctx, options, workflow, args)
-	return callArgs.Get(0).(client.WorkflowRun), callArgs.Error(1)
+func (m *MockScanServiceClient) ListScans(ctx context.Context, in *v1.ListScansRequest, opts ...grpc.CallOption) (*v1.ListScansResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.ListScansResponse), args.Error(1)
 }
 
 func TestCreateScanHandler(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	mockTemporal := new(MockTemporalClient)
+	mockService := new(MockScanServiceClient)
 	api := &API{
-		DB:             db,
-		TemporalClient: mockTemporal,
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
 	}
 
 	payload := map[string]string{"target_image": "nginx:latest"}
@@ -63,53 +67,21 @@ func TestCreateScanHandler(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
 	rr := httptest.NewRecorder()
 
-	mockDB.ExpectExec("INSERT INTO scans").
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), "nginx:latest").
-		WillReturnResult(sqlmock.NewResult(1, 1))
-
-	mockRun := new(MockWorkflowRun)
-	mockTemporal.On("ExecuteWorkflow", mock.Anything, mock.Anything, "PentestWorkflow", mock.Anything).
-		Return(mockRun, nil)
+	mockService.On("StartScan", mock.Anything, &v1.StartScanRequest{TargetImage: "nginx:latest"}).
+		Return(&v1.StartScanResponse{ScanId: "s1"}, nil)
 
 	handler := http.HandlerFunc(api.CreateScanHandler)
 	handler.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusCreated, rr.Code)
-	mockTemporal.AssertExpectations(t)
-	assert.NoError(t, mockDB.ExpectationsWereMet())
 }
 
-func TestCreateScanHandler_DBFailure(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	api := &API{DB: db}
-
-	payload := map[string]string{"target_image": "nginx:latest"}
-	body, _ := json.Marshal(payload)
-	req, _ := http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
-	rr := httptest.NewRecorder()
-
-	mockDB.ExpectExec("INSERT INTO scans").
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), "nginx:latest").
-		WillReturnError(fmt.Errorf("db error"))
-
-	handler := http.HandlerFunc(api.CreateScanHandler)
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
-}
-
-func TestCreateScanHandler_TemporalFailure(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	mockTemporal := new(MockTemporalClient)
+func TestCreateScanHandler_GRPCFailure(t *testing.T) {
+	mockService := new(MockScanServiceClient)
 	api := &API{
-		DB:             db,
-		TemporalClient: mockTemporal,
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
 	}
 
 	payload := map[string]string{"target_image": "nginx:latest"}
@@ -117,16 +89,8 @@ func TestCreateScanHandler_TemporalFailure(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
 	rr := httptest.NewRecorder()
 
-	mockDB.ExpectExec("INSERT INTO scans").
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), "nginx:latest").
-		WillReturnResult(sqlmock.NewResult(1, 1))
-
-	mockTemporal.On("ExecuteWorkflow", mock.Anything, mock.Anything, "PentestWorkflow", mock.Anything).
-		Return((*MockWorkflowRun)(nil), fmt.Errorf("temporal error"))
-
-	mockDB.ExpectExec("UPDATE scans SET status = 'FAILED'").
-		WithArgs(sqlmock.AnyArg()).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+	mockService.On("StartScan", mock.Anything, mock.Anything).
+		Return(nil, fmt.Errorf("grpc error"))
 
 	handler := http.HandlerFunc(api.CreateScanHandler)
 	handler.ServeHTTP(rr, req)
@@ -134,14 +98,49 @@ func TestCreateScanHandler_TemporalFailure(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
-func TestGetScansHandler_DBError(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+func TestGetScansHandler(t *testing.T) {
+	mockService := new(MockScanServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
-	mockDB.ExpectQuery("SELECT id, temporal_workflow_id, target_image, status, started_at, completed_at FROM scans").
-		WillReturnError(fmt.Errorf("db error"))
+	resp := &v1.ListScansResponse{
+		Scans: []*v1.ScanDetails{
+			{
+				ScanId:             "s1",
+				TemporalWorkflowId: "wf-1",
+				TargetImage:        "img-1",
+				Status:             "PENDING",
+				StartedAt:          timestamppb.New(time.Now()),
+				CompletedAt:        nil,
+			},
+		},
+	}
+
+	mockService.On("ListScans", mock.Anything, &v1.ListScansRequest{}).
+		Return(resp, nil)
+
+	req, _ := http.NewRequest("GET", "/scans", nil)
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(api.GetScansHandler)
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestGetScansHandler_GRPCError(t *testing.T) {
+	mockService := new(MockScanServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
+	}
+
+	mockService.On("ListScans", mock.Anything, mock.Anything).
+		Return(nil, fmt.Errorf("grpc error"))
 
 	req, _ := http.NewRequest("GET", "/scans", nil)
 	rr := httptest.NewRecorder()
@@ -152,15 +151,54 @@ func TestGetScansHandler_DBError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
-func TestGetScanByIDHandler_NotFound(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+func TestGetScanByIDHandler_Found(t *testing.T) {
+	mockService := new(MockScanServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
-	mockDB.ExpectQuery("SELECT id, temporal_workflow_id, target_image, status, started_at, completed_at FROM scans WHERE id =").
-		WithArgs("nb").
-		WillReturnError(sql.ErrNoRows)
+	resp := &v1.ListScansResponse{
+		Scans: []*v1.ScanDetails{
+			{
+				ScanId:             "s1",
+				TemporalWorkflowId: "wf-1",
+				TargetImage:        "img-1",
+				Status:             "PENDING",
+				StartedAt:          timestamppb.New(time.Now()),
+				CompletedAt:        nil,
+			},
+		},
+	}
+
+	mockService.On("ListScans", mock.Anything, &v1.ListScansRequest{}).
+		Return(resp, nil)
+
+	req, _ := http.NewRequest("GET", "/scans/s1", nil)
+	req.SetPathValue("id", "s1")
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(api.GetScanByIDHandler)
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestGetScanByIDHandler_NotFound(t *testing.T) {
+	mockService := new(MockScanServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
+	}
+
+	resp := &v1.ListScansResponse{
+		Scans: []*v1.ScanDetails{},
+	}
+
+	mockService.On("ListScans", mock.Anything, &v1.ListScansRequest{}).
+		Return(resp, nil)
 
 	req, _ := http.NewRequest("GET", "/scans/nb", nil)
 	req.SetPathValue("id", "nb")
@@ -172,122 +210,20 @@ func TestGetScanByIDHandler_NotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, rr.Code)
 }
 
-func TestGetScanReportHandler_EmptyReport(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	api := &API{DB: db}
-	rows := sqlmock.NewRows([]string{"report_pdf"}).AddRow([]byte{})
-
-	mockDB.ExpectQuery("SELECT report_pdf FROM scans WHERE id =").
-		WithArgs("s1").
-		WillReturnRows(rows)
-
-	req, _ := http.NewRequest("GET", "/scans/s1/report", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(api.GetScanReportHandler)
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusNotFound, rr.Code)
-}
-
-func TestGetScanReportHandler_DBError(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	api := &API{DB: db}
-	mockDB.ExpectQuery("SELECT report_pdf FROM scans WHERE id =").
-		WithArgs("s1").
-		WillReturnError(fmt.Errorf("db error"))
-
-	req, _ := http.NewRequest("GET", "/scans/s1/report", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(api.GetScanReportHandler)
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
-}
-
-func TestGetScanReportHandler_NotFound(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	api := &API{DB: db}
-	mockDB.ExpectQuery("SELECT report_pdf FROM scans WHERE id =").
-		WithArgs("s1").
-		WillReturnError(sql.ErrNoRows)
-
-	req, _ := http.NewRequest("GET", "/scans/s1/report", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(api.GetScanReportHandler)
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusNotFound, rr.Code)
-}
-
-func TestGetScansHandler_RowScanError(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	api := &API{DB: db}
-	// Add a row with a wrong type to trigger scan error
-	rows := sqlmock.NewRows([]string{"id", "temporal_workflow_id", "target_image", "status", "started_at", "completed_at"}).
-		AddRow(1, "wf-1", "img-1", "PENDING", "start", "end")
-
-	mockDB.ExpectQuery("SELECT id, temporal_workflow_id, target_image, status, started_at, completed_at FROM scans").
-		WillReturnRows(rows)
-
-	req, _ := http.NewRequest("GET", "/scans", nil)
-	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(api.GetScansHandler)
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code)
-}
-
-func TestGetScanByIDHandler_DBError(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	api := &API{DB: db}
-	mockDB.ExpectQuery("SELECT id, temporal_workflow_id, target_image, status, started_at, completed_at FROM scans WHERE id =").
-		WithArgs("s1").
-		WillReturnError(fmt.Errorf("db error"))
-
-	req, _ := http.NewRequest("GET", "/scans/s1", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(api.GetScanByIDHandler)
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
-}
-
 func TestGetScanReportHandler_Success(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+	mockService := new(MockScanServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
-	pdfData := []byte("fake-pdf-content")
-	rows := sqlmock.NewRows([]string{"report_pdf"}).AddRow(pdfData)
+	resp := &v1.GetScanReportResponse{
+		PdfData: []byte("fake-pdf-content"),
+	}
 
-	mockDB.ExpectQuery("SELECT report_pdf FROM scans WHERE id =").
-		WithArgs("s1").
-		WillReturnRows(rows)
+	mockService.On("GetScanReport", mock.Anything, &v1.GetScanReportRequest{ScanId: "s1"}).
+		Return(resp, nil)
 
 	req, _ := http.NewRequest("GET", "/scans/s1/report", nil)
 	req.SetPathValue("id", "s1")
@@ -300,24 +236,49 @@ func TestGetScanReportHandler_Success(t *testing.T) {
 	assert.Equal(t, "application/pdf", rr.Header().Get("Content-Type"))
 }
 
-func TestGetScansHandler_RowErr(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+func TestGetScanReportHandler_EmptyReport(t *testing.T) {
+	mockService := new(MockScanServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
-	rows := sqlmock.NewRows([]string{"id", "temporal_workflow_id", "target_image", "status", "started_at", "completed_at"}).
-		AddRow("s1", "wf1", "img1", "PENDING", time.Now(), nil).
-		RowError(0, fmt.Errorf("row error"))
+	resp := &v1.GetScanReportResponse{
+		PdfData: []byte{},
+	}
 
-	mockDB.ExpectQuery("SELECT id, temporal_workflow_id, target_image, status, started_at, completed_at FROM scans").
-		WillReturnRows(rows)
+	mockService.On("GetScanReport", mock.Anything, &v1.GetScanReportRequest{ScanId: "s1"}).
+		Return(resp, nil)
 
-	req, _ := http.NewRequest("GET", "/scans", nil)
+	req, _ := http.NewRequest("GET", "/scans/s1/report", nil)
+	req.SetPathValue("id", "s1")
 	rr := httptest.NewRecorder()
 
-	handler := http.HandlerFunc(api.GetScansHandler)
+	handler := http.HandlerFunc(api.GetScanReportHandler)
 	handler.ServeHTTP(rr, req)
 
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Equal(t, http.StatusNotFound, rr.Code)
+}
+
+func TestGetScanReportHandler_GRPCError(t *testing.T) {
+	mockService := new(MockScanServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
+	}
+
+	mockService.On("GetScanReport", mock.Anything, &v1.GetScanReportRequest{ScanId: "s1"}).
+		Return(nil, fmt.Errorf("grpc error"))
+
+	req, _ := http.NewRequest("GET", "/scans/s1/report", nil)
+	req.SetPathValue("id", "s1")
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(api.GetScanReportHandler)
+	handler.ServeHTTP(rr, req)
+
+	// Since we return 404 for GRPC errors in GetScanReportHandler for simplicity
+	assert.Equal(t, http.StatusNotFound, rr.Code)
 }

@@ -34,6 +34,16 @@ func (m *MockScanServiceClient) GetScanStatus(ctx context.Context, in *v1.GetSca
 	return args.Get(0).(*v1.GetScanStatusResponse), args.Error(1)
 }
 
+func (m *MockScanServiceClient) GetScanReport(ctx context.Context, in *v1.GetScanReportRequest, opts ...grpc.CallOption) (*v1.GetScanReportResponse, error) {
+	args := m.Called(ctx, in)
+	return args.Get(0).(*v1.GetScanReportResponse), args.Error(1)
+}
+
+func (m *MockScanServiceClient) ListScans(ctx context.Context, in *v1.ListScansRequest, opts ...grpc.CallOption) (*v1.ListScansResponse, error) {
+	args := m.Called(ctx, in)
+	return args.Get(0).(*v1.ListScansResponse), args.Error(1)
+}
+
 type MockVulnerabilityServiceClient struct {
 	mock.Mock
 }
@@ -41,6 +51,11 @@ type MockVulnerabilityServiceClient struct {
 func (m *MockVulnerabilityServiceClient) GetVulnerabilities(ctx context.Context, in *v1.GetVulnerabilitiesRequest, opts ...grpc.CallOption) (*v1.GetVulnerabilitiesResponse, error) {
 	args := m.Called(ctx, in)
 	return args.Get(0).(*v1.GetVulnerabilitiesResponse), args.Error(1)
+}
+
+func (m *MockVulnerabilityServiceClient) GetEvidences(ctx context.Context, in *v1.GetEvidencesRequest, opts ...grpc.CallOption) (*v1.GetEvidencesResponse, error) {
+	args := m.Called(ctx, in)
+	return args.Get(0).(*v1.GetEvidencesResponse), args.Error(1)
 }
 
 func TestClient_Ping(t *testing.T) {

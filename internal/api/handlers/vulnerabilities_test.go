@@ -1,30 +1,63 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
+	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+type MockVulnerabilityServiceClient struct {
+	mock.Mock
+}
+
+func (m *MockVulnerabilityServiceClient) GetVulnerabilities(ctx context.Context, in *v1.GetVulnerabilitiesRequest, opts ...grpc.CallOption) (*v1.GetVulnerabilitiesResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetVulnerabilitiesResponse), args.Error(1)
+}
+
+func (m *MockVulnerabilityServiceClient) GetEvidences(ctx context.Context, in *v1.GetEvidencesRequest, opts ...grpc.CallOption) (*v1.GetEvidencesResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetEvidencesResponse), args.Error(1)
+}
+
 func TestGetVulnerabilitiesHandler(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+	mockService := new(MockVulnerabilityServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			VulnerabilityService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
+	response := &v1.GetVulnerabilitiesResponse{
+		Vulnerabilities: []*v1.Vulnerability{
+			{
+				Id:             "v1",
+				VulnType:       "SQL Injection",
+				Severity:       "HIGH",
+				TargetEndpoint: "http://target",
+				Description:    "Desc",
+				DiscoveredAt:   timestamppb.New(time.Now()),
+			},
+		},
+	}
 
-	now := time.Now()
-	rows := sqlmock.NewRows([]string{"id", "vuln_type", "severity", "target_endpoint", "description", "discovered_at"}).
-		AddRow("v1", "SQL Injection", "HIGH", "http://target", "Desc", now)
-
-	mockDB.ExpectQuery("SELECT id, vuln_type, severity, target_endpoint, description, discovered_at FROM vulnerabilities WHERE scan_id =").
-		WithArgs("s1").
-		WillReturnRows(rows)
+	mockService.On("GetVulnerabilities", mock.Anything, &v1.GetVulnerabilitiesRequest{ScanId: "s1"}).Return(response, nil)
 
 	req, _ := http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
 	req.SetPathValue("id", "s1")
@@ -37,19 +70,26 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 }
 
 func TestGetEvidencesHandler(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+	mockService := new(MockVulnerabilityServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			VulnerabilityService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
+	response := &v1.GetEvidencesResponse{
+		Evidences: []*v1.Evidence{
+			{
+				Id:              "e1",
+				VulnerabilityId: "v1",
+				PayloadUsed:     "payload",
+				LootData:        "loot",
+				CapturedAt:      timestamppb.New(time.Now()),
+			},
+		},
+	}
 
-	now := time.Now()
-	rows := sqlmock.NewRows([]string{"id", "vulnerability_id", "payload_used", "loot_data", "captured_at"}).
-		AddRow("e1", "v1", "payload", "loot", now)
-
-	mockDB.ExpectQuery("SELECT id, vulnerability_id, payload_used, loot_data, captured_at FROM evidences WHERE vulnerability_id =").
-		WithArgs("v1").
-		WillReturnRows(rows)
+	mockService.On("GetEvidences", mock.Anything, &v1.GetEvidencesRequest{VulnerabilityId: "v1"}).Return(response, nil)
 
 	req, _ := http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
 	req.SetPathValue("id", "v1")
@@ -61,14 +101,15 @@ func TestGetEvidencesHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
 
-func TestGetVulnerabilitiesHandler_DBError(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+func TestGetVulnerabilitiesHandler_GRPCError(t *testing.T) {
+	mockService := new(MockVulnerabilityServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			VulnerabilityService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
-	mockDB.ExpectQuery("SELECT id, vuln_type, severity, target_endpoint, description, discovered_at FROM vulnerabilities WHERE scan_id =").
-		WillReturnError(fmt.Errorf("db error"))
+	mockService.On("GetVulnerabilities", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("grpc error"))
 
 	req, _ := http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
 	req.SetPathValue("id", "s1")
@@ -80,14 +121,15 @@ func TestGetVulnerabilitiesHandler_DBError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
-func TestGetEvidencesHandler_DBError(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+func TestGetEvidencesHandler_GRPCError(t *testing.T) {
+	mockService := new(MockVulnerabilityServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			VulnerabilityService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
-	mockDB.ExpectQuery("SELECT id, vulnerability_id, payload_used, loot_data, captured_at FROM evidences WHERE vulnerability_id =").
-		WillReturnError(fmt.Errorf("db error"))
+	mockService.On("GetEvidences", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("grpc error"))
 
 	req, _ := http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
 	req.SetPathValue("id", "v1")
@@ -99,36 +141,19 @@ func TestGetEvidencesHandler_DBError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }
 
-func TestGetVulnerabilitiesHandler_RowErr(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	api := &API{DB: db}
-	rows := sqlmock.NewRows([]string{"id", "vuln_type", "severity", "target_endpoint", "description", "discovered_at"}).
-		AddRow("v1", "type", "high", "end", "desc", time.Now()).
-		RowError(0, fmt.Errorf("row error"))
-
-	mockDB.ExpectQuery("SELECT id, vuln_type, severity, target_endpoint, description, discovered_at FROM vulnerabilities WHERE scan_id =").
-		WithArgs("s1").
-		WillReturnRows(rows)
-
-	req, _ := http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(api.GetVulnerabilitiesHandler)
-	handler.ServeHTTP(rr, req)
-}
-
 func TestGetVulnerabilitiesHandler_Empty(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+	mockService := new(MockVulnerabilityServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			VulnerabilityService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
-	mockDB.ExpectQuery("SELECT id, vuln_type, severity, target_endpoint, description, discovered_at FROM vulnerabilities WHERE scan_id =").
-		WillReturnRows(sqlmock.NewRows([]string{"id", "vuln_type", "severity", "target_endpoint", "description", "discovered_at"}))
+	response := &v1.GetVulnerabilitiesResponse{
+		Vulnerabilities: []*v1.Vulnerability{},
+	}
+
+	mockService.On("GetVulnerabilities", mock.Anything, mock.Anything).Return(response, nil)
 
 	req, _ := http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
 	req.SetPathValue("id", "s1")
@@ -141,37 +166,18 @@ func TestGetVulnerabilitiesHandler_Empty(t *testing.T) {
 }
 
 func TestGetEvidencesHandler_Empty(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
+	mockService := new(MockVulnerabilityServiceClient)
+	api := &API{
+		GRPCClient: &agrpc.Client{
+			VulnerabilityService: mockService,
+		},
+	}
 
-	api := &API{DB: db}
-	mockDB.ExpectQuery("SELECT id, vulnerability_id, payload_used, loot_data, captured_at FROM evidences WHERE vulnerability_id =").
-		WillReturnRows(sqlmock.NewRows([]string{"id", "vulnerability_id", "payload_used", "loot_data", "captured_at"}))
+	response := &v1.GetEvidencesResponse{
+		Evidences: []*v1.Evidence{},
+	}
 
-	req, _ := http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
-	req.SetPathValue("id", "v1")
-	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(api.GetEvidencesHandler)
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code)
-}
-
-func TestGetEvidencesHandler_RowScanError(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	api := &API{DB: db}
-	// Wrong type for id
-	rows := sqlmock.NewRows([]string{"id", "vulnerability_id", "payload_used", "loot_data", "captured_at"}).
-		AddRow(1, "v1", "payload", "loot", time.Now())
-
-	mockDB.ExpectQuery("SELECT id, vulnerability_id, payload_used, loot_data, captured_at FROM evidences WHERE vulnerability_id =").
-		WithArgs("v1").
-		WillReturnRows(rows)
+	mockService.On("GetEvidences", mock.Anything, mock.Anything).Return(response, nil)
 
 	req, _ := http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
 	req.SetPathValue("id", "v1")
@@ -181,28 +187,4 @@ func TestGetEvidencesHandler_RowScanError(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-}
-
-func TestGetEvidencesHandler_RowErr(t *testing.T) {
-	db, mockDB, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer func() { _ = db.Close() }()
-
-	api := &API{DB: db}
-	rows := sqlmock.NewRows([]string{"id", "vulnerability_id", "payload_used", "loot_data", "captured_at"}).
-		AddRow("e1", "v1", "payload", "loot", time.Now()).
-		RowError(0, fmt.Errorf("row error"))
-
-	mockDB.ExpectQuery("SELECT id, vulnerability_id, payload_used, loot_data, captured_at FROM evidences WHERE vulnerability_id =").
-		WithArgs("v1").
-		WillReturnRows(rows)
-
-	req, _ := http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
-	req.SetPathValue("id", "v1")
-	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(api.GetEvidencesHandler)
-	handler.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }

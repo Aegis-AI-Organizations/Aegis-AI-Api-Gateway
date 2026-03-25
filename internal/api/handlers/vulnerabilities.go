@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
 )
@@ -17,42 +17,28 @@ func (a *API) GetVulnerabilitiesHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	query := `
-		SELECT id, vuln_type, severity, target_endpoint, description, discovered_at
-		FROM vulnerabilities
-		WHERE scan_id = $1
-		ORDER BY discovered_at DESC
-	`
-	rows, err := a.DB.Query(query, scanID)
+	grpcVulns, err := a.GRPCClient.GetVulnerabilities(r.Context(), scanID)
 	if err != nil {
-		log.Printf("DB query error: %v", err)
+		log.Printf("GRPC GetVulnerabilities error: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	defer func() {
-		if err := rows.Close(); err != nil {
-			log.Printf("Failed to close rows: %v", err)
-		}
-	}()
 
 	var vulns []models.Vulnerability
-	for rows.Next() {
-		var v models.Vulnerability
-		var endpoint, desc sql.NullString
-
-		if err := rows.Scan(&v.ID, &v.VulnType, &v.Severity, &endpoint, &desc, &v.DiscoveredAt); err != nil {
-			log.Printf("Row scan error: %v", err)
-			continue
+	for _, v := range grpcVulns {
+		var discoTime time.Time
+		if v.DiscoveredAt != nil {
+			discoTime = v.DiscoveredAt.AsTime()
 		}
 
-		if endpoint.Valid {
-			v.TargetEndpoint = endpoint.String
-		}
-		if desc.Valid {
-			v.Description = desc.String
-		}
-
-		vulns = append(vulns, v)
+		vulns = append(vulns, models.Vulnerability{
+			ID:             v.Id,
+			VulnType:       v.VulnType,
+			Severity:       v.Severity,
+			TargetEndpoint: v.TargetEndpoint,
+			Description:    v.Description,
+			DiscoveredAt:   discoTime,
+		})
 	}
 
 	if vulns == nil {

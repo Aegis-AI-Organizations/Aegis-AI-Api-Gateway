@@ -2,18 +2,53 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/DATA-DOG/go-sqlmock"
+	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"google.golang.org/grpc"
 )
 
+type MockScanServiceClient struct {
+	mock.Mock
+}
+
+func (m *MockScanServiceClient) StartScan(ctx context.Context, in *v1.StartScanRequest, opts ...grpc.CallOption) (*v1.StartScanResponse, error) {
+	return &v1.StartScanResponse{ScanId: "test-id"}, nil
+}
+func (m *MockScanServiceClient) GetScanStatus(ctx context.Context, in *v1.GetScanStatusRequest, opts ...grpc.CallOption) (*v1.GetScanStatusResponse, error) {
+	return &v1.GetScanStatusResponse{}, nil
+}
+func (m *MockScanServiceClient) GetScanReport(ctx context.Context, in *v1.GetScanReportRequest, opts ...grpc.CallOption) (*v1.GetScanReportResponse, error) {
+	return &v1.GetScanReportResponse{PdfData: []byte("pdf")}, nil
+}
+func (m *MockScanServiceClient) ListScans(ctx context.Context, in *v1.ListScansRequest, opts ...grpc.CallOption) (*v1.ListScansResponse, error) {
+	return &v1.ListScansResponse{
+		Scans: []*v1.ScanDetails{{ScanId: "1"}},
+	}, nil
+}
+
+type MockVulnerabilityServiceClient struct {
+	mock.Mock
+}
+func (m *MockVulnerabilityServiceClient) GetVulnerabilities(ctx context.Context, in *v1.GetVulnerabilitiesRequest, opts ...grpc.CallOption) (*v1.GetVulnerabilitiesResponse, error) {
+	return &v1.GetVulnerabilitiesResponse{}, nil
+}
+func (m *MockVulnerabilityServiceClient) GetEvidences(ctx context.Context, in *v1.GetEvidencesRequest, opts ...grpc.CallOption) (*v1.GetEvidencesResponse, error) {
+	return &v1.GetEvidencesResponse{}, nil
+}
+
 func TestNewRouterFull(t *testing.T) {
-	db, _, _ := sqlmock.New()
-	defer func() { _ = db.Close() }()
-	mux := NewRouter(db, nil, nil)
+	dummyClient := &agrpc.Client{
+		ScanService:          &MockScanServiceClient{},
+		VulnerabilityService: &MockVulnerabilityServiceClient{},
+	}
+	mux := NewRouter(dummyClient)
 
 	tests := []struct {
 		method string
