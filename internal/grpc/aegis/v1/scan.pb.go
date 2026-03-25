@@ -238,6 +238,258 @@ func (x *GetScanStatusResponse) GetCompletedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type ListScansRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListScansRequest) Reset() {
+	*x = ListScansRequest{}
+	mi := &file_aegis_v1_scan_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListScansRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListScansRequest) ProtoMessage() {}
+
+func (x *ListScansRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v1_scan_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListScansRequest.ProtoReflect.Descriptor instead.
+func (*ListScansRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v1_scan_proto_rawDescGZIP(), []int{4}
+}
+
+type ScanDetails struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	ScanId             string                 `protobuf:"bytes,1,opt,name=scan_id,json=scanId,proto3" json:"scan_id,omitempty"`
+	TargetImage        string                 `protobuf:"bytes,2,opt,name=target_image,json=targetImage,proto3" json:"target_image,omitempty"`
+	TemporalWorkflowId string                 `protobuf:"bytes,3,opt,name=temporal_workflow_id,json=temporalWorkflowId,proto3" json:"temporal_workflow_id,omitempty"`
+	Status             string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	StartedAt          *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	CompletedAt        *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *ScanDetails) Reset() {
+	*x = ScanDetails{}
+	mi := &file_aegis_v1_scan_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ScanDetails) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ScanDetails) ProtoMessage() {}
+
+func (x *ScanDetails) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v1_scan_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ScanDetails.ProtoReflect.Descriptor instead.
+func (*ScanDetails) Descriptor() ([]byte, []int) {
+	return file_aegis_v1_scan_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ScanDetails) GetScanId() string {
+	if x != nil {
+		return x.ScanId
+	}
+	return ""
+}
+
+func (x *ScanDetails) GetTargetImage() string {
+	if x != nil {
+		return x.TargetImage
+	}
+	return ""
+}
+
+func (x *ScanDetails) GetTemporalWorkflowId() string {
+	if x != nil {
+		return x.TemporalWorkflowId
+	}
+	return ""
+}
+
+func (x *ScanDetails) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *ScanDetails) GetStartedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.StartedAt
+	}
+	return nil
+}
+
+func (x *ScanDetails) GetCompletedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CompletedAt
+	}
+	return nil
+}
+
+type ListScansResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Scans         []*ScanDetails         `protobuf:"bytes,1,rep,name=scans,proto3" json:"scans,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListScansResponse) Reset() {
+	*x = ListScansResponse{}
+	mi := &file_aegis_v1_scan_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListScansResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListScansResponse) ProtoMessage() {}
+
+func (x *ListScansResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v1_scan_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListScansResponse.ProtoReflect.Descriptor instead.
+func (*ListScansResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v1_scan_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ListScansResponse) GetScans() []*ScanDetails {
+	if x != nil {
+		return x.Scans
+	}
+	return nil
+}
+
+type GetScanReportRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ScanId        string                 `protobuf:"bytes,1,opt,name=scan_id,json=scanId,proto3" json:"scan_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetScanReportRequest) Reset() {
+	*x = GetScanReportRequest{}
+	mi := &file_aegis_v1_scan_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetScanReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetScanReportRequest) ProtoMessage() {}
+
+func (x *GetScanReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v1_scan_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetScanReportRequest.ProtoReflect.Descriptor instead.
+func (*GetScanReportRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v1_scan_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetScanReportRequest) GetScanId() string {
+	if x != nil {
+		return x.ScanId
+	}
+	return ""
+}
+
+type GetScanReportResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PdfData       []byte                 `protobuf:"bytes,1,opt,name=pdf_data,json=pdfData,proto3" json:"pdf_data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetScanReportResponse) Reset() {
+	*x = GetScanReportResponse{}
+	mi := &file_aegis_v1_scan_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetScanReportResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetScanReportResponse) ProtoMessage() {}
+
+func (x *GetScanReportResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v1_scan_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetScanReportResponse.ProtoReflect.Descriptor instead.
+func (*GetScanReportResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v1_scan_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetScanReportResponse) GetPdfData() []byte {
+	if x != nil {
+		return x.PdfData
+	}
+	return nil
+}
+
 var File_aegis_v1_scan_proto protoreflect.FileDescriptor
 
 const file_aegis_v1_scan_proto_rawDesc = "" +
@@ -257,10 +509,27 @@ const file_aegis_v1_scan_proto_rawDesc = "" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x129\n" +
 	"\n" +
 	"started_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
-	"\fcompleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt2\xa5\x01\n" +
+	"\fcompleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"\x12\n" +
+	"\x10ListScansRequest\"\x8d\x02\n" +
+	"\vScanDetails\x12\x17\n" +
+	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x12!\n" +
+	"\ftarget_image\x18\x02 \x01(\tR\vtargetImage\x120\n" +
+	"\x14temporal_workflow_id\x18\x03 \x01(\tR\x12temporalWorkflowId\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x129\n" +
+	"\n" +
+	"started_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
+	"\fcompleted_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"@\n" +
+	"\x11ListScansResponse\x12+\n" +
+	"\x05scans\x18\x01 \x03(\v2\x15.aegis.v1.ScanDetailsR\x05scans\"/\n" +
+	"\x14GetScanReportRequest\x12\x17\n" +
+	"\ascan_id\x18\x01 \x01(\tR\x06scanId\"2\n" +
+	"\x15GetScanReportResponse\x12\x19\n" +
+	"\bpdf_data\x18\x01 \x01(\fR\apdfData2\xbd\x02\n" +
 	"\vScanService\x12D\n" +
 	"\tStartScan\x12\x1a.aegis.v1.StartScanRequest\x1a\x1b.aegis.v1.StartScanResponse\x12P\n" +
-	"\rGetScanStatus\x12\x1e.aegis.v1.GetScanStatusRequest\x1a\x1f.aegis.v1.GetScanStatusResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v1b\x06proto3"
+	"\rGetScanStatus\x12\x1e.aegis.v1.GetScanStatusRequest\x1a\x1f.aegis.v1.GetScanStatusResponse\x12D\n" +
+	"\tListScans\x12\x1a.aegis.v1.ListScansRequest\x1a\x1b.aegis.v1.ListScansResponse\x12P\n" +
+	"\rGetScanReport\x12\x1e.aegis.v1.GetScanReportRequest\x1a\x1f.aegis.v1.GetScanReportResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v1b\x06proto3"
 
 var (
 	file_aegis_v1_scan_proto_rawDescOnce sync.Once
@@ -274,27 +543,39 @@ func file_aegis_v1_scan_proto_rawDescGZIP() []byte {
 	return file_aegis_v1_scan_proto_rawDescData
 }
 
-var file_aegis_v1_scan_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_aegis_v1_scan_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_aegis_v1_scan_proto_goTypes = []any{
 	(*StartScanRequest)(nil),      // 0: aegis.v1.StartScanRequest
 	(*StartScanResponse)(nil),     // 1: aegis.v1.StartScanResponse
 	(*GetScanStatusRequest)(nil),  // 2: aegis.v1.GetScanStatusRequest
 	(*GetScanStatusResponse)(nil), // 3: aegis.v1.GetScanStatusResponse
-	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
+	(*ListScansRequest)(nil),      // 4: aegis.v1.ListScansRequest
+	(*ScanDetails)(nil),           // 5: aegis.v1.ScanDetails
+	(*ListScansResponse)(nil),     // 6: aegis.v1.ListScansResponse
+	(*GetScanReportRequest)(nil),  // 7: aegis.v1.GetScanReportRequest
+	(*GetScanReportResponse)(nil), // 8: aegis.v1.GetScanReportResponse
+	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
 }
 var file_aegis_v1_scan_proto_depIdxs = []int32{
-	4, // 0: aegis.v1.StartScanResponse.started_at:type_name -> google.protobuf.Timestamp
-	4, // 1: aegis.v1.GetScanStatusResponse.started_at:type_name -> google.protobuf.Timestamp
-	4, // 2: aegis.v1.GetScanStatusResponse.completed_at:type_name -> google.protobuf.Timestamp
-	0, // 3: aegis.v1.ScanService.StartScan:input_type -> aegis.v1.StartScanRequest
-	2, // 4: aegis.v1.ScanService.GetScanStatus:input_type -> aegis.v1.GetScanStatusRequest
-	1, // 5: aegis.v1.ScanService.StartScan:output_type -> aegis.v1.StartScanResponse
-	3, // 6: aegis.v1.ScanService.GetScanStatus:output_type -> aegis.v1.GetScanStatusResponse
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	9,  // 0: aegis.v1.StartScanResponse.started_at:type_name -> google.protobuf.Timestamp
+	9,  // 1: aegis.v1.GetScanStatusResponse.started_at:type_name -> google.protobuf.Timestamp
+	9,  // 2: aegis.v1.GetScanStatusResponse.completed_at:type_name -> google.protobuf.Timestamp
+	9,  // 3: aegis.v1.ScanDetails.started_at:type_name -> google.protobuf.Timestamp
+	9,  // 4: aegis.v1.ScanDetails.completed_at:type_name -> google.protobuf.Timestamp
+	5,  // 5: aegis.v1.ListScansResponse.scans:type_name -> aegis.v1.ScanDetails
+	0,  // 6: aegis.v1.ScanService.StartScan:input_type -> aegis.v1.StartScanRequest
+	2,  // 7: aegis.v1.ScanService.GetScanStatus:input_type -> aegis.v1.GetScanStatusRequest
+	4,  // 8: aegis.v1.ScanService.ListScans:input_type -> aegis.v1.ListScansRequest
+	7,  // 9: aegis.v1.ScanService.GetScanReport:input_type -> aegis.v1.GetScanReportRequest
+	1,  // 10: aegis.v1.ScanService.StartScan:output_type -> aegis.v1.StartScanResponse
+	3,  // 11: aegis.v1.ScanService.GetScanStatus:output_type -> aegis.v1.GetScanStatusResponse
+	6,  // 12: aegis.v1.ScanService.ListScans:output_type -> aegis.v1.ListScansResponse
+	8,  // 13: aegis.v1.ScanService.GetScanReport:output_type -> aegis.v1.GetScanReportResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_aegis_v1_scan_proto_init() }
@@ -308,7 +589,7 @@ func file_aegis_v1_scan_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v1_scan_proto_rawDesc), len(file_aegis_v1_scan_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
