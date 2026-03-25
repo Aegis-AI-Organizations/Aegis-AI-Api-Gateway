@@ -26,9 +26,10 @@ func (a *API) GetVulnerabilitiesHandler(w http.ResponseWriter, r *http.Request) 
 
 	var vulns []models.Vulnerability
 	for _, v := range grpcVulns {
-		var discoTime time.Time
+		var discoTime *time.Time
 		if v.DiscoveredAt != nil {
-			discoTime = v.DiscoveredAt.AsTime()
+			t := v.DiscoveredAt.AsTime()
+			discoTime = &t
 		}
 
 		vulns = append(vulns, models.Vulnerability{

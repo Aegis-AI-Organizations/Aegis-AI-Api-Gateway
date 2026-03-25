@@ -83,9 +83,9 @@ func TestClient_ScanServices(t *testing.T) {
 	mockScan.On("GetScanStatus", mock.Anything, mock.Anything).Return(&v1.GetScanStatusResponse{Status: "RUNNING"}, nil)
 	mockVuln.On("GetVulnerabilities", mock.Anything, mock.Anything).Return(&v1.GetVulnerabilitiesResponse{Vulnerabilities: []*v1.Vulnerability{}}, nil)
 
-	id, err := client.StartScan(context.Background(), "img")
+	resp, err := client.StartScan(context.Background(), "img")
 	assert.NoError(t, err)
-	assert.Equal(t, "s1", id)
+	assert.Equal(t, "s1", resp.ScanId)
 
 	status, err := client.GetScanStatus(context.Background(), "s1")
 	assert.NoError(t, err)
@@ -94,6 +94,21 @@ func TestClient_ScanServices(t *testing.T) {
 	vulns, err := client.GetVulnerabilities(context.Background(), "s1")
 	assert.NoError(t, err)
 	assert.Len(t, vulns, 0)
+
+	mockScan.On("GetScanReport", mock.Anything, mock.Anything).Return(&v1.GetScanReportResponse{PdfData: []byte("pdf")}, nil)
+	report, err := client.GetScanReport(context.Background(), "s1")
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("pdf"), report)
+
+	mockScan.On("ListScans", mock.Anything, mock.Anything).Return(&v1.ListScansResponse{Scans: []*v1.ScanDetails{}}, nil)
+	scans, err := client.ListScans(context.Background())
+	assert.NoError(t, err)
+	assert.Len(t, scans, 0)
+
+	mockVuln.On("GetEvidences", mock.Anything, mock.Anything).Return(&v1.GetEvidencesResponse{Evidences: []*v1.Evidence{}}, nil)
+	evidences, err := client.GetEvidences(context.Background(), "v1")
+	assert.NoError(t, err)
+	assert.Len(t, evidences, 0)
 }
 
 func TestClient_Failures(t *testing.T) {
@@ -108,6 +123,11 @@ func TestClient_Failures(t *testing.T) {
 	mockScan.On("GetScanStatus", mock.Anything, mock.Anything).Return((*v1.GetScanStatusResponse)(nil), fmt.Errorf("rpc error"))
 	mockVuln.On("GetVulnerabilities", mock.Anything, mock.Anything).Return((*v1.GetVulnerabilitiesResponse)(nil), fmt.Errorf("rpc error"))
 
+	mockScan.On("GetVulnerabilities", mock.Anything, mock.Anything).Return((*v1.GetVulnerabilitiesResponse)(nil), fmt.Errorf("rpc error")) // Unused maybe
+	mockScan.On("GetScanReport", mock.Anything, mock.Anything).Return((*v1.GetScanReportResponse)(nil), fmt.Errorf("rpc error"))
+	mockScan.On("ListScans", mock.Anything, mock.Anything).Return((*v1.ListScansResponse)(nil), fmt.Errorf("rpc error"))
+	mockVuln.On("GetEvidences", mock.Anything, mock.Anything).Return((*v1.GetEvidencesResponse)(nil), fmt.Errorf("rpc error"))
+
 	_, err := client.StartScan(context.Background(), "img")
 	assert.Error(t, err)
 
@@ -115,6 +135,15 @@ func TestClient_Failures(t *testing.T) {
 	assert.Error(t, err)
 
 	_, err = client.GetVulnerabilities(context.Background(), "s1")
+	assert.Error(t, err)
+
+	_, err = client.GetScanReport(context.Background(), "s1")
+	assert.Error(t, err)
+
+	_, err = client.ListScans(context.Background())
+	assert.Error(t, err)
+
+	_, err = client.GetEvidences(context.Background(), "v1")
 	assert.Error(t, err)
 }
 

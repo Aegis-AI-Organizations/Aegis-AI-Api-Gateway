@@ -1,6 +1,6 @@
 module github.com/Aegis-AI-Organizations/aegis-ai-api-gateway
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/lib/pq v1.11.2

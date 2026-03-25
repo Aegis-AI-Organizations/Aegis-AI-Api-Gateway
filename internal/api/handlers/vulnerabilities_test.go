@@ -67,6 +67,7 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
+	mockService.AssertExpectations(t)
 }
 
 func TestGetEvidencesHandler(t *testing.T) {

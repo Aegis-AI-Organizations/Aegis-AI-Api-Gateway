@@ -68,12 +68,13 @@ func TestCreateScanHandler(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	mockService.On("StartScan", mock.Anything, &v1.StartScanRequest{TargetImage: "nginx:latest"}).
-		Return(&v1.StartScanResponse{ScanId: "s1"}, nil)
+		Return(&v1.StartScanResponse{ScanId: "s1", Status: "PENDING"}, nil)
 
 	handler := http.HandlerFunc(api.CreateScanHandler)
 	handler.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusCreated, rr.Code)
+	mockService.AssertExpectations(t)
 }
 
 func TestCreateScanHandler_GRPCFailure(t *testing.T) {
@@ -279,6 +280,5 @@ func TestGetScanReportHandler_GRPCError(t *testing.T) {
 	handler := http.HandlerFunc(api.GetScanReportHandler)
 	handler.ServeHTTP(rr, req)
 
-	// Since we return 404 for GRPC errors in GetScanReportHandler for simplicity
-	assert.Equal(t, http.StatusNotFound, rr.Code)
+	assert.Equal(t, http.StatusInternalServerError, rr.Code)
 }

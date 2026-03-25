@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // CreateScanHandler handles POST /scans
@@ -29,19 +31,18 @@ func (a *API) CreateScanHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scanID, err := a.GRPCClient.StartScan(r.Context(), req.TargetImage)
+	resp, err := a.GRPCClient.StartScan(r.Context(), req.TargetImage)
 	if err != nil {
 		log.Printf("Failed to start scan via gRPC: %v", err)
 		http.Error(w, "Failed to start workflow orchestrator", http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("Started Orchestration Workflow for scanID: %s", scanID)
+	log.Printf("Started Orchestration Workflow for scanID: %s", resp.ScanId)
 
 	res := models.CreateScanResponse{
-		ScanID:             scanID,
-		TemporalWorkflowID: fmt.Sprintf("pentest-workflow-%s", scanID),
-		Status:             "PENDING",
+		ScanID: resp.ScanId,
+		Status: resp.Status,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -155,9 +156,14 @@ func (a *API) GetScanReportHandler(w http.ResponseWriter, r *http.Request) {
 
 	pdfBytes, err := a.GRPCClient.GetScanReport(r.Context(), scanID)
 	if err != nil {
-		// Just assuming any error means not found for simplicity since the grpc client returns error.
-		log.Printf("GRPC GetScanReport error: %v", err)
-		http.Error(w, "Scan or report not found", http.StatusNotFound)
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.NotFound {
+			log.Printf("GRPC GetScanReport not found: %v", err)
+			http.Error(w, "Scan or report not found", http.StatusNotFound)
+		} else {
+			log.Printf("GRPC GetScanReport error: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
 		return
 	}
 

@@ -31,9 +31,10 @@ func (a *API) GetEvidencesHandler(w http.ResponseWriter, r *http.Request) {
 			lootData = json.RawMessage(e.LootData)
 		}
 
-		var capturedAt time.Time
+		var capturedAt *time.Time
 		if e.CapturedAt != nil {
-			capturedAt = e.CapturedAt.AsTime()
+			t := e.CapturedAt.AsTime()
+			capturedAt = &t
 		}
 
 		evidences = append(evidences, models.Evidence{

@@ -45,15 +45,15 @@ func (c *Client) Ping(ctx context.Context) (string, error) {
 	return resp.Message, nil
 }
 
-func (c *Client) StartScan(ctx context.Context, image string) (string, error) {
+func (c *Client) StartScan(ctx context.Context, image string) (*v1.StartScanResponse, error) {
 	if c.ScanService == nil {
-		return "", fmt.Errorf("scan service not initialized")
+		return nil, fmt.Errorf("scan service not initialized")
 	}
 	resp, err := c.ScanService.StartScan(ctx, &v1.StartScanRequest{TargetImage: image})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return resp.ScanId, nil
+	return resp, nil
 }
 
 func (c *Client) GetScanStatus(ctx context.Context, scanID string) (string, error) {

@@ -10,9 +10,8 @@ type CreateScanRequest struct {
 }
 
 type CreateScanResponse struct {
-	ScanID             string `json:"scan_id"`
-	TemporalWorkflowID string `json:"temporal_workflow_id"`
-	Status             string `json:"status"`
+	ScanID string `json:"scan_id"`
+	Status string `json:"status"`
 }
 
 type Scan struct {
@@ -29,8 +28,8 @@ type Vulnerability struct {
 	VulnType       string    `json:"vuln_type"`
 	Severity       string    `json:"severity"`
 	TargetEndpoint string    `json:"target_endpoint"`
-	Description    string    `json:"description"`
-	DiscoveredAt   time.Time `json:"discovered_at"`
+	Description    string     `json:"description"`
+	DiscoveredAt   *time.Time `json:"discovered_at,omitempty"`
 }
 
 type Evidence struct {
@@ -38,5 +37,5 @@ type Evidence struct {
 	VulnerabilityID string          `json:"vulnerability_id"`
 	PayloadUsed     string          `json:"payload_used"`
 	LootData        json.RawMessage `json:"loot_data"`
-	CapturedAt      time.Time       `json:"captured_at"`
+	CapturedAt      *time.Time      `json:"captured_at,omitempty"`
 }
