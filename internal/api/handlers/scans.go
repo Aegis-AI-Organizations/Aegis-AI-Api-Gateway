@@ -2,18 +2,15 @@ package handlers
 
 import (
 	"bytes"
-	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-	"go.temporal.io/sdk/client"
-
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // CreateScanHandler handles POST /scans
@@ -34,39 +31,18 @@ func (a *API) CreateScanHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scanID := uuid.New().String()
-	workflowID := fmt.Sprintf("pentest-workflow-%s", scanID)
-
-	query := `INSERT INTO scans (id, temporal_workflow_id, target_image, status) VALUES ($1, $2, $3, 'PENDING')`
-	_, err := a.DB.Exec(query, scanID, workflowID, req.TargetImage)
+	resp, err := a.GRPCClient.StartScan(r.Context(), req.TargetImage)
 	if err != nil {
-		log.Printf("Failed to insert scan into DB: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	options := client.StartWorkflowOptions{
-		ID:        workflowID,
-		TaskQueue: "BRAIN_TASK_QUEUE",
-	}
-
-	we, err := a.TemporalClient.ExecuteWorkflow(context.Background(), options, "PentestWorkflow", scanID, req.TargetImage)
-	if err != nil {
-		log.Printf("Failed to start Temporal workflow: %v", err)
-		if _, dbErr := a.DB.Exec(`UPDATE scans SET status = 'FAILED' WHERE id = $1`, scanID); dbErr != nil {
-			log.Printf("Failed to update scan status to FAILED: %v", dbErr)
-		}
-
+		log.Printf("Failed to start scan via gRPC: %v", err)
 		http.Error(w, "Failed to start workflow orchestrator", http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("Started Orchestration Workflow. WorkflowID: %s, RunID: %s", we.GetID(), we.GetRunID())
+	log.Printf("Started Orchestration Workflow for scanID: %s", resp.ScanId)
 
 	res := models.CreateScanResponse{
-		ScanID:             scanID,
-		TemporalWorkflowID: workflowID,
-		Status:             "PENDING",
+		ScanID: resp.ScanId,
+		Status: resp.Status,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -78,44 +54,34 @@ func (a *API) CreateScanHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetScansHandler handles GET /scans
 func (a *API) GetScansHandler(w http.ResponseWriter, r *http.Request) {
-	query := `
-		SELECT id, temporal_workflow_id, target_image, status, started_at, completed_at
-		FROM scans
-		ORDER BY started_at DESC
-	`
-	rows, err := a.DB.Query(query)
+	grpcScans, err := a.GRPCClient.ListScans(r.Context())
 	if err != nil {
-		log.Printf("DB query error: %v", err)
+		log.Printf("GRPC query error: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	defer func() {
-		if err := rows.Close(); err != nil {
-			log.Printf("Failed to close rows: %v", err)
-		}
-	}()
 
 	var scans []models.Scan
-	for rows.Next() {
-		var s models.Scan
-		var completedAt sql.NullString
-
-		if err := rows.Scan(&s.ID, &s.TemporalWorkflowID, &s.TargetImage, &s.Status, &s.StartedAt, &completedAt); err != nil {
-			log.Printf("Row scan error: %v", err)
-			continue
+	for _, s := range grpcScans {
+		startStr := ""
+		if s.StartedAt != nil {
+			startStr = s.StartedAt.AsTime().Format(time.RFC3339)
 		}
 
-		if completedAt.Valid {
-			s.CompletedAt = &completedAt.String
+		var compStr *string
+		if s.CompletedAt != nil {
+			t := s.CompletedAt.AsTime().Format(time.RFC3339)
+			compStr = &t
 		}
 
-		scans = append(scans, s)
-	}
-
-	if err := rows.Err(); err != nil {
-		log.Printf("Row iteration error: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+		scans = append(scans, models.Scan{
+			ID:                 s.ScanId,
+			TemporalWorkflowID: s.TemporalWorkflowId,
+			TargetImage:        s.TargetImage,
+			Status:             s.Status,
+			StartedAt:          startStr,
+			CompletedAt:        compStr,
+		})
 	}
 
 	if scans == nil {
@@ -136,31 +102,44 @@ func (a *API) GetScanByIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `
-		SELECT id, temporal_workflow_id, target_image, status, started_at, completed_at
-		FROM scans
-		WHERE id = $1
-	`
-
-	var s models.Scan
-	var completedAt sql.NullString
-
-	err := a.DB.QueryRow(query, scanID).Scan(&s.ID, &s.TemporalWorkflowID, &s.TargetImage, &s.Status, &s.StartedAt, &completedAt)
-	if err == sql.ErrNoRows {
-		http.Error(w, "Scan not found", http.StatusNotFound)
-		return
-	} else if err != nil {
-		log.Printf("DB query error: %v", err)
+	grpcScans, err := a.GRPCClient.ListScans(r.Context())
+	if err != nil {
+		log.Printf("GRPC query error: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	if completedAt.Valid {
-		s.CompletedAt = &completedAt.String
+	var found *models.Scan
+	for _, s := range grpcScans {
+		if s.ScanId == scanID {
+			startStr := ""
+			if s.StartedAt != nil {
+				startStr = s.StartedAt.AsTime().Format(time.RFC3339)
+			}
+			var compStr *string
+			if s.CompletedAt != nil {
+				t := s.CompletedAt.AsTime().Format(time.RFC3339)
+				compStr = &t
+			}
+			found = &models.Scan{
+				ID:                 s.ScanId,
+				TemporalWorkflowID: s.TemporalWorkflowId,
+				TargetImage:        s.TargetImage,
+				Status:             s.Status,
+				StartedAt:          startStr,
+				CompletedAt:        compStr,
+			}
+			break
+		}
+	}
+
+	if found == nil {
+		http.Error(w, "Scan not found", http.StatusNotFound)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(s); err != nil {
+	if err := json.NewEncoder(w).Encode(found); err != nil {
 		log.Printf("Failed to encode response: %v", err)
 	}
 }
@@ -175,17 +154,16 @@ func (a *API) GetScanReportHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `SELECT report_pdf FROM scans WHERE id = $1`
-
-	var pdfBytes []byte
-	err := a.DB.QueryRow(query, scanID).Scan(&pdfBytes)
-
-	if err == sql.ErrNoRows {
-		http.Error(w, "Scan not found", http.StatusNotFound)
-		return
-	} else if err != nil {
-		log.Printf("DB query error for report_pdf: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	pdfBytes, err := a.GRPCClient.GetScanReport(r.Context(), scanID)
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.NotFound {
+			log.Printf("GRPC GetScanReport not found: %v", err)
+			http.Error(w, "Scan or report not found", http.StatusNotFound)
+		} else {
+			log.Printf("GRPC GetScanReport error: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
 		return
 	}
 

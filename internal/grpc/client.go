@@ -45,15 +45,15 @@ func (c *Client) Ping(ctx context.Context) (string, error) {
 	return resp.Message, nil
 }
 
-func (c *Client) StartScan(ctx context.Context, image string) (string, error) {
+func (c *Client) StartScan(ctx context.Context, image string) (*v1.StartScanResponse, error) {
 	if c.ScanService == nil {
-		return "", fmt.Errorf("scan service not initialized")
+		return nil, fmt.Errorf("scan service not initialized")
 	}
 	resp, err := c.ScanService.StartScan(ctx, &v1.StartScanRequest{TargetImage: image})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return resp.ScanId, nil
+	return resp, nil
 }
 
 func (c *Client) GetScanStatus(ctx context.Context, scanID string) (string, error) {
@@ -67,6 +67,28 @@ func (c *Client) GetScanStatus(ctx context.Context, scanID string) (string, erro
 	return resp.Status, nil
 }
 
+func (c *Client) ListScans(ctx context.Context) ([]*v1.ScanDetails, error) {
+	if c.ScanService == nil {
+		return nil, fmt.Errorf("scan service not initialized")
+	}
+	resp, err := c.ScanService.ListScans(ctx, &v1.ListScansRequest{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Scans, nil
+}
+
+func (c *Client) GetScanReport(ctx context.Context, scanID string) ([]byte, error) {
+	if c.ScanService == nil {
+		return nil, fmt.Errorf("scan service not initialized")
+	}
+	resp, err := c.ScanService.GetScanReport(ctx, &v1.GetScanReportRequest{ScanId: scanID})
+	if err != nil {
+		return nil, err
+	}
+	return resp.PdfData, nil
+}
+
 func (c *Client) GetVulnerabilities(ctx context.Context, scanID string) ([]*v1.Vulnerability, error) {
 	if c.VulnerabilityService == nil {
 		return nil, fmt.Errorf("vulnerability service not initialized")
@@ -76,4 +98,15 @@ func (c *Client) GetVulnerabilities(ctx context.Context, scanID string) ([]*v1.V
 		return nil, err
 	}
 	return resp.Vulnerabilities, nil
+}
+
+func (c *Client) GetEvidences(ctx context.Context, vulnID string) ([]*v1.Evidence, error) {
+	if c.VulnerabilityService == nil {
+		return nil, fmt.Errorf("vulnerability service not initialized")
+	}
+	resp, err := c.VulnerabilityService.GetEvidences(ctx, &v1.GetEvidencesRequest{VulnerabilityId: vulnID})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Evidences, nil
 }

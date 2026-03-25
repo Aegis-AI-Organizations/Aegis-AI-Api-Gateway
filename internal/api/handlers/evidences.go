@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
 )
@@ -17,46 +17,35 @@ func (a *API) GetEvidencesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := `
-		SELECT id, vulnerability_id, payload_used, loot_data, captured_at
-		FROM evidences
-		WHERE vulnerability_id = $1
-		ORDER BY captured_at DESC
-	`
-	rows, err := a.DB.QueryContext(r.Context(), query, vulnID)
+	grpcEvidences, err := a.GRPCClient.GetEvidences(r.Context(), vulnID)
 	if err != nil {
-		log.Printf("DB query error: %v", err)
+		log.Printf("GRPC GetEvidences error: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	defer func() {
-		if err := rows.Close(); err != nil {
-			log.Printf("Failed to close rows: %v", err)
-		}
-	}()
 
 	var evidences []models.Evidence
-	for rows.Next() {
-		var e models.Evidence
-		var lootDataStr sql.NullString
-
-		if err := rows.Scan(&e.ID, &e.VulnerabilityID, &e.PayloadUsed, &lootDataStr, &e.CapturedAt); err != nil {
-			log.Printf("Row scan error: %v", err)
-			continue
+	for _, e := range grpcEvidences {
+		var lootData json.RawMessage
+		if e.LootData != "" {
+			lootData = json.RawMessage(e.LootData)
 		}
 
-		if lootDataStr.Valid {
-			e.LootData = json.RawMessage(lootDataStr.String)
+		var capturedAt *time.Time
+		if e.CapturedAt != nil {
+			t := e.CapturedAt.AsTime()
+			capturedAt = &t
 		}
 
-		evidences = append(evidences, e)
+		evidences = append(evidences, models.Evidence{
+			ID:              e.Id,
+			VulnerabilityID: e.VulnerabilityId,
+			PayloadUsed:     e.PayloadUsed,
+			LootData:        lootData,
+			CapturedAt:      capturedAt,
+		})
 	}
 
-	if err := rows.Err(); err != nil {
-		log.Printf("Row iteration error: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
 	if evidences == nil {
 		evidences = []models.Evidence{}
 	}

@@ -1,18 +1,14 @@
 package handlers
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
-	"go.temporal.io/sdk/client"
 )
 
 // API holds the core dependencies dynamically injected by our server initialization.
 type API struct {
-	DB             *sql.DB
-	TemporalClient client.Client
 	GRPCClient     *grpc.Client
 }
 
