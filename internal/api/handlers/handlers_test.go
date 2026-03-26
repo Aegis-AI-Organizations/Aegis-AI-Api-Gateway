@@ -68,3 +68,27 @@ func TestGetScanReportHandler_MissingID(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, rr.Code)
 }
+
+func TestHealthHandler(t *testing.T) {
+	api := &API{}
+	req, _ := http.NewRequest("GET", "/health", nil)
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(api.HealthHandler)
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Contains(t, rr.Body.String(), "ok")
+}
+
+func TestRootHandler(t *testing.T) {
+	api := &API{}
+	req, _ := http.NewRequest("GET", "/", nil)
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(api.RootHandler)
+	handler.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Contains(t, rr.Body.String(), "aegis-api-gateway")
+}
