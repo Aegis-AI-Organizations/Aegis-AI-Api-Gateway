@@ -4,7 +4,7 @@
 // 	protoc        (unknown)
 // source: aegis/v2/scan.proto
 
-package v1
+package v2
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -529,7 +529,7 @@ const file_aegis_v2_scan_proto_rawDesc = "" +
 	"\tStartScan\x12\x1a.aegis.v2.StartScanRequest\x1a\x1b.aegis.v2.StartScanResponse\x12P\n" +
 	"\rGetScanStatus\x12\x1e.aegis.v2.GetScanStatusRequest\x1a\x1f.aegis.v2.GetScanStatusResponse\x12D\n" +
 	"\tListScans\x12\x1a.aegis.v2.ListScansRequest\x1a\x1b.aegis.v2.ListScansResponse\x12P\n" +
-	"\rGetScanReport\x12\x1e.aegis.v2.GetScanReportRequest\x1a\x1f.aegis.v2.GetScanReportResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v1b\x06proto3"
+	"\rGetScanReport\x12\x1e.aegis.v2.GetScanReportRequest\x1a\x1f.aegis.v2.GetScanReportResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_scan_proto_rawDescOnce sync.Once
