@@ -17,7 +17,7 @@ func TestHealthHandler(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, "OK", rr.Body.String())
+	assert.Equal(t, `{"status":"ok"}`, rr.Body.String())
 }
 
 func TestRootHandler(t *testing.T) {
@@ -28,5 +28,5 @@ func TestRootHandler(t *testing.T) {
 	handler.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Contains(t, rr.Body.String(), "Aegis AI API Gateway")
+	assert.Equal(t, `{"service":"aegis-api-gateway","version":"pre-alpha"}`, rr.Body.String())
 }
