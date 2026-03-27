@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,15 +8,14 @@ import (
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
-	"go.temporal.io/sdk/client"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 )
 
-func NewRouter(db *sql.DB, tc client.Client) *http.ServeMux {
+func NewRouter(gc *grpc.Client) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	h := &handlers.API{
-		DB:             db,
-		TemporalClient: tc,
+		GRPCClient:     gc,
 	}
 
 	mux.HandleFunc("GET /health", h.HealthHandler)
@@ -30,13 +28,18 @@ func NewRouter(db *sql.DB, tc client.Client) *http.ServeMux {
 	mux.HandleFunc("GET /scans/{id}/vulnerabilities", h.GetVulnerabilitiesHandler)
 	mux.HandleFunc("GET /vulnerabilities/{id}/evidences", h.GetEvidencesHandler)
 
+	mux.HandleFunc("GET /scans/{id}/report", h.GetScanReportHandler)
+
+	mux.HandleFunc("GET /scans/stream", h.ScanStreamHandler)
+	mux.HandleFunc("GET /scans/{id}/stream", h.ScanStreamHandler)
+
 	return mux
 }
 
-func Start(database *sql.DB, tc client.Client) {
+func Start(gc *grpc.Client) {
 	fmt.Println("🌍 Aegis AI Web API Gateway HTTP Server starting...")
 
-	router := NewRouter(database, tc)
+	router := NewRouter(gc)
 
 	port := os.Getenv("PORT")
 	if port == "" {

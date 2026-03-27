@@ -1,17 +1,15 @@
 package handlers
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
-	"go.temporal.io/sdk/client"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 )
 
 // API holds the core dependencies dynamically injected by our server initialization.
 type API struct {
-	DB             *sql.DB
-	TemporalClient client.Client
+	GRPCClient     *grpc.Client
 }
 
 // HealthHandler returns a simple 200 OK status for Kubernetes liveness probes.

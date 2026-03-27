@@ -4,31 +4,29 @@ import (
 	"fmt"
 	"log"
 
+	"os"
+
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api"
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/temporalclient"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 )
 
 func main() {
 	fmt.Println("🚀 Aegis AI API Gateway is starting...")
 
-	database, err := db.Connect()
+	brainAddr := os.Getenv("BRAIN_GRPC_ADDR")
+	if brainAddr == "" {
+		brainAddr = "localhost:50051"
+	}
+	gc, err := grpc.NewClient(brainAddr)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to connect to Brain gRPC: %v", err)
 	}
 	defer func() {
-		if err := database.Close(); err != nil {
-			log.Printf("Failed to close database: %v", err)
+		if err := gc.Close(); err != nil {
+			log.Printf("Failed to close Brain gRPC client: %v", err)
 		}
 	}()
-	fmt.Println("✅ Connected to PostgreSQL database")
+	fmt.Printf("✅ Connected to Brain gRPC at %s\n", brainAddr)
 
-	tc, err := temporalclient.Connect()
-	if err != nil {
-		log.Fatalf("Failed to connect to Temporal: %v", err)
-	}
-	defer tc.Close()
-	fmt.Println("✅ Connected to Temporal orchestrator")
-
-	api.Start(database, tc)
+	api.Start(gc)
 }
