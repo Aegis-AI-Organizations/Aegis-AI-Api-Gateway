@@ -96,9 +96,9 @@ func TestClient_ScanServices(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "s1", resp.ScanId)
 
-	status, err := client.GetScanStatus(context.Background(), "s1")
+	statusResp, err := client.GetScanStatus(context.Background(), "s1")
 	assert.NoError(t, err)
-	assert.Equal(t, "RUNNING", status)
+	assert.Equal(t, "RUNNING", statusResp.Status)
 
 	vulns, err := client.GetVulnerabilities(context.Background(), "s1")
 	assert.NoError(t, err)
@@ -156,10 +156,32 @@ func TestClient_Failures(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestClient_PingNil(t *testing.T) {
-    client := &agrpc.Client{}
-    _, err := client.Ping(context.Background())
-    assert.Error(t, err)
+func TestClient_NilServices(t *testing.T) {
+	client := &agrpc.Client{}
+
+	_, err := client.Ping(context.Background())
+	assert.Error(t, err)
+
+	_, err = client.StartScan(context.Background(), "img")
+	assert.Error(t, err)
+
+	_, err = client.GetScanStatus(context.Background(), "s1")
+	assert.Error(t, err)
+
+	_, err = client.ListScans(context.Background())
+	assert.Error(t, err)
+
+	_, err = client.GetScanReport(context.Background(), "s1")
+	assert.Error(t, err)
+
+	_, err = client.GetVulnerabilities(context.Background(), "s1")
+	assert.Error(t, err)
+
+	_, err = client.GetEvidences(context.Background(), "v1")
+	assert.Error(t, err)
+
+	_, err = client.WatchScanStatus(context.Background(), "s1")
+	assert.Error(t, err)
 }
 
 func TestNewClient(t *testing.T) {

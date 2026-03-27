@@ -169,20 +169,16 @@ func TestGetScanByIDHandler_Found(t *testing.T) {
 		},
 	}
 
-	resp := &v1.ListScansResponse{
-		Scans: []*v1.ScanDetails{
-			{
-				ScanId:             "s1",
-				TemporalWorkflowId: "wf-1",
-				TargetImage:        "img-1",
-				Status:             "PENDING",
-				StartedAt:          timestamppb.New(time.Now()),
-				CompletedAt:        nil,
-			},
-		},
+	resp := &v1.GetScanStatusResponse{
+		ScanId:             "s1",
+		TemporalWorkflowId: "wf-1",
+		TargetImage:        "img-1",
+		Status:             "PENDING",
+		StartedAt:          timestamppb.New(time.Now()),
+		CompletedAt:        nil,
 	}
 
-	mockService.On("ListScans", mock.Anything, &v1.ListScansRequest{}).
+	mockService.On("GetScanStatus", mock.Anything, &v1.GetScanStatusRequest{ScanId: "s1"}).
 		Return(resp, nil)
 
 	req, _ := http.NewRequest("GET", "/scans/s1", nil)
@@ -203,12 +199,8 @@ func TestGetScanByIDHandler_NotFound(t *testing.T) {
 		},
 	}
 
-	resp := &v1.ListScansResponse{
-		Scans: []*v1.ScanDetails{},
-	}
-
-	mockService.On("ListScans", mock.Anything, &v1.ListScansRequest{}).
-		Return(resp, nil)
+	mockService.On("GetScanStatus", mock.Anything, mock.Anything).
+		Return(nil, fmt.Errorf("not found"))
 
 	req, _ := http.NewRequest("GET", "/scans/nb", nil)
 	req.SetPathValue("id", "nb")

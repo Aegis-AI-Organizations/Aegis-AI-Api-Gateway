@@ -31,6 +31,9 @@ func NewClient(addr string) (*Client, error) {
 }
 
 func (c *Client) Close() error {
+	if c.conn == nil {
+		return nil
+	}
 	return c.conn.Close()
 }
 
@@ -56,15 +59,11 @@ func (c *Client) StartScan(ctx context.Context, image string) (*v1.StartScanResp
 	return resp, nil
 }
 
-func (c *Client) GetScanStatus(ctx context.Context, scanID string) (string, error) {
+func (c *Client) GetScanStatus(ctx context.Context, scanID string) (*v1.GetScanStatusResponse, error) {
 	if c.ScanService == nil {
-		return "", fmt.Errorf("scan service not initialized")
+		return nil, fmt.Errorf("scan service not initialized")
 	}
-	resp, err := c.ScanService.GetScanStatus(ctx, &v1.GetScanStatusRequest{ScanId: scanID})
-	if err != nil {
-		return "", err
-	}
-	return resp.Status, nil
+	return c.ScanService.GetScanStatus(ctx, &v1.GetScanStatusRequest{ScanId: scanID})
 }
 
 func (c *Client) ListScans(ctx context.Context) ([]*v1.ScanDetails, error) {

@@ -57,40 +57,29 @@ func (a *API) GetScanByIDHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	grpcScans, err := a.GRPCClient.ListScans(r.Context())
+	s, err := a.GRPCClient.GetScanStatus(r.Context(), scanID)
 	if err != nil {
-		log.Printf("GRPC query error: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	var found *models.Scan
-	for _, s := range grpcScans {
-		if s.ScanId == scanID {
-			startStr := ""
-			if s.StartedAt != nil {
-				startStr = s.StartedAt.AsTime().Format(time.RFC3339)
-			}
-			var compStr *string
-			if s.CompletedAt != nil {
-				t := s.CompletedAt.AsTime().Format(time.RFC3339)
-				compStr = &t
-			}
-			found = &models.Scan{
-				ID:                 s.ScanId,
-				TemporalWorkflowID: s.TemporalWorkflowId,
-				TargetImage:        s.TargetImage,
-				Status:             s.Status,
-				StartedAt:          startStr,
-				CompletedAt:        compStr,
-			}
-			break
-		}
-	}
-
-	if found == nil {
+		log.Printf("GRPC GetScanStatus error: %v", err)
 		http.Error(w, "Scan not found", http.StatusNotFound)
 		return
+	}
+
+	startStr := ""
+	if s.StartedAt != nil {
+		startStr = s.StartedAt.AsTime().Format(time.RFC3339)
+	}
+	var compStr *string
+	if s.CompletedAt != nil {
+		t := s.CompletedAt.AsTime().Format(time.RFC3339)
+		compStr = &t
+	}
+	found := &models.Scan{
+		ID:                 s.ScanId,
+		TemporalWorkflowID: s.TemporalWorkflowId,
+		TargetImage:        s.TargetImage,
+		Status:             s.Status,
+		StartedAt:          startStr,
+		CompletedAt:        compStr,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
