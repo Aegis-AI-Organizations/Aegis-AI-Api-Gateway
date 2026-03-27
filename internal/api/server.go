@@ -30,6 +30,9 @@ func NewRouter(gc *grpc.Client) *http.ServeMux {
 
 	mux.HandleFunc("GET /scans/{id}/report", h.GetScanReportHandler)
 
+	mux.HandleFunc("GET /scans/stream", h.ScanStreamHandler)
+	mux.HandleFunc("GET /scans/{id}/stream", h.ScanStreamHandler)
+
 	return mux
 }
 

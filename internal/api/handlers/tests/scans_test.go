@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
 	"github.com/stretchr/testify/assert"
@@ -54,9 +55,17 @@ func (m *MockScanServiceClient) ListScans(ctx context.Context, in *v1.ListScansR
 	return args.Get(0).(*v1.ListScansResponse), args.Error(1)
 }
 
+func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.WatchScanStatusRequest, opts ...grpc.CallOption) (v1.ScanService_WatchScanStatusClient, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(v1.ScanService_WatchScanStatusClient), args.Error(1)
+}
+
 func TestCreateScanHandler(t *testing.T) {
 	mockService := new(MockScanServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			ScanService: mockService,
 		},
@@ -79,7 +88,7 @@ func TestCreateScanHandler(t *testing.T) {
 
 func TestCreateScanHandler_GRPCFailure(t *testing.T) {
 	mockService := new(MockScanServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			ScanService: mockService,
 		},
@@ -101,7 +110,7 @@ func TestCreateScanHandler_GRPCFailure(t *testing.T) {
 
 func TestGetScansHandler(t *testing.T) {
 	mockService := new(MockScanServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			ScanService: mockService,
 		},
@@ -134,7 +143,7 @@ func TestGetScansHandler(t *testing.T) {
 
 func TestGetScansHandler_GRPCError(t *testing.T) {
 	mockService := new(MockScanServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			ScanService: mockService,
 		},
@@ -154,26 +163,22 @@ func TestGetScansHandler_GRPCError(t *testing.T) {
 
 func TestGetScanByIDHandler_Found(t *testing.T) {
 	mockService := new(MockScanServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			ScanService: mockService,
 		},
 	}
 
-	resp := &v1.ListScansResponse{
-		Scans: []*v1.ScanDetails{
-			{
-				ScanId:             "s1",
-				TemporalWorkflowId: "wf-1",
-				TargetImage:        "img-1",
-				Status:             "PENDING",
-				StartedAt:          timestamppb.New(time.Now()),
-				CompletedAt:        nil,
-			},
-		},
+	resp := &v1.GetScanStatusResponse{
+		ScanId:             "s1",
+		TemporalWorkflowId: "wf-1",
+		TargetImage:        "img-1",
+		Status:             "PENDING",
+		StartedAt:          timestamppb.New(time.Now()),
+		CompletedAt:        nil,
 	}
 
-	mockService.On("ListScans", mock.Anything, &v1.ListScansRequest{}).
+	mockService.On("GetScanStatus", mock.Anything, &v1.GetScanStatusRequest{ScanId: "s1"}).
 		Return(resp, nil)
 
 	req, _ := http.NewRequest("GET", "/scans/s1", nil)
@@ -188,18 +193,14 @@ func TestGetScanByIDHandler_Found(t *testing.T) {
 
 func TestGetScanByIDHandler_NotFound(t *testing.T) {
 	mockService := new(MockScanServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			ScanService: mockService,
 		},
 	}
 
-	resp := &v1.ListScansResponse{
-		Scans: []*v1.ScanDetails{},
-	}
-
-	mockService.On("ListScans", mock.Anything, &v1.ListScansRequest{}).
-		Return(resp, nil)
+	mockService.On("GetScanStatus", mock.Anything, mock.Anything).
+		Return(nil, fmt.Errorf("not found"))
 
 	req, _ := http.NewRequest("GET", "/scans/nb", nil)
 	req.SetPathValue("id", "nb")
@@ -213,7 +214,7 @@ func TestGetScanByIDHandler_NotFound(t *testing.T) {
 
 func TestGetScanReportHandler_Success(t *testing.T) {
 	mockService := new(MockScanServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			ScanService: mockService,
 		},
@@ -239,7 +240,7 @@ func TestGetScanReportHandler_Success(t *testing.T) {
 
 func TestGetScanReportHandler_EmptyReport(t *testing.T) {
 	mockService := new(MockScanServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			ScanService: mockService,
 		},
@@ -264,7 +265,7 @@ func TestGetScanReportHandler_EmptyReport(t *testing.T) {
 
 func TestGetScanReportHandler_GRPCError(t *testing.T) {
 	mockService := new(MockScanServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			ScanService: mockService,
 		},

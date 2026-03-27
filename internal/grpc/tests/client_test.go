@@ -1,10 +1,11 @@
-package grpc
+package grpc_test
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
+	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -44,6 +45,14 @@ func (m *MockScanServiceClient) ListScans(ctx context.Context, in *v1.ListScansR
 	return args.Get(0).(*v1.ListScansResponse), args.Error(1)
 }
 
+func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.WatchScanStatusRequest, opts ...grpc.CallOption) (v1.ScanService_WatchScanStatusClient, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(v1.ScanService_WatchScanStatusClient), args.Error(1)
+}
+
 type MockVulnerabilityServiceClient struct {
 	mock.Mock
 }
@@ -60,7 +69,7 @@ func (m *MockVulnerabilityServiceClient) GetEvidences(ctx context.Context, in *v
 
 func TestClient_Ping(t *testing.T) {
 	mockPing := new(MockPingServiceClient)
-	client := &Client{
+	client := &agrpc.Client{
 		PingService: mockPing,
 	}
 
@@ -74,7 +83,7 @@ func TestClient_Ping(t *testing.T) {
 func TestClient_ScanServices(t *testing.T) {
 	mockScan := new(MockScanServiceClient)
 	mockVuln := new(MockVulnerabilityServiceClient)
-	client := &Client{
+	client := &agrpc.Client{
 		ScanService:          mockScan,
 		VulnerabilityService: mockVuln,
 	}
@@ -87,9 +96,9 @@ func TestClient_ScanServices(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "s1", resp.ScanId)
 
-	status, err := client.GetScanStatus(context.Background(), "s1")
+	statusResp, err := client.GetScanStatus(context.Background(), "s1")
 	assert.NoError(t, err)
-	assert.Equal(t, "RUNNING", status)
+	assert.Equal(t, "RUNNING", statusResp.Status)
 
 	vulns, err := client.GetVulnerabilities(context.Background(), "s1")
 	assert.NoError(t, err)
@@ -114,7 +123,7 @@ func TestClient_ScanServices(t *testing.T) {
 func TestClient_Failures(t *testing.T) {
 	mockScan := new(MockScanServiceClient)
 	mockVuln := new(MockVulnerabilityServiceClient)
-	client := &Client{
+	client := &agrpc.Client{
 		ScanService:          mockScan,
 		VulnerabilityService: mockVuln,
 	}
@@ -147,15 +156,37 @@ func TestClient_Failures(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestClient_PingNil(t *testing.T) {
-    client := &Client{}
-    _, err := client.Ping(context.Background())
-    assert.Error(t, err)
+func TestClient_NilServices(t *testing.T) {
+	client := &agrpc.Client{}
+
+	_, err := client.Ping(context.Background())
+	assert.Error(t, err)
+
+	_, err = client.StartScan(context.Background(), "img")
+	assert.Error(t, err)
+
+	_, err = client.GetScanStatus(context.Background(), "s1")
+	assert.Error(t, err)
+
+	_, err = client.ListScans(context.Background())
+	assert.Error(t, err)
+
+	_, err = client.GetScanReport(context.Background(), "s1")
+	assert.Error(t, err)
+
+	_, err = client.GetVulnerabilities(context.Background(), "s1")
+	assert.Error(t, err)
+
+	_, err = client.GetEvidences(context.Background(), "v1")
+	assert.Error(t, err)
+
+	_, err = client.WatchScanStatus(context.Background(), "s1")
+	assert.Error(t, err)
 }
 
 func TestNewClient(t *testing.T) {
 	// Should succeed in creating the structure even if connection is lazy/not established yet
-	c, err := NewClient("localhost:1234")
+	c, err := agrpc.NewClient("localhost:1234")
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	defer func() { _ = c.Close() }()

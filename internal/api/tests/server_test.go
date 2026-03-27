@@ -1,17 +1,20 @@
-package api
+package api_test
 
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 type MockScanServiceClient struct {
@@ -32,6 +35,24 @@ func (m *MockScanServiceClient) ListScans(ctx context.Context, in *v1.ListScansR
 		Scans: []*v1.ScanDetails{{ScanId: "1"}},
 	}, nil
 }
+type MockScanStreamClient struct {
+	mock.Mock
+}
+
+func (m *MockScanStreamClient) Recv() (*v1.WatchScanStatusResponse, error) {
+	return nil, fmt.Errorf("EOF")
+}
+
+func (m *MockScanStreamClient) Context() context.Context { return context.Background() }
+func (m *MockScanStreamClient) Header() (metadata.MD, error) { return nil, nil }
+func (m *MockScanStreamClient) Trailer() metadata.MD { return nil }
+func (m *MockScanStreamClient) CloseSend() error { return nil }
+func (m *MockScanStreamClient) SendMsg(m_ interface{}) error { return nil }
+func (m *MockScanStreamClient) RecvMsg(m_ interface{}) error { return nil }
+
+func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.WatchScanStatusRequest, opts ...grpc.CallOption) (v1.ScanService_WatchScanStatusClient, error) {
+	return &MockScanStreamClient{}, nil
+}
 
 type MockVulnerabilityServiceClient struct {
 	mock.Mock
@@ -48,7 +69,7 @@ func TestNewRouterFull(t *testing.T) {
 		ScanService:          &MockScanServiceClient{},
 		VulnerabilityService: &MockVulnerabilityServiceClient{},
 	}
-	mux := NewRouter(dummyClient)
+	mux := api.NewRouter(dummyClient)
 
 	tests := []struct {
 		method string
@@ -57,12 +78,14 @@ func TestNewRouterFull(t *testing.T) {
 	}{
 		{"GET", "/health", http.StatusOK},
 		{"GET", "/", http.StatusOK},
-		{"POST", "/scans", http.StatusBadRequest},
-		{"GET", "/scans", http.StatusInternalServerError},
-		{"GET", "/scans/1", http.StatusInternalServerError},
-		{"GET", "/scans/1/vulnerabilities", http.StatusInternalServerError},
-		{"GET", "/vulnerabilities/1/evidences", http.StatusInternalServerError},
-		{"GET", "/scans/1/report", http.StatusInternalServerError},
+		{"POST", "/scans", http.StatusCreated}, // Mock returns success
+		{"GET", "/scans", http.StatusOK},
+		{"GET", "/scans/1", http.StatusOK},
+		{"GET", "/scans/1/vulnerabilities", http.StatusOK},
+		{"GET", "/vulnerabilities/1/evidences", http.StatusOK},
+		{"GET", "/scans/1/report", http.StatusOK},
+		{"GET", "/scans/stream", http.StatusOK},
+		{"GET", "/scans/1/stream", http.StatusOK},
 	}
 
 	for _, tt := range tests {
@@ -74,5 +97,6 @@ func TestNewRouterFull(t *testing.T) {
 		rr := httptest.NewRecorder()
 		mux.ServeHTTP(rr, req)
 		assert.NotEqual(t, http.StatusNotFound, rr.Code, "Path %s %s should be registered", tt.method, tt.path)
+		assert.Equal(t, tt.code, rr.Code, "Path %s %s should return code %d", tt.method, tt.path, tt.code)
 	}
 }

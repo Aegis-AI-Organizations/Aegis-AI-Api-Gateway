@@ -28,7 +28,12 @@ func (a *API) GetEvidencesHandler(w http.ResponseWriter, r *http.Request) {
 	for _, e := range grpcEvidences {
 		var lootData json.RawMessage
 		if e.LootData != "" {
-			lootData = json.RawMessage(e.LootData)
+			if json.Valid([]byte(e.LootData)) {
+				lootData = json.RawMessage(e.LootData)
+			} else {
+				marshaledLoot, _ := json.Marshal(e.LootData)
+				lootData = json.RawMessage(marshaledLoot)
+			}
 		}
 
 		var capturedAt *time.Time
