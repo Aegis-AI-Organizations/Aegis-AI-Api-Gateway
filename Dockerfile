@@ -1,6 +1,6 @@
 # Optimized Dockerfile for Go project
 # Stage 1: Build
-FROM golang:alpine AS builder
+FROM public.ecr.aws/docker/library/golang:alpine AS builder
 WORKDIR /app
 COPY go.mod go.sum* ./
 RUN go mod download || true
