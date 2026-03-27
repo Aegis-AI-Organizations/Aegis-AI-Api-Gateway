@@ -110,3 +110,10 @@ func (c *Client) GetEvidences(ctx context.Context, vulnID string) ([]*v1.Evidenc
 	}
 	return resp.Evidences, nil
 }
+
+func (c *Client) WatchScanStatus(ctx context.Context, scanID string) (v1.ScanService_WatchScanStatusClient, error) {
+	if c.ScanService == nil {
+		return nil, fmt.Errorf("scan service not initialized")
+	}
+	return c.ScanService.WatchScanStatus(ctx, &v1.WatchScanStatusRequest{ScanId: scanID})
+}

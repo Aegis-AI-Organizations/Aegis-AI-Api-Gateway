@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +39,7 @@ func (m *MockVulnerabilityServiceClient) GetEvidences(ctx context.Context, in *v
 
 func TestGetVulnerabilitiesHandler(t *testing.T) {
 	mockService := new(MockVulnerabilityServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			VulnerabilityService: mockService,
 		},
@@ -72,7 +73,7 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 
 func TestGetEvidencesHandler(t *testing.T) {
 	mockService := new(MockVulnerabilityServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			VulnerabilityService: mockService,
 		},
@@ -104,7 +105,7 @@ func TestGetEvidencesHandler(t *testing.T) {
 
 func TestGetVulnerabilitiesHandler_GRPCError(t *testing.T) {
 	mockService := new(MockVulnerabilityServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			VulnerabilityService: mockService,
 		},
@@ -124,7 +125,7 @@ func TestGetVulnerabilitiesHandler_GRPCError(t *testing.T) {
 
 func TestGetEvidencesHandler_GRPCError(t *testing.T) {
 	mockService := new(MockVulnerabilityServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			VulnerabilityService: mockService,
 		},
@@ -144,7 +145,7 @@ func TestGetEvidencesHandler_GRPCError(t *testing.T) {
 
 func TestGetVulnerabilitiesHandler_Empty(t *testing.T) {
 	mockService := new(MockVulnerabilityServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			VulnerabilityService: mockService,
 		},
@@ -168,7 +169,7 @@ func TestGetVulnerabilitiesHandler_Empty(t *testing.T) {
 
 func TestGetEvidencesHandler_Empty(t *testing.T) {
 	mockService := new(MockVulnerabilityServiceClient)
-	api := &API{
+	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
 			VulnerabilityService: mockService,
 		},

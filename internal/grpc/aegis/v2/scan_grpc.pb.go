@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ScanService_StartScan_FullMethodName     = "/aegis.v2.ScanService/StartScan"
-	ScanService_GetScanStatus_FullMethodName = "/aegis.v2.ScanService/GetScanStatus"
-	ScanService_ListScans_FullMethodName     = "/aegis.v2.ScanService/ListScans"
-	ScanService_GetScanReport_FullMethodName = "/aegis.v2.ScanService/GetScanReport"
+	ScanService_StartScan_FullMethodName       = "/aegis.v2.ScanService/StartScan"
+	ScanService_GetScanStatus_FullMethodName   = "/aegis.v2.ScanService/GetScanStatus"
+	ScanService_ListScans_FullMethodName       = "/aegis.v2.ScanService/ListScans"
+	ScanService_GetScanReport_FullMethodName   = "/aegis.v2.ScanService/GetScanReport"
+	ScanService_WatchScanStatus_FullMethodName = "/aegis.v2.ScanService/WatchScanStatus"
 )
 
 // ScanServiceClient is the client API for ScanService service.
@@ -33,6 +34,7 @@ type ScanServiceClient interface {
 	GetScanStatus(ctx context.Context, in *GetScanStatusRequest, opts ...grpc.CallOption) (*GetScanStatusResponse, error)
 	ListScans(ctx context.Context, in *ListScansRequest, opts ...grpc.CallOption) (*ListScansResponse, error)
 	GetScanReport(ctx context.Context, in *GetScanReportRequest, opts ...grpc.CallOption) (*GetScanReportResponse, error)
+	WatchScanStatus(ctx context.Context, in *WatchScanStatusRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchScanStatusResponse], error)
 }
 
 type scanServiceClient struct {
@@ -83,6 +85,25 @@ func (c *scanServiceClient) GetScanReport(ctx context.Context, in *GetScanReport
 	return out, nil
 }
 
+func (c *scanServiceClient) WatchScanStatus(ctx context.Context, in *WatchScanStatusRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchScanStatusResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &ScanService_ServiceDesc.Streams[0], ScanService_WatchScanStatus_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[WatchScanStatusRequest, WatchScanStatusResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type ScanService_WatchScanStatusClient = grpc.ServerStreamingClient[WatchScanStatusResponse]
+
 // ScanServiceServer is the server API for ScanService service.
 // All implementations must embed UnimplementedScanServiceServer
 // for forward compatibility.
@@ -91,6 +112,7 @@ type ScanServiceServer interface {
 	GetScanStatus(context.Context, *GetScanStatusRequest) (*GetScanStatusResponse, error)
 	ListScans(context.Context, *ListScansRequest) (*ListScansResponse, error)
 	GetScanReport(context.Context, *GetScanReportRequest) (*GetScanReportResponse, error)
+	WatchScanStatus(*WatchScanStatusRequest, grpc.ServerStreamingServer[WatchScanStatusResponse]) error
 	mustEmbedUnimplementedScanServiceServer()
 }
 
@@ -112,6 +134,9 @@ func (UnimplementedScanServiceServer) ListScans(context.Context, *ListScansReque
 }
 func (UnimplementedScanServiceServer) GetScanReport(context.Context, *GetScanReportRequest) (*GetScanReportResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetScanReport not implemented")
+}
+func (UnimplementedScanServiceServer) WatchScanStatus(*WatchScanStatusRequest, grpc.ServerStreamingServer[WatchScanStatusResponse]) error {
+	return status.Error(codes.Unimplemented, "method WatchScanStatus not implemented")
 }
 func (UnimplementedScanServiceServer) mustEmbedUnimplementedScanServiceServer() {}
 func (UnimplementedScanServiceServer) testEmbeddedByValue()                     {}
@@ -206,6 +231,17 @@ func _ScanService_GetScanReport_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ScanService_WatchScanStatus_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchScanStatusRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ScanServiceServer).WatchScanStatus(m, &grpc.GenericServerStream[WatchScanStatusRequest, WatchScanStatusResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type ScanService_WatchScanStatusServer = grpc.ServerStreamingServer[WatchScanStatusResponse]
+
 // ScanService_ServiceDesc is the grpc.ServiceDesc for ScanService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -230,6 +266,12 @@ var ScanService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ScanService_GetScanReport_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "WatchScanStatus",
+			Handler:       _ScanService_WatchScanStatus_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "aegis/v2/scan.proto",
 }

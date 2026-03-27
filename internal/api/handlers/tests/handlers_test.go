@@ -1,4 +1,4 @@
-package handlers
+package handlers_test
 
 import (
 	"bytes"
@@ -7,12 +7,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/stretchr/testify/assert"
 )
 
 
 func TestCreateScanHandler_MethodNotAllowed(t *testing.T) {
-	api := &API{}
+	api := &handlers.API{}
 	req, _ := http.NewRequest("GET", "/scans", nil)
 	rr := httptest.NewRecorder()
 
@@ -23,7 +24,7 @@ func TestCreateScanHandler_MethodNotAllowed(t *testing.T) {
 }
 
 func TestCreateScanHandler_InvalidJSON(t *testing.T) {
-	api := &API{}
+	api := &handlers.API{}
 	req, _ := http.NewRequest("POST", "/scans", bytes.NewBuffer([]byte("invalid-json")))
 	rr := httptest.NewRecorder()
 
@@ -34,7 +35,7 @@ func TestCreateScanHandler_InvalidJSON(t *testing.T) {
 }
 
 func TestCreateScanHandler_MissingImage(t *testing.T) {
-	api := &API{}
+	api := &handlers.API{}
 	payload := map[string]string{"target_image": ""}
 	body, _ := json.Marshal(payload)
 	req, _ := http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
@@ -47,7 +48,7 @@ func TestCreateScanHandler_MissingImage(t *testing.T) {
 }
 
 func TestGetScanByIDHandler_MissingID(t *testing.T) {
-	api := &API{}
+	api := &handlers.API{}
 	req, _ := http.NewRequest("GET", "/scans/", nil)
 	// PathValue not set simulation
 	rr := httptest.NewRecorder()
@@ -59,7 +60,7 @@ func TestGetScanByIDHandler_MissingID(t *testing.T) {
 }
 
 func TestGetScanReportHandler_MissingID(t *testing.T) {
-	api := &API{}
+	api := &handlers.API{}
 	req, _ := http.NewRequest("GET", "/scans//report", nil)
 	rr := httptest.NewRecorder()
 
@@ -70,7 +71,7 @@ func TestGetScanReportHandler_MissingID(t *testing.T) {
 }
 
 func TestHealthHandler(t *testing.T) {
-	api := &API{}
+	api := &handlers.API{}
 	req, _ := http.NewRequest("GET", "/health", nil)
 	rr := httptest.NewRecorder()
 
@@ -82,7 +83,7 @@ func TestHealthHandler(t *testing.T) {
 }
 
 func TestRootHandler(t *testing.T) {
-	api := &API{}
+	api := &handlers.API{}
 	req, _ := http.NewRequest("GET", "/", nil)
 	rr := httptest.NewRecorder()
 

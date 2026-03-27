@@ -1,10 +1,11 @@
-package middleware
+package middleware_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,7 +14,7 @@ func TestCORSMiddleware(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	corsHandler := CORS(handler)
+	corsHandler := middleware.CORS(handler)
 
 	req, _ := http.NewRequest("OPTIONS", "/", nil)
 	rr := httptest.NewRecorder()

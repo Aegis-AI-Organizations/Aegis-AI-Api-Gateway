@@ -1,4 +1,4 @@
-package api
+package api_test
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
 	"github.com/stretchr/testify/assert"
@@ -32,6 +33,9 @@ func (m *MockScanServiceClient) ListScans(ctx context.Context, in *v1.ListScansR
 		Scans: []*v1.ScanDetails{{ScanId: "1"}},
 	}, nil
 }
+func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.WatchScanStatusRequest, opts ...grpc.CallOption) (v1.ScanService_WatchScanStatusClient, error) {
+	return nil, nil
+}
 
 type MockVulnerabilityServiceClient struct {
 	mock.Mock
@@ -48,7 +52,7 @@ func TestNewRouterFull(t *testing.T) {
 		ScanService:          &MockScanServiceClient{},
 		VulnerabilityService: &MockVulnerabilityServiceClient{},
 	}
-	mux := NewRouter(dummyClient)
+	mux := api.NewRouter(dummyClient)
 
 	tests := []struct {
 		method string
@@ -63,6 +67,8 @@ func TestNewRouterFull(t *testing.T) {
 		{"GET", "/scans/1/vulnerabilities", http.StatusInternalServerError},
 		{"GET", "/vulnerabilities/1/evidences", http.StatusInternalServerError},
 		{"GET", "/scans/1/report", http.StatusInternalServerError},
+		{"GET", "/scans/stream", http.StatusOK},
+		{"GET", "/scans/1/stream", http.StatusOK},
 	}
 
 	for _, tt := range tests {
