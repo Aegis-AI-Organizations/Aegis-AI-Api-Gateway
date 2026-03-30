@@ -7,13 +7,16 @@ import (
 	"testing"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
+	"github.com/stretchr/testify/assert"
 )
 
 type errorResponseWriter struct {
 	http.ResponseWriter
+	WriteCalled bool
 }
 
 func (e *errorResponseWriter) Write(b []byte) (int, error) {
+	e.WriteCalled = true
 	return 0, errors.New("write error")
 }
 
@@ -27,11 +30,19 @@ func TestHandlers_WriteError(t *testing.T) {
 	api := &handlers.API{}
 	req := httptest.NewRequest("GET", "/health", nil)
 
-	// Test HealthHandler error path
-	rrHealth := &errorResponseWriter{}
-	api.HealthHandler(rrHealth, req)
+	t.Run("HealthHandler", func(t *testing.T) {
+		rr := &errorResponseWriter{}
+		assert.NotPanics(t, func() {
+			api.HealthHandler(rr, req)
+		})
+		assert.True(t, rr.WriteCalled, "Write should have been called on HealthHandler")
+	})
 
-	// Test RootHandler error path
-	rrRoot := &errorResponseWriter{}
-	api.RootHandler(rrRoot, req)
+	t.Run("RootHandler", func(t *testing.T) {
+		rr := &errorResponseWriter{}
+		assert.NotPanics(t, func() {
+			api.RootHandler(rr, req)
+		})
+		assert.True(t, rr.WriteCalled, "Write should have been called on RootHandler")
+	})
 }
