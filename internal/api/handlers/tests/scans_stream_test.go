@@ -10,6 +10,7 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/testutils"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -35,21 +36,6 @@ func (m *MockScanStream) CloseSend() error { return nil }
 func (m *MockScanStream) SendMsg(m_ interface{}) error { return nil }
 func (m *MockScanStream) RecvMsg(m_ interface{}) error { return nil }
 
-type closeNotifierRecorder struct {
-	*httptest.ResponseRecorder
-	closed chan bool
-}
-
-func (c *closeNotifierRecorder) CloseNotify() <-chan bool {
-	return c.closed
-}
-
-func newCloseNotifierRecorder() *closeNotifierRecorder {
-	return &closeNotifierRecorder{
-		ResponseRecorder: httptest.NewRecorder(),
-		closed:           make(chan bool, 1),
-	}
-}
 
 func TestScanStreamHandler_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -67,7 +53,7 @@ func TestScanStreamHandler_Success(t *testing.T) {
 	mockService.On("WatchScanStatus", mock.Anything, &v1.WatchScanStatusRequest{ScanId: "s1"}).
 		Return(mockStream, nil)
 
-	w := newCloseNotifierRecorder()
+	w := testutils.NewCloseNotifierRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest("GET", "/scans/s1/stream", nil)
 	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
@@ -94,7 +80,7 @@ func TestScanStreamHandler_Global(t *testing.T) {
 	mockService.On("WatchScanStatus", mock.Anything, &v1.WatchScanStatusRequest{ScanId: ""}).
 		Return(mockStream, nil)
 
-	w := newCloseNotifierRecorder()
+	w := testutils.NewCloseNotifierRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest("GET", "/scans/stream", nil)
 

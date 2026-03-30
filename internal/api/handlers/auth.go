@@ -20,7 +20,7 @@ func (a *API) LoginHandler(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
 	resp, err := a.GRPCClient.Login(ctx, req.Email, req.Password)
@@ -31,7 +31,13 @@ func (a *API) LoginHandler(c *gin.Context) {
 
 	// Set Refresh Token in HttpOnly cookie
 	// MaxAge: 7 days (604800 seconds)
-	c.SetCookie("refresh_token", resp.RefreshToken, 604800, "/", "", true, true)
+	secure := gin.Mode() == gin.ReleaseMode
+	if secure {
+		c.SetSameSite(http.SameSiteNoneMode)
+	} else {
+		c.SetSameSite(http.SameSiteLaxMode)
+	}
+	c.SetCookie("refresh_token", resp.RefreshToken, 604800, "/", "", secure, true)
 
 	c.JSON(http.StatusOK, gin.H{
 		"access_token": resp.AccessToken,
@@ -46,7 +52,7 @@ func (a *API) RefreshHandler(c *gin.Context) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
 	resp, err := a.GRPCClient.Refresh(ctx, refreshToken)
@@ -64,13 +70,19 @@ func (a *API) RefreshHandler(c *gin.Context) {
 func (a *API) LogoutHandler(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err == nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 		defer cancel()
 		_, _ = a.GRPCClient.Logout(ctx, refreshToken)
 	}
 
 	// Clear the cookie
-	c.SetCookie("refresh_token", "", -1, "/", "", true, true)
+	secure := gin.Mode() == gin.ReleaseMode
+	if secure {
+		c.SetSameSite(http.SameSiteNoneMode)
+	} else {
+		c.SetSameSite(http.SameSiteLaxMode)
+	}
+	c.SetCookie("refresh_token", "", -1, "/", "", secure, true)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }

@@ -18,11 +18,9 @@ repos:
       - id: check-yaml
         args: [--unsafe]
 
+
   # 3. Linter Code Go
   - repo: https://github.com/golangci/golangci-lint
     rev: v1.60.2
     hooks:
       - id: golangci-lint
-        entry: bash -c 'if [ -f "go.mod" ]; then golangci-lint run; else echo "Skipping golangci-lint since go.mod is not present"; fi'
-        language: system
-        types: [go]

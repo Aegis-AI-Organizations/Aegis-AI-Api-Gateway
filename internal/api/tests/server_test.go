@@ -5,10 +5,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/testutils"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
 	"github.com/stretchr/testify/assert"
@@ -78,21 +78,6 @@ func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest
 	return &v1.LogoutResponse{Success: true}, nil
 }
 
-type closeNotifierRecorder struct {
-	*httptest.ResponseRecorder
-	closed chan bool
-}
-
-func (c *closeNotifierRecorder) CloseNotify() <-chan bool {
-	return c.closed
-}
-
-func newCloseNotifierRecorder() *closeNotifierRecorder {
-	return &closeNotifierRecorder{
-		ResponseRecorder: httptest.NewRecorder(),
-		closed:           make(chan bool, 1),
-	}
-}
 
 func TestNewRouterFull(t *testing.T) {
 	dummyClient := &agrpc.Client{
@@ -125,7 +110,7 @@ func TestNewRouterFull(t *testing.T) {
 			body = []byte(`{"target_image":"test"}`)
 		}
 		req, _ := http.NewRequest(tt.method, tt.path, bytes.NewBuffer(body))
-		rr := newCloseNotifierRecorder()
+		rr := testutils.NewCloseNotifierRecorder()
 		mux.ServeHTTP(rr, req)
 		assert.NotEqual(t, http.StatusNotFound, rr.Code, "Path %s %s should be registered", tt.method, tt.path)
 		assert.Equal(t, tt.code, rr.Code, "Path %s %s should return code %d", tt.method, tt.path, tt.code)
