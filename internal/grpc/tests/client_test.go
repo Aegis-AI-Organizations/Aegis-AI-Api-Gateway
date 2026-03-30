@@ -67,6 +67,34 @@ func (m *MockVulnerabilityServiceClient) GetEvidences(ctx context.Context, in *v
 	return args.Get(0).(*v1.GetEvidencesResponse), args.Error(1)
 }
 
+type MockAuthServiceClient struct {
+	mock.Mock
+}
+
+func (m *MockAuthServiceClient) Login(ctx context.Context, in *v1.LoginRequest, opts ...grpc.CallOption) (*v1.LoginResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.LoginResponse), args.Error(1)
+}
+
+func (m *MockAuthServiceClient) Refresh(ctx context.Context, in *v1.RefreshRequest, opts ...grpc.CallOption) (*v1.RefreshResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.RefreshResponse), args.Error(1)
+}
+
+func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest, opts ...grpc.CallOption) (*v1.LogoutResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.LogoutResponse), args.Error(1)
+}
+
 func TestClient_Ping(t *testing.T) {
 	mockPing := new(MockPingServiceClient)
 	client := &agrpc.Client{
@@ -137,6 +165,14 @@ func TestClient_Failures(t *testing.T) {
 	mockScan.On("ListScans", mock.Anything, mock.Anything).Return((*v1.ListScansResponse)(nil), fmt.Errorf("rpc error"))
 	mockVuln.On("GetEvidences", mock.Anything, mock.Anything).Return((*v1.GetEvidencesResponse)(nil), fmt.Errorf("rpc error"))
 
+	mockVuln.On("GetEvidences", mock.Anything, mock.Anything).Return((*v1.GetEvidencesResponse)(nil), fmt.Errorf("rpc error"))
+
+	mockAuth := new(MockAuthServiceClient)
+	client.AuthService = mockAuth
+	mockAuth.On("Login", mock.Anything, mock.Anything).Return((*v1.LoginResponse)(nil), fmt.Errorf("rpc error"))
+	mockAuth.On("Refresh", mock.Anything, mock.Anything).Return((*v1.RefreshResponse)(nil), fmt.Errorf("rpc error"))
+	mockAuth.On("Logout", mock.Anything, mock.Anything).Return((*v1.LogoutResponse)(nil), fmt.Errorf("rpc error"))
+
 	_, err := client.StartScan(context.Background(), "img")
 	assert.Error(t, err)
 
@@ -154,6 +190,45 @@ func TestClient_Failures(t *testing.T) {
 
 	_, err = client.GetEvidences(context.Background(), "v1")
 	assert.Error(t, err)
+
+	_, err = client.Login(context.Background(), "e", "p")
+	assert.Error(t, err)
+
+	_, err = client.Refresh(context.Background(), "r")
+	assert.Error(t, err)
+
+	_, err = client.Logout(context.Background(), "r")
+	assert.Error(t, err)
+}
+
+func TestClient_AuthMethods(t *testing.T) {
+	mockAuth := new(MockAuthServiceClient)
+	client := &agrpc.Client{
+		AuthService: mockAuth,
+	}
+
+	ctx := context.Background()
+
+	// Login
+	mockAuth.On("Login", ctx, &v1.LoginRequest{Email: "e", Password: "p"}).
+		Return(&v1.LoginResponse{AccessToken: "a", RefreshToken: "r"}, nil)
+	resp, err := client.Login(ctx, "e", "p")
+	assert.NoError(t, err)
+	assert.Equal(t, "a", resp.AccessToken)
+
+	// Refresh
+	mockAuth.On("Refresh", ctx, &v1.RefreshRequest{RefreshToken: "r"}).
+		Return(&v1.RefreshResponse{AccessToken: "a2"}, nil)
+	respR, err := client.Refresh(ctx, "r")
+	assert.NoError(t, err)
+	assert.Equal(t, "a2", respR.AccessToken)
+
+	// Logout
+	mockAuth.On("Logout", ctx, &v1.LogoutRequest{RefreshToken: "r"}).
+		Return(&v1.LogoutResponse{Success: true}, nil)
+	respL, err := client.Logout(ctx, "r")
+	assert.NoError(t, err)
+	assert.True(t, respL.Success)
 }
 
 func TestClient_NilServices(t *testing.T) {

@@ -194,3 +194,38 @@ func TestLogoutHandler_Success(t *testing.T) {
 	}
 	assert.True(t, found)
 }
+
+func TestRefreshHandler_GRPCError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/auth/refresh", nil)
+	c.Request.AddCookie(&http.Cookie{Name: "refresh_token", Value: "invalid-token"})
+
+	mockAuth.On("Refresh", mock.Anything, mock.Anything).
+		Return(nil, fmt.Errorf("grpc error"))
+
+	api.RefreshHandler(c)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+func TestLogoutHandler_MissingCookie(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/auth/logout", nil)
+
+	api.LogoutHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}

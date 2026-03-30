@@ -49,4 +49,16 @@ func TestClient_ServiceErrors_Nil(t *testing.T) {
 	_, err = client.WatchScanStatus(ctx, "s1")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.Login(ctx, "e", "p")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.Refresh(ctx, "r")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.Logout(ctx, "r")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
 }
