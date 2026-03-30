@@ -7,20 +7,21 @@ import (
 	"time"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
+	"github.com/gin-gonic/gin"
 )
 
-// GetEvidencesHandler handles GET /vulnerabilities/{id}/evidences
-func (a *API) GetEvidencesHandler(w http.ResponseWriter, r *http.Request) {
-	vulnID := r.PathValue("id")
+// GetEvidencesHandler handles GET /vulnerabilities/:id/evidences
+func (a *API) GetEvidencesHandler(c *gin.Context) {
+	vulnID := c.Param("id")
 	if vulnID == "" {
-		http.Error(w, "vulnerability id parameter is required", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "vulnerability id parameter is required"})
 		return
 	}
 
-	grpcEvidences, err := a.GRPCClient.GetEvidences(r.Context(), vulnID)
+	grpcEvidences, err := a.GRPCClient.GetEvidences(c.Request.Context(), vulnID)
 	if err != nil {
 		log.Printf("GRPC GetEvidences error: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
@@ -55,8 +56,5 @@ func (a *API) GetEvidencesHandler(w http.ResponseWriter, r *http.Request) {
 		evidences = []models.Evidence{}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(evidences); err != nil {
-		log.Printf("Failed to encode response: %v", err)
-	}
+	c.JSON(http.StatusOK, evidences)
 }

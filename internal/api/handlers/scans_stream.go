@@ -1,54 +1,44 @@
 package handlers
 
 import (
-	"encoding/json"
-	"fmt"
+	"io"
 	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-// ScanStreamHandler handles GET /scans/stream or /scans/{id}/stream
-func (a *API) ScanStreamHandler(w http.ResponseWriter, r *http.Request) {
-	scanID := r.PathValue("id")
+// ScanStreamHandler handles GET /scans/stream or /scans/:id/stream
+func (a *API) ScanStreamHandler(c *gin.Context) {
+	scanID := c.Param("id")
 	if scanID == "" {
 		log.Printf("📡 Starting global SSE stream")
 	} else {
 		log.Printf("📡 Starting SSE stream for scanID: %s", scanID)
 	}
 
-	stream, err := a.GRPCClient.WatchScanStatus(r.Context(), scanID)
+	stream, err := a.GRPCClient.WatchScanStatus(c.Request.Context(), scanID)
 	if err != nil || stream == nil {
 		log.Printf("Failed to open gRPC stream: %v", err)
-		http.Error(w, "Failed to initialize stream", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize stream"})
 		return
 	}
 
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
-		return
-	}
-
-	for {
+	c.Stream(func(w io.Writer) bool {
 		resp, err := stream.Recv()
 		if err != nil {
-			log.Printf("gRPC stream closed: %v", err)
-			return
+			if err == io.EOF {
+				log.Printf("gRPC stream finished: %v", err)
+			} else {
+				log.Printf("gRPC stream error: %v", err)
+			}
+			return false
 		}
 
-		payload, err := json.Marshal(map[string]string{
+		c.SSEvent("message", gin.H{
 			"scan_id": resp.ScanId,
 			"status":  resp.Status,
 		})
-		if err != nil {
-			log.Printf("Failed to marshal SSE payload: %v", err)
-			continue
-		}
-
-		if _, err := fmt.Fprintf(w, "data: %s\n\n", string(payload)); err != nil {
-			log.Printf("Failed to write to SSE stream: %v", err)
-			return
-		}
-		flusher.Flush()
-	}
+		return true
+	})
 }

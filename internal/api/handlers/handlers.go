@@ -1,29 +1,26 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
+	"github.com/gin-gonic/gin"
 )
 
 // API holds the core dependencies dynamically injected by our server initialization.
 type API struct {
-	GRPCClient     *grpc.Client
+	GRPCClient *grpc.Client
 }
 
 // HealthHandler returns a simple 200 OK status for Kubernetes liveness probes.
-func (a *API) HealthHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte(`{"status":"ok"}`)); err != nil {
-		log.Printf("Failed to write response: %v", err)
-	}
+func (a *API) HealthHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 // RootHandler returns the service name and version.
-func (a *API) RootHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte(`{"service":"aegis-api-gateway","version":"pre-alpha"}`)); err != nil {
-		log.Printf("Failed to write response: %v", err)
-	}
+func (a *API) RootHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"service": "aegis-api-gateway",
+		"version": "pre-alpha",
+	})
 }

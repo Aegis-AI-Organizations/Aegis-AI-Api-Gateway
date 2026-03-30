@@ -6,27 +6,34 @@ import (
 	"testing"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCORSMiddleware(t *testing.T) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(middleware.CORSMiddleware())
+	r.GET("/test", func(c *gin.Context) {
+		c.Status(http.StatusOK)
 	})
 
-	corsHandler := middleware.CORS(handler)
-
-	req, _ := http.NewRequest("OPTIONS", "/", nil)
+	// Test OPTIONS preflight
+	req, _ := http.NewRequest("OPTIONS", "/test", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
 	rr := httptest.NewRecorder()
-	corsHandler.ServeHTTP(rr, req)
+	r.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusNoContent, rr.Code)
-	assert.Equal(t, "*", rr.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, "http://localhost:3000", rr.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, "true", rr.Header().Get("Access-Control-Allow-Credentials"))
 
-	req, _ = http.NewRequest("GET", "/", nil)
+	// Test GET request
+	req, _ = http.NewRequest("GET", "/test", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
 	rr = httptest.NewRecorder()
-	corsHandler.ServeHTTP(rr, req)
+	r.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, "*", rr.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, "http://localhost:3000", rr.Header().Get("Access-Control-Allow-Origin"))
 }

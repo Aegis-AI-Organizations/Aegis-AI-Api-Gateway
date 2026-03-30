@@ -64,10 +64,41 @@ func (m *MockVulnerabilityServiceClient) GetEvidences(ctx context.Context, in *v
 	return &v1.GetEvidencesResponse{}, nil
 }
 
+type MockAuthServiceClient struct {
+	mock.Mock
+}
+
+func (m *MockAuthServiceClient) Login(ctx context.Context, in *v1.LoginRequest, opts ...grpc.CallOption) (*v1.LoginResponse, error) {
+	return &v1.LoginResponse{AccessToken: "at", RefreshToken: "rt"}, nil
+}
+func (m *MockAuthServiceClient) Refresh(ctx context.Context, in *v1.RefreshRequest, opts ...grpc.CallOption) (*v1.RefreshResponse, error) {
+	return &v1.RefreshResponse{AccessToken: "at"}, nil
+}
+func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest, opts ...grpc.CallOption) (*v1.LogoutResponse, error) {
+	return &v1.LogoutResponse{Success: true}, nil
+}
+
+type closeNotifierRecorder struct {
+	*httptest.ResponseRecorder
+	closed chan bool
+}
+
+func (c *closeNotifierRecorder) CloseNotify() <-chan bool {
+	return c.closed
+}
+
+func newCloseNotifierRecorder() *closeNotifierRecorder {
+	return &closeNotifierRecorder{
+		ResponseRecorder: httptest.NewRecorder(),
+		closed:           make(chan bool, 1),
+	}
+}
+
 func TestNewRouterFull(t *testing.T) {
 	dummyClient := &agrpc.Client{
 		ScanService:          &MockScanServiceClient{},
 		VulnerabilityService: &MockVulnerabilityServiceClient{},
+		AuthService:          &MockAuthServiceClient{},
 	}
 	mux := api.NewRouter(dummyClient)
 
@@ -94,7 +125,7 @@ func TestNewRouterFull(t *testing.T) {
 			body = []byte(`{"target_image":"test"}`)
 		}
 		req, _ := http.NewRequest(tt.method, tt.path, bytes.NewBuffer(body))
-		rr := httptest.NewRecorder()
+		rr := newCloseNotifierRecorder()
 		mux.ServeHTTP(rr, req)
 		assert.NotEqual(t, http.StatusNotFound, rr.Code, "Path %s %s should be registered", tt.method, tt.path)
 		assert.Equal(t, tt.code, rr.Code, "Path %s %s should return code %d", tt.method, tt.path, tt.code)

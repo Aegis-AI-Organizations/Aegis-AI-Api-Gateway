@@ -1,34 +1,29 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
+	"github.com/gin-gonic/gin"
 )
 
-func (a *API) CreateScanHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method must be POST", http.StatusMethodNotAllowed)
-		return
-	}
-
+func (a *API) CreateScanHandler(c *gin.Context) {
 	var req models.CreateScanRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON body"})
 		return
 	}
 
 	if req.TargetImage == "" {
-		http.Error(w, "target_image is required", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "target_image is required"})
 		return
 	}
 
-	resp, err := a.GRPCClient.StartScan(r.Context(), req.TargetImage)
+	resp, err := a.GRPCClient.StartScan(c.Request.Context(), req.TargetImage)
 	if err != nil {
 		log.Printf("Failed to start scan via gRPC: %v", err)
-		http.Error(w, "Failed to start workflow orchestrator", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start workflow orchestrator"})
 		return
 	}
 
@@ -39,9 +34,5 @@ func (a *API) CreateScanHandler(w http.ResponseWriter, r *http.Request) {
 		Status: resp.Status,
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		log.Printf("Failed to encode response: %v", err)
-	}
+	c.JSON(http.StatusCreated, res)
 }
