@@ -39,3 +39,17 @@ type Evidence struct {
 	LootData        json.RawMessage `json:"loot_data"`
 	CapturedAt      *time.Time      `json:"captured_at,omitempty"`
 }
+
+type LicenseStatus string
+
+const (
+	LicenseStatusActive  LicenseStatus = "active"
+	LicenseStatusExpired LicenseStatus = "expired"
+)
+
+type License struct {
+	ID            string        `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()" db:"id"`
+	Name          string        `json:"name" gorm:"type:varchar(255);unique;not null" db:"name"`
+	LicenseStatus LicenseStatus `json:"license_status" gorm:"type:varchar(50);not null;default:'active'" db:"license_status"`
+	CreatedAt     time.Time     `json:"created_at" gorm:"autoCreateTime" db:"created_at"`
+}
