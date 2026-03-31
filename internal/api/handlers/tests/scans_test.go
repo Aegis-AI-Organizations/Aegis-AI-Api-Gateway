@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
@@ -64,6 +64,7 @@ func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.Watc
 }
 
 func TestCreateScanHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -73,20 +74,21 @@ func TestCreateScanHandler(t *testing.T) {
 
 	payload := map[string]string{"target_image": "nginx:latest"}
 	body, _ := json.Marshal(payload)
-	req, _ := http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
 
 	mockService.On("StartScan", mock.Anything, &v1.StartScanRequest{TargetImage: "nginx:latest"}).
 		Return(&v1.StartScanResponse{ScanId: "s1", Status: "PENDING"}, nil)
 
-	handler := http.HandlerFunc(api.CreateScanHandler)
-	handler.ServeHTTP(rr, req)
+	api.CreateScanHandler(c)
 
-	assert.Equal(t, http.StatusCreated, rr.Code)
+	assert.Equal(t, http.StatusCreated, w.Code)
 	mockService.AssertExpectations(t)
 }
 
 func TestCreateScanHandler_GRPCFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -96,19 +98,42 @@ func TestCreateScanHandler_GRPCFailure(t *testing.T) {
 
 	payload := map[string]string{"target_image": "nginx:latest"}
 	body, _ := json.Marshal(payload)
-	req, _ := http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
 
 	mockService.On("StartScan", mock.Anything, mock.Anything).
 		Return(nil, fmt.Errorf("grpc error"))
 
-	handler := http.HandlerFunc(api.CreateScanHandler)
-	handler.ServeHTTP(rr, req)
+	api.CreateScanHandler(c)
 
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestCreateScanHandler_EmptyTargetImage(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+	payload := map[string]string{"target_image": ""}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
+	api.CreateScanHandler(c)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestCreateScanHandler_InvalidJSON(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/scans", bytes.NewBuffer([]byte("not-json")))
+	api.CreateScanHandler(c)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestGetScansHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -123,7 +148,7 @@ func TestGetScansHandler(t *testing.T) {
 				TemporalWorkflowId: "wf-1",
 				TargetImage:        "img-1",
 				Status:             "PENDING",
-				StartedAt:          timestamppb.New(time.Now()),
+				StartedAt:          timestamppb.Now(),
 				CompletedAt:        nil,
 			},
 		},
@@ -132,16 +157,17 @@ func TestGetScansHandler(t *testing.T) {
 	mockService.On("ListScans", mock.Anything, &v1.ListScansRequest{}).
 		Return(resp, nil)
 
-	req, _ := http.NewRequest("GET", "/scans", nil)
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans", nil)
 
-	handler := http.HandlerFunc(api.GetScansHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetScansHandler(c)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestGetScansHandler_GRPCError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -152,16 +178,33 @@ func TestGetScansHandler_GRPCError(t *testing.T) {
 	mockService.On("ListScans", mock.Anything, mock.Anything).
 		Return(nil, fmt.Errorf("grpc error"))
 
-	req, _ := http.NewRequest("GET", "/scans", nil)
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans", nil)
 
-	handler := http.HandlerFunc(api.GetScansHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetScansHandler(c)
 
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestGetScansHandler_NilRes(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockService := new(MockScanServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			ScanService: mockService,
+		},
+	}
+	mockService.On("ListScans", mock.Anything, mock.Anything).Return(&v1.ListScansResponse{Scans: nil}, nil)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans", nil)
+	api.GetScansHandler(c)
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestGetScanByIDHandler_Found(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -174,24 +217,25 @@ func TestGetScanByIDHandler_Found(t *testing.T) {
 		TemporalWorkflowId: "wf-1",
 		TargetImage:        "img-1",
 		Status:             "PENDING",
-		StartedAt:          timestamppb.New(time.Now()),
+		StartedAt:          timestamppb.Now(),
 		CompletedAt:        nil,
 	}
 
 	mockService.On("GetScanStatus", mock.Anything, &v1.GetScanStatusRequest{ScanId: "s1"}).
 		Return(resp, nil)
 
-	req, _ := http.NewRequest("GET", "/scans/s1", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/s1", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
 
-	handler := http.HandlerFunc(api.GetScanByIDHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetScanByIDHandler(c)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestGetScanByIDHandler_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -202,17 +246,28 @@ func TestGetScanByIDHandler_NotFound(t *testing.T) {
 	mockService.On("GetScanStatus", mock.Anything, mock.Anything).
 		Return(nil, fmt.Errorf("not found"))
 
-	req, _ := http.NewRequest("GET", "/scans/nb", nil)
-	req.SetPathValue("id", "nb")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/nb", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "nb"}}
 
-	handler := http.HandlerFunc(api.GetScanByIDHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetScanByIDHandler(c)
 
-	assert.Equal(t, http.StatusNotFound, rr.Code)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestGetScanByIDHandler_EmptyID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/", nil)
+	api.GetScanByIDHandler(c)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestGetScanReportHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -227,18 +282,19 @@ func TestGetScanReportHandler_Success(t *testing.T) {
 	mockService.On("GetScanReport", mock.Anything, &v1.GetScanReportRequest{ScanId: "s1"}).
 		Return(resp, nil)
 
-	req, _ := http.NewRequest("GET", "/scans/s1/report", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/s1/report", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
 
-	handler := http.HandlerFunc(api.GetScanReportHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetScanReportHandler(c)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Equal(t, "application/pdf", rr.Header().Get("Content-Type"))
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "application/pdf", w.Header().Get("Content-Type"))
 }
 
 func TestGetScanReportHandler_EmptyReport(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -253,17 +309,18 @@ func TestGetScanReportHandler_EmptyReport(t *testing.T) {
 	mockService.On("GetScanReport", mock.Anything, &v1.GetScanReportRequest{ScanId: "s1"}).
 		Return(resp, nil)
 
-	req, _ := http.NewRequest("GET", "/scans/s1/report", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/s1/report", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
 
-	handler := http.HandlerFunc(api.GetScanReportHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetScanReportHandler(c)
 
-	assert.Equal(t, http.StatusNotFound, rr.Code)
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
 func TestGetScanReportHandler_GRPCError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -274,12 +331,12 @@ func TestGetScanReportHandler_GRPCError(t *testing.T) {
 	mockService.On("GetScanReport", mock.Anything, &v1.GetScanReportRequest{ScanId: "s1"}).
 		Return(nil, fmt.Errorf("grpc error"))
 
-	req, _ := http.NewRequest("GET", "/scans/s1/report", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/s1/report", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
 
-	handler := http.HandlerFunc(api.GetScanReportHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetScanReportHandler(c)
 
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }

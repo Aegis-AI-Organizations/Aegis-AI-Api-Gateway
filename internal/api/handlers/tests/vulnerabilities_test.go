@@ -11,6 +11,7 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
@@ -38,6 +39,7 @@ func (m *MockVulnerabilityServiceClient) GetEvidences(ctx context.Context, in *v
 }
 
 func TestGetVulnerabilitiesHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockVulnerabilityServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -60,18 +62,19 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 
 	mockService.On("GetVulnerabilities", mock.Anything, &v1.GetVulnerabilitiesRequest{ScanId: "s1"}).Return(response, nil)
 
-	req, _ := http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
 
-	handler := http.HandlerFunc(api.GetVulnerabilitiesHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetVulnerabilitiesHandler(c)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 	mockService.AssertExpectations(t)
 }
 
 func TestGetEvidencesHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockVulnerabilityServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -93,17 +96,18 @@ func TestGetEvidencesHandler(t *testing.T) {
 
 	mockService.On("GetEvidences", mock.Anything, &v1.GetEvidencesRequest{VulnerabilityId: "v1"}).Return(response, nil)
 
-	req, _ := http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
-	req.SetPathValue("id", "v1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "v1"}}
 
-	handler := http.HandlerFunc(api.GetEvidencesHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetEvidencesHandler(c)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestGetVulnerabilitiesHandler_GRPCError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockVulnerabilityServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -113,17 +117,18 @@ func TestGetVulnerabilitiesHandler_GRPCError(t *testing.T) {
 
 	mockService.On("GetVulnerabilities", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("grpc error"))
 
-	req, _ := http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
 
-	handler := http.HandlerFunc(api.GetVulnerabilitiesHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetVulnerabilitiesHandler(c)
 
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestGetEvidencesHandler_GRPCError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockVulnerabilityServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -133,17 +138,18 @@ func TestGetEvidencesHandler_GRPCError(t *testing.T) {
 
 	mockService.On("GetEvidences", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("grpc error"))
 
-	req, _ := http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
-	req.SetPathValue("id", "v1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "v1"}}
 
-	handler := http.HandlerFunc(api.GetEvidencesHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetEvidencesHandler(c)
 
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestGetVulnerabilitiesHandler_Empty(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockVulnerabilityServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -157,17 +163,18 @@ func TestGetVulnerabilitiesHandler_Empty(t *testing.T) {
 
 	mockService.On("GetVulnerabilities", mock.Anything, mock.Anything).Return(response, nil)
 
-	req, _ := http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/s1/vulnerabilities", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
 
-	handler := http.HandlerFunc(api.GetVulnerabilitiesHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetVulnerabilitiesHandler(c)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestGetEvidencesHandler_Empty(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockVulnerabilityServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -181,12 +188,12 @@ func TestGetEvidencesHandler_Empty(t *testing.T) {
 
 	mockService.On("GetEvidences", mock.Anything, mock.Anything).Return(response, nil)
 
-	req, _ := http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
-	req.SetPathValue("id", "v1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/vulnerabilities/v1/evidences", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "v1"}}
 
-	handler := http.HandlerFunc(api.GetEvidencesHandler)
-	handler.ServeHTTP(rr, req)
+	api.GetEvidencesHandler(c)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 }

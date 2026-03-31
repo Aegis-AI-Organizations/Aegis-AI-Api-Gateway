@@ -1,19 +1,19 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
+	"github.com/gin-gonic/gin"
 )
 
-func (a *API) GetScansHandler(w http.ResponseWriter, r *http.Request) {
-	grpcScans, err := a.GRPCClient.ListScans(r.Context())
+func (a *API) GetScansHandler(c *gin.Context) {
+	grpcScans, err := a.GRPCClient.ListScans(c.Request.Context())
 	if err != nil {
 		log.Printf("GRPC query error: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 
@@ -44,23 +44,20 @@ func (a *API) GetScansHandler(w http.ResponseWriter, r *http.Request) {
 		scans = []models.Scan{}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(scans); err != nil {
-		log.Printf("Failed to encode response: %v", err)
-	}
+	c.JSON(http.StatusOK, scans)
 }
 
-func (a *API) GetScanByIDHandler(w http.ResponseWriter, r *http.Request) {
-	scanID := r.PathValue("id")
+func (a *API) GetScanByIDHandler(c *gin.Context) {
+	scanID := c.Param("id")
 	if scanID == "" {
-		http.Error(w, "scan id parameter is required", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "scan id parameter is required"})
 		return
 	}
 
-	s, err := a.GRPCClient.GetScanStatus(r.Context(), scanID)
+	s, err := a.GRPCClient.GetScanStatus(c.Request.Context(), scanID)
 	if err != nil {
 		log.Printf("GRPC GetScanStatus error: %v", err)
-		http.Error(w, "Scan not found", http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Scan not found"})
 		return
 	}
 
@@ -82,8 +79,5 @@ func (a *API) GetScanByIDHandler(w http.ResponseWriter, r *http.Request) {
 		CompletedAt:        compStr,
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(found); err != nil {
-		log.Printf("Failed to encode response: %v", err)
-	}
+	c.JSON(http.StatusOK, found)
 }

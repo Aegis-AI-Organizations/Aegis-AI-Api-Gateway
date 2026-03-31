@@ -14,6 +14,7 @@ type Client struct {
 	PingService          v1.PingServiceClient
 	ScanService          v1.ScanServiceClient
 	VulnerabilityService v1.VulnerabilityServiceClient
+	AuthService          v1.AuthServiceClient
 }
 
 func NewClient(addr string) (*Client, error) {
@@ -27,6 +28,7 @@ func NewClient(addr string) (*Client, error) {
 		PingService:          v1.NewPingServiceClient(conn),
 		ScanService:          v1.NewScanServiceClient(conn),
 		VulnerabilityService: v1.NewVulnerabilityServiceClient(conn),
+		AuthService:          v1.NewAuthServiceClient(conn),
 	}, nil
 }
 
@@ -115,4 +117,25 @@ func (c *Client) WatchScanStatus(ctx context.Context, scanID string) (v1.ScanSer
 		return nil, fmt.Errorf("scan service not initialized")
 	}
 	return c.ScanService.WatchScanStatus(ctx, &v1.WatchScanStatusRequest{ScanId: scanID})
+}
+
+func (c *Client) Login(ctx context.Context, email, password string) (*v1.LoginResponse, error) {
+	if c.AuthService == nil {
+		return nil, fmt.Errorf("auth service not initialized")
+	}
+	return c.AuthService.Login(ctx, &v1.LoginRequest{Email: email, Password: password})
+}
+
+func (c *Client) Refresh(ctx context.Context, refreshToken string) (*v1.RefreshResponse, error) {
+	if c.AuthService == nil {
+		return nil, fmt.Errorf("auth service not initialized")
+	}
+	return c.AuthService.Refresh(ctx, &v1.RefreshRequest{RefreshToken: refreshToken})
+}
+
+func (c *Client) Logout(ctx context.Context, refreshToken string) (*v1.LogoutResponse, error) {
+	if c.AuthService == nil {
+		return nil, fmt.Errorf("auth service not initialized")
+	}
+	return c.AuthService.Logout(ctx, &v1.LogoutRequest{RefreshToken: refreshToken})
 }

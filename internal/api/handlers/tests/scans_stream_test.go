@@ -10,6 +10,8 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/testutils"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/metadata"
@@ -34,7 +36,9 @@ func (m *MockScanStream) CloseSend() error { return nil }
 func (m *MockScanStream) SendMsg(m_ interface{}) error { return nil }
 func (m *MockScanStream) RecvMsg(m_ interface{}) error { return nil }
 
+
 func TestScanStreamHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -49,20 +53,19 @@ func TestScanStreamHandler_Success(t *testing.T) {
 	mockService.On("WatchScanStatus", mock.Anything, &v1.WatchScanStatusRequest{ScanId: "s1"}).
 		Return(mockStream, nil)
 
-	req, _ := http.NewRequest("GET", "/scans/s1/stream", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
+	w := testutils.NewCloseNotifierRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/s1/stream", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
 
-	// Use a channel to limit the execution time as the handler has an infinite loop
-	// but our mock returns EOF after 2 calls.
-	handler := http.HandlerFunc(api.ScanStreamHandler)
-	handler.ServeHTTP(rr, req)
+	api.ScanStreamHandler(c)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Contains(t, rr.Body.String(), "data: {\"scan_id\":\"s1\",\"status\":\"RUNNING\"}")
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "data:{\"scan_id\":\"s1\",\"status\":\"RUNNING\"}")
 }
 
 func TestScanStreamHandler_Global(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -77,17 +80,18 @@ func TestScanStreamHandler_Global(t *testing.T) {
 	mockService.On("WatchScanStatus", mock.Anything, &v1.WatchScanStatusRequest{ScanId: ""}).
 		Return(mockStream, nil)
 
-	req, _ := http.NewRequest("GET", "/scans/stream", nil)
-	rr := httptest.NewRecorder()
+	w := testutils.NewCloseNotifierRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/stream", nil)
 
-	handler := http.HandlerFunc(api.ScanStreamHandler)
-	handler.ServeHTTP(rr, req)
+	api.ScanStreamHandler(c)
 
-	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.Contains(t, rr.Body.String(), "data: {\"scan_id\":\"s2\",\"status\":\"COMPLETED\"}")
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "data:{\"scan_id\":\"s2\",\"status\":\"COMPLETED\"}")
 }
 
 func TestScanStreamHandler_GRPCError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 	mockService := new(MockScanServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
@@ -98,12 +102,12 @@ func TestScanStreamHandler_GRPCError(t *testing.T) {
 	mockService.On("WatchScanStatus", mock.Anything, mock.Anything).
 		Return(nil, fmt.Errorf("grpc error"))
 
-	req, _ := http.NewRequest("GET", "/scans/s1/stream", nil)
-	req.SetPathValue("id", "s1")
-	rr := httptest.NewRecorder()
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/scans/s1/stream", nil)
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
 
-	handler := http.HandlerFunc(api.ScanStreamHandler)
-	handler.ServeHTTP(rr, req)
+	api.ScanStreamHandler(c)
 
-	assert.Equal(t, http.StatusInternalServerError, rr.Code)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
