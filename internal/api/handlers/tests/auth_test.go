@@ -67,7 +67,7 @@ func TestLoginHandler_Success(t *testing.T) {
 	api.LoginHandler(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	
+
 	var resp map[string]string
 	json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Equal(t, "access", resp["access_token"])
@@ -142,7 +142,7 @@ func TestRefreshHandler_Success(t *testing.T) {
 	api.RefreshHandler(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	
+
 	var resp map[string]string
 	json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Equal(t, "new-access", resp["access_token"])
