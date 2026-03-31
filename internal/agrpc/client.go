@@ -3,7 +3,6 @@ package agrpc
 import (
 	"context"
 	"fmt"
-	"log"
 
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
@@ -24,26 +23,19 @@ type Client struct {
 func WithMetadata(ctx context.Context) context.Context {
 	md := metadata.Pairs()
 
-	found := 0
 	// Extract from context (matching strongly-typed keys in middleware/auth.go)
 	if userID, ok := ctx.Value(middleware.UserIDKey).(string); ok {
 		md.Set("user-id", userID)
-		found++
 	}
 	if companyID, ok := ctx.Value(middleware.CompanyIDKey).(string); ok {
 		md.Set("company-id", companyID)
-		found++
 	}
 	if role, ok := ctx.Value(middleware.RoleKey).(string); ok {
 		md.Set("role", role)
-		found++
 	}
 	if token, ok := ctx.Value(middleware.TokenKey).(string); ok {
 		md.Set("authorization", "Bearer "+token)
-		found++
 	}
-
-	log.Printf("DEBUG: WithMetadata found %d keys in context", found)
 
 	if md.Len() > 0 {
 		return metadata.NewOutgoingContext(ctx, md)
