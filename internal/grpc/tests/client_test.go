@@ -165,8 +165,6 @@ func TestClient_Failures(t *testing.T) {
 	mockScan.On("ListScans", mock.Anything, mock.Anything).Return((*v1.ListScansResponse)(nil), fmt.Errorf("rpc error"))
 	mockVuln.On("GetEvidences", mock.Anything, mock.Anything).Return((*v1.GetEvidencesResponse)(nil), fmt.Errorf("rpc error"))
 
-	mockVuln.On("GetEvidences", mock.Anything, mock.Anything).Return((*v1.GetEvidencesResponse)(nil), fmt.Errorf("rpc error"))
-
 	mockAuth := new(MockAuthServiceClient)
 	client.AuthService = mockAuth
 	mockAuth.On("Login", mock.Anything, mock.Anything).Return((*v1.LoginResponse)(nil), fmt.Errorf("rpc error"))

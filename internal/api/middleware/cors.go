@@ -21,7 +21,12 @@ func CORSMiddleware() gin.HandlerFunc {
 
 	// Load from environment if available
 	if envOrigins := os.Getenv("ALLOWED_ORIGINS"); envOrigins != "" {
-		allowedOrigins = append(allowedOrigins, strings.Split(envOrigins, ",")...)
+		for _, o := range strings.Split(envOrigins, ",") {
+			trimmed := strings.TrimSpace(o)
+			if trimmed != "" {
+				allowedOrigins = append(allowedOrigins, trimmed)
+			}
+		}
 	}
 
 	return func(c *gin.Context) {
@@ -40,9 +45,10 @@ func CORSMiddleware() gin.HandlerFunc {
 		if isAllowed {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 			c.Writer.Header().Set("Vary", "Origin")
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			c.Writer.Header().Set("Access-Control-Max-Age", "86400")
 		}
 
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin, Cache-Control, X-Requested-With")
 

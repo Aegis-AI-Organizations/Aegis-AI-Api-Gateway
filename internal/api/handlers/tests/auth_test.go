@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,6 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type MockAuthServiceClient struct {
@@ -99,7 +100,7 @@ func TestLoginHandler_InvalidInput(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestLoginHandler_GRPCError(t *testing.T) {
+func TestLoginHandler_GRPCError_Unauthenticated(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockAuth := new(MockAuthServiceClient)
 	api := &handlers.API{
@@ -115,11 +116,34 @@ func TestLoginHandler_GRPCError(t *testing.T) {
 	c.Request, _ = http.NewRequest("POST", "/auth/login", bytes.NewBuffer(body))
 
 	mockAuth.On("Login", mock.Anything, mock.Anything).
-		Return(nil, fmt.Errorf("invalid credentials"))
+		Return(nil, status.Error(codes.Unauthenticated, "invalid credentials"))
 
 	api.LoginHandler(c)
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+func TestLoginHandler_GRPCError_Internal(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	payload := map[string]string{"email": "test@example.com", "password": "any"}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/auth/login", bytes.NewBuffer(body))
+
+	mockAuth.On("Login", mock.Anything, mock.Anything).
+		Return(nil, status.Error(codes.Internal, "internal fail"))
+
+	api.LoginHandler(c)
+
+	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
 }
 
 func TestRefreshHandler_Success(t *testing.T) {
@@ -195,7 +219,7 @@ func TestLogoutHandler_Success(t *testing.T) {
 	assert.True(t, found)
 }
 
-func TestRefreshHandler_GRPCError(t *testing.T) {
+func TestRefreshHandler_GRPCError_Unauthenticated(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockAuth := new(MockAuthServiceClient)
 	api := &handlers.API{
@@ -210,11 +234,33 @@ func TestRefreshHandler_GRPCError(t *testing.T) {
 	c.Request.AddCookie(&http.Cookie{Name: "refresh_token", Value: "invalid-token"})
 
 	mockAuth.On("Refresh", mock.Anything, mock.Anything).
-		Return(nil, fmt.Errorf("grpc error"))
+		Return(nil, status.Error(codes.Unauthenticated, "invalid token"))
 
 	api.RefreshHandler(c)
 
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+func TestRefreshHandler_GRPCError_Internal(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/auth/refresh", nil)
+	c.Request.AddCookie(&http.Cookie{Name: "refresh_token", Value: "token"})
+
+	mockAuth.On("Refresh", mock.Anything, mock.Anything).
+		Return(nil, status.Error(codes.Internal, "internal fail"))
+
+	api.RefreshHandler(c)
+
+	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
 }
 
 func TestLogoutHandler_MissingCookie(t *testing.T) {

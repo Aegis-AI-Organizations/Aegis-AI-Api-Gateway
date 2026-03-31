@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // LoginHandler handles user login and sets the refresh token cookie.
@@ -25,7 +27,14 @@ func (a *API) LoginHandler(c *gin.Context) {
 
 	resp, err := a.GRPCClient.Login(ctx, req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.Unauthenticated {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		} else if ok && st.Code() == codes.PermissionDenied {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Account forbidden"})
+		} else {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Authentication service unavailable"})
+		}
 		return
 	}
 
@@ -57,7 +66,12 @@ func (a *API) RefreshHandler(c *gin.Context) {
 
 	resp, err := a.GRPCClient.Refresh(ctx, refreshToken)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired refresh token"})
+		st, ok := status.FromError(err)
+		if ok && (st.Code() == codes.Unauthenticated || st.Code() == codes.PermissionDenied) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired refresh token"})
+		} else {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Authentication service unavailable"})
+		}
 		return
 	}
 
