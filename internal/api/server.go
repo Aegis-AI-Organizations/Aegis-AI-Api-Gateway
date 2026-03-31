@@ -6,11 +6,11 @@ import (
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(gc *grpc.Client) *gin.Engine {
+func NewRouter(gc *agrpc.Client) *gin.Engine {
 	r := gin.Default()
 
 	// Apply CORS middleware
@@ -20,33 +20,39 @@ func NewRouter(gc *grpc.Client) *gin.Engine {
 		GRPCClient: gc,
 	}
 
-	// Basic routes
+	// Basic public routes
 	r.GET("/health", h.HealthHandler)
 	r.GET("/", h.RootHandler)
 
-	// Auth routes
+	// Public Auth routes
 	r.POST("/auth/login", h.LoginHandler)
 	r.POST("/auth/refresh", h.RefreshHandler)
-	r.POST("/auth/logout", h.LogoutHandler)
 
-	// Scan routes
-	r.POST("/scans", h.CreateScanHandler)
-	r.GET("/scans", h.GetScansHandler)
-	r.GET("/scans/:id", h.GetScanByIDHandler)
-	r.GET("/scans/:id/vulnerabilities", h.GetVulnerabilitiesHandler)
-	r.GET("/scans/:id/report", h.GetScanReportHandler)
+	// Protected routes group
+	auth := r.Group("/")
+	auth.Use(middleware.AuthMiddleware())
+	{
+		auth.POST("/auth/logout", h.LogoutHandler)
 
-	// Vulnerability routes
-	r.GET("/vulnerabilities/:id/evidences", h.GetEvidencesHandler)
+		// Scan routes
+		auth.POST("/scans", h.CreateScanHandler)
+		auth.GET("/scans", h.GetScansHandler)
+		auth.GET("/scans/:id", h.GetScanByIDHandler)
+		auth.GET("/scans/:id/vulnerabilities", h.GetVulnerabilitiesHandler)
+		auth.GET("/scans/:id/report", h.GetScanReportHandler)
 
-	// Streaming routes
-	r.GET("/scans/stream", h.ScanStreamHandler)
-	r.GET("/scans/:id/stream", h.ScanStreamHandler)
+		// Vulnerability routes
+		auth.GET("/vulnerabilities/:id/evidences", h.GetEvidencesHandler)
+
+		// Streaming routes
+		auth.GET("/scans/stream", h.ScanStreamHandler)
+		auth.GET("/scans/:id/stream", h.ScanStreamHandler)
+	}
 
 	return r
 }
 
-func Start(gc *grpc.Client) {
+func Start(gc *agrpc.Client) {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

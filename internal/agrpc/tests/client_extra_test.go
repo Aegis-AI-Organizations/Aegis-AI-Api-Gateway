@@ -1,10 +1,10 @@
-package grpc_test
+package agrpc_test
 
 import (
 	"context"
 	"testing"
 
-	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
+	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	"github.com/stretchr/testify/assert"
 )
 

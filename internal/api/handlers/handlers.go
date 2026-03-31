@@ -3,13 +3,13 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	"github.com/gin-gonic/gin"
 )
 
 // API holds the core dependencies dynamically injected by our server initialization.
 type API struct {
-	GRPCClient *grpc.Client
+	GRPCClient *agrpc.Client
 }
 
 // HealthHandler returns a simple 200 OK status for Kubernetes liveness probes.

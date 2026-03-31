@@ -1,12 +1,13 @@
-package grpc
+package agrpc
 
 import (
 	"context"
 	"fmt"
 
-	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 type Client struct {
@@ -15,6 +16,27 @@ type Client struct {
 	ScanService          v1.ScanServiceClient
 	VulnerabilityService v1.VulnerabilityServiceClient
 	AuthService          v1.AuthServiceClient
+}
+
+// WithMetadata extracts identity claims from context and injects them into gRPC metadata.
+func WithMetadata(ctx context.Context) context.Context {
+	md := metadata.Pairs()
+
+	// Extract from context (matching keys in middleware/auth.go)
+	if userID, ok := ctx.Value("user_id").(string); ok {
+		md.Set("user-id", userID)
+	}
+	if companyID, ok := ctx.Value("company_id").(string); ok {
+		md.Set("company-id", companyID)
+	}
+	if role, ok := ctx.Value("role").(string); ok {
+		md.Set("role", role)
+	}
+
+	if md.Len() > 0 {
+		return metadata.NewOutgoingContext(ctx, md)
+	}
+	return ctx
 }
 
 func NewClient(addr string) (*Client, error) {
@@ -43,7 +65,7 @@ func (c *Client) Ping(ctx context.Context) (string, error) {
 	if c.PingService == nil {
 		return "", fmt.Errorf("ping service not initialized")
 	}
-	resp, err := c.PingService.Ping(ctx, &v1.PingRequest{})
+	resp, err := c.PingService.Ping(WithMetadata(ctx), &v1.PingRequest{})
 	if err != nil {
 		return "", err
 	}
@@ -54,7 +76,7 @@ func (c *Client) StartScan(ctx context.Context, image string) (*v1.StartScanResp
 	if c.ScanService == nil {
 		return nil, fmt.Errorf("scan service not initialized")
 	}
-	resp, err := c.ScanService.StartScan(ctx, &v1.StartScanRequest{TargetImage: image})
+	resp, err := c.ScanService.StartScan(WithMetadata(ctx), &v1.StartScanRequest{TargetImage: image})
 	if err != nil {
 		return nil, err
 	}
@@ -65,14 +87,14 @@ func (c *Client) GetScanStatus(ctx context.Context, scanID string) (*v1.GetScanS
 	if c.ScanService == nil {
 		return nil, fmt.Errorf("scan service not initialized")
 	}
-	return c.ScanService.GetScanStatus(ctx, &v1.GetScanStatusRequest{ScanId: scanID})
+	return c.ScanService.GetScanStatus(WithMetadata(ctx), &v1.GetScanStatusRequest{ScanId: scanID})
 }
 
 func (c *Client) ListScans(ctx context.Context) ([]*v1.ScanDetails, error) {
 	if c.ScanService == nil {
 		return nil, fmt.Errorf("scan service not initialized")
 	}
-	resp, err := c.ScanService.ListScans(ctx, &v1.ListScansRequest{})
+	resp, err := c.ScanService.ListScans(WithMetadata(ctx), &v1.ListScansRequest{})
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +105,7 @@ func (c *Client) GetScanReport(ctx context.Context, scanID string) ([]byte, erro
 	if c.ScanService == nil {
 		return nil, fmt.Errorf("scan service not initialized")
 	}
-	resp, err := c.ScanService.GetScanReport(ctx, &v1.GetScanReportRequest{ScanId: scanID})
+	resp, err := c.ScanService.GetScanReport(WithMetadata(ctx), &v1.GetScanReportRequest{ScanId: scanID})
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +116,7 @@ func (c *Client) GetVulnerabilities(ctx context.Context, scanID string) ([]*v1.V
 	if c.VulnerabilityService == nil {
 		return nil, fmt.Errorf("vulnerability service not initialized")
 	}
-	resp, err := c.VulnerabilityService.GetVulnerabilities(ctx, &v1.GetVulnerabilitiesRequest{ScanId: scanID})
+	resp, err := c.VulnerabilityService.GetVulnerabilities(WithMetadata(ctx), &v1.GetVulnerabilitiesRequest{ScanId: scanID})
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +127,7 @@ func (c *Client) GetEvidences(ctx context.Context, vulnID string) ([]*v1.Evidenc
 	if c.VulnerabilityService == nil {
 		return nil, fmt.Errorf("vulnerability service not initialized")
 	}
-	resp, err := c.VulnerabilityService.GetEvidences(ctx, &v1.GetEvidencesRequest{VulnerabilityId: vulnID})
+	resp, err := c.VulnerabilityService.GetEvidences(WithMetadata(ctx), &v1.GetEvidencesRequest{VulnerabilityId: vulnID})
 	if err != nil {
 		return nil, err
 	}
@@ -116,26 +138,26 @@ func (c *Client) WatchScanStatus(ctx context.Context, scanID string) (v1.ScanSer
 	if c.ScanService == nil {
 		return nil, fmt.Errorf("scan service not initialized")
 	}
-	return c.ScanService.WatchScanStatus(ctx, &v1.WatchScanStatusRequest{ScanId: scanID})
+	return c.ScanService.WatchScanStatus(WithMetadata(ctx), &v1.WatchScanStatusRequest{ScanId: scanID})
 }
 
 func (c *Client) Login(ctx context.Context, email, password string) (*v1.LoginResponse, error) {
 	if c.AuthService == nil {
 		return nil, fmt.Errorf("auth service not initialized")
 	}
-	return c.AuthService.Login(ctx, &v1.LoginRequest{Email: email, Password: password})
+	return c.AuthService.Login(WithMetadata(ctx), &v1.LoginRequest{Email: email, Password: password})
 }
 
 func (c *Client) Refresh(ctx context.Context, refreshToken string) (*v1.RefreshResponse, error) {
 	if c.AuthService == nil {
 		return nil, fmt.Errorf("auth service not initialized")
 	}
-	return c.AuthService.Refresh(ctx, &v1.RefreshRequest{RefreshToken: refreshToken})
+	return c.AuthService.Refresh(WithMetadata(ctx), &v1.RefreshRequest{RefreshToken: refreshToken})
 }
 
 func (c *Client) Logout(ctx context.Context, refreshToken string) (*v1.LogoutResponse, error) {
 	if c.AuthService == nil {
 		return nil, fmt.Errorf("auth service not initialized")
 	}
-	return c.AuthService.Logout(ctx, &v1.LogoutRequest{RefreshToken: refreshToken})
+	return c.AuthService.Logout(WithMetadata(ctx), &v1.LogoutRequest{RefreshToken: refreshToken})
 }
