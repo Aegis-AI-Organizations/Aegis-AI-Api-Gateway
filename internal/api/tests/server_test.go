@@ -21,7 +21,7 @@ import (
 // Helper to generate a test token
 func generateTestToken(secret string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":    "test-user",
+		"sub":        "test-user",
 		"company_id": "test-company",
 		"role":       "admin",
 	})

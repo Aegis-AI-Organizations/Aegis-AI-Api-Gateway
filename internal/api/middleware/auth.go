@@ -24,7 +24,11 @@ const (
 func AuthMiddleware() gin.HandlerFunc {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		fmt.Println("WARNING: JWT_SECRET not set in environment. Authentication will fail.")
+		fmt.Println("ERROR: JWT_SECRET not set in environment. All authenticated requests will fail.")
+		return func(c *gin.Context) {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Authentication service misconfigured"})
+			c.Abort()
+		}
 	}
 
 	return func(c *gin.Context) {
@@ -57,9 +61,16 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		userID, _ := claims["sub"].(string)
-		companyID, _ := claims["company_id"].(string)
-		role, _ := claims["role"].(string)
+
+		userID, ok1 := claims["sub"].(string)
+		companyID, ok2 := claims["company_id"].(string)
+		role, ok3 := claims["role"].(string)
+
+		if !ok1 || !ok2 || !ok3 || userID == "" || companyID == "" || role == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token missing required identity claims"})
+			c.Abort()
+			return
+		}
 
 		c.Set("user_id", userID)
 		c.Set("company_id", companyID)
