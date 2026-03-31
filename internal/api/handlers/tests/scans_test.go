@@ -262,7 +262,6 @@ func TestGetScanByIDHandler_EmptyID(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest("GET", "/scans/", nil)
-	// Params remain empty
 	api.GetScanByIDHandler(c)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
