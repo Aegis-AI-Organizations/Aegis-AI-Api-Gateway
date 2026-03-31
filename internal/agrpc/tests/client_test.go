@@ -1,12 +1,12 @@
-package grpc_test
+package agrpc_test
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
-	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
-	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
+	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"

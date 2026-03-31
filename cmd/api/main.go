@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api"
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 	if brainAddr == "" {
 		brainAddr = "localhost:50051"
 	}
-	gc, err := grpc.NewClient(brainAddr)
+	gc, err := agrpc.NewClient(brainAddr)
 	if err != nil {
 		log.Fatalf("Failed to connect to Brain gRPC: %v", err)
 	}
