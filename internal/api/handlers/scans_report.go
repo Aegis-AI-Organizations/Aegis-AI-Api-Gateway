@@ -46,7 +46,6 @@ func (a *API) GetScanReportHandler(c *gin.Context) {
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
 	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 
-	// Use ServeContent to support HTTP range requests and conditional responses
 	http.ServeContent(c.Writer, c.Request, fileName, time.Time{}, bytes.NewReader(pdfBytes))
 
 	log.Printf("✅ Drafted response for scan ID: %s", scanID)
