@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc/codes"
@@ -40,10 +42,12 @@ func (a *API) GetScanReportHandler(c *gin.Context) {
 
 	log.Printf("📤 Sending report PDF (%d bytes) for scan ID: %s", len(pdfBytes), scanID)
 
-	c.Header("Content-Type", "application/pdf")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"scan_report_%s.pdf\"", scanID))
+	fileName := fmt.Sprintf("scan_report_%s.pdf", scanID)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
 	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
-	c.Data(http.StatusOK, "application/pdf", pdfBytes)
+
+	// Use ServeContent to support HTTP range requests and conditional responses
+	http.ServeContent(c.Writer, c.Request, fileName, time.Time{}, bytes.NewReader(pdfBytes))
 
 	log.Printf("✅ Drafted response for scan ID: %s", scanID)
 }

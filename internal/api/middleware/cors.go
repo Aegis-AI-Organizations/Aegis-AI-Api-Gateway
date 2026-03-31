@@ -12,20 +12,22 @@ import (
 // handles OPTIONS preflight requests so the browser can call the API from
 // a different origin (e.g. app.aegis.pre-alpha.local → api.aegis.pre-alpha.local).
 func CORSMiddleware() gin.HandlerFunc {
-	// Default allowed origins for development
-	allowedOrigins := []string{
-		"http://localhost:3000",
-		"http://app.aegis.pre-alpha.local",
-		"https://app.aegis.pre-alpha.local",
-	}
+	var allowedOrigins []string
 
-	// Load from environment if available
+	// Load from environment if available (Overrides defaults)
 	if envOrigins := os.Getenv("ALLOWED_ORIGINS"); envOrigins != "" {
 		for _, o := range strings.Split(envOrigins, ",") {
 			trimmed := strings.TrimSpace(o)
 			if trimmed != "" {
 				allowedOrigins = append(allowedOrigins, trimmed)
 			}
+		}
+	} else {
+		// Default allowed origins for development if NO override provided
+		allowedOrigins = []string{
+			"http://localhost:3000",
+			"http://app.aegis.pre-alpha.local",
+			"https://app.aegis.pre-alpha.local",
 		}
 	}
 

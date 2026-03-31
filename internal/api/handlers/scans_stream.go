@@ -24,6 +24,13 @@ func (a *API) ScanStreamHandler(c *gin.Context) {
 		return
 	}
 
+	// Set standard SSE headers before starting the stream
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Header("Transfer-Encoding", "chunked")
+	c.Header("X-Accel-Buffering", "no")
+
 	c.Stream(func(w io.Writer) bool {
 		resp, err := stream.Recv()
 		if err != nil {
