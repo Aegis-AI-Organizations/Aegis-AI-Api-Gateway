@@ -9,13 +9,25 @@ import (
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/testutils"
-	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc"
-	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/grpc/aegis/v2"
+	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
+
+// Helper to generate a test token
+func generateTestToken(secret string) string {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub":        "test-user",
+		"company_id": "test-company",
+		"role":       "admin",
+	})
+	tokenString, _ := token.SignedString([]byte(secret))
+	return tokenString
+}
 
 type MockScanServiceClient struct {
 	mock.Mock
@@ -80,6 +92,10 @@ func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest
 
 
 func TestNewRouterFull(t *testing.T) {
+	testSecret := "test-secret-123"
+	t.Setenv("JWT_SECRET", testSecret)
+	token := generateTestToken(testSecret)
+
 	dummyClient := &agrpc.Client{
 		ScanService:          &MockScanServiceClient{},
 		VulnerabilityService: &MockVulnerabilityServiceClient{},
@@ -88,20 +104,21 @@ func TestNewRouterFull(t *testing.T) {
 	mux := api.NewRouter(dummyClient)
 
 	tests := []struct {
-		method string
-		path   string
-		code   int
+		method    string
+		path      string
+		code      int
+		protected bool
 	}{
-		{"GET", "/health", http.StatusOK},
-		{"GET", "/", http.StatusOK},
-		{"POST", "/scans", http.StatusCreated}, // Mock returns success
-		{"GET", "/scans", http.StatusOK},
-		{"GET", "/scans/1", http.StatusOK},
-		{"GET", "/scans/1/vulnerabilities", http.StatusOK},
-		{"GET", "/vulnerabilities/1/evidences", http.StatusOK},
-		{"GET", "/scans/1/report", http.StatusOK},
-		{"GET", "/scans/stream", http.StatusOK},
-		{"GET", "/scans/1/stream", http.StatusOK},
+		{"GET", "/health", http.StatusOK, false},
+		{"GET", "/", http.StatusOK, false},
+		{"POST", "/scans", http.StatusCreated, true},
+		{"GET", "/scans", http.StatusOK, true},
+		{"GET", "/scans/1", http.StatusOK, true},
+		{"GET", "/scans/1/vulnerabilities", http.StatusOK, true},
+		{"GET", "/vulnerabilities/1/evidences", http.StatusOK, true},
+		{"GET", "/scans/1/report", http.StatusOK, true},
+		{"GET", "/scans/stream", http.StatusOK, true},
+		{"GET", "/scans/1/stream", http.StatusOK, true},
 	}
 
 	for _, tt := range tests {
@@ -110,6 +127,10 @@ func TestNewRouterFull(t *testing.T) {
 			body = []byte(`{"target_image":"test"}`)
 		}
 		req, _ := http.NewRequest(tt.method, tt.path, bytes.NewBuffer(body))
+		if tt.protected {
+			req.Header.Set("Authorization", "Bearer "+token)
+		}
+
 		rr := testutils.NewCloseNotifierRecorder()
 		mux.ServeHTTP(rr, req)
 		assert.NotEqual(t, http.StatusNotFound, rr.Code, "Path %s %s should be registered", tt.method, tt.path)
