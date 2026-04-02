@@ -171,13 +171,15 @@ func (x *GetScanStatusRequest) GetScanId() string {
 }
 
 type GetScanStatusResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ScanId        string                 `protobuf:"bytes,1,opt,name=scan_id,json=scanId,proto3" json:"scan_id,omitempty"`
-	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	StartedAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
-	CompletedAt   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	ScanId             string                 `protobuf:"bytes,1,opt,name=scan_id,json=scanId,proto3" json:"scan_id,omitempty"`
+	Status             string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	StartedAt          *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
+	CompletedAt        *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	TemporalWorkflowId string                 `protobuf:"bytes,5,opt,name=temporal_workflow_id,json=temporalWorkflowId,proto3" json:"temporal_workflow_id,omitempty"`
+	TargetImage        string                 `protobuf:"bytes,6,opt,name=target_image,json=targetImage,proto3" json:"target_image,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *GetScanStatusResponse) Reset() {
@@ -236,6 +238,20 @@ func (x *GetScanStatusResponse) GetCompletedAt() *timestamppb.Timestamp {
 		return x.CompletedAt
 	}
 	return nil
+}
+
+func (x *GetScanStatusResponse) GetTemporalWorkflowId() string {
+	if x != nil {
+		return x.TemporalWorkflowId
+	}
+	return ""
+}
+
+func (x *GetScanStatusResponse) GetTargetImage() string {
+	if x != nil {
+		return x.TargetImage
+	}
+	return ""
 }
 
 type ListScansRequest struct {
@@ -599,13 +615,15 @@ const file_aegis_v2_scan_proto_rawDesc = "" +
 	"\n" +
 	"started_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\"/\n" +
 	"\x14GetScanStatusRequest\x12\x17\n" +
-	"\ascan_id\x18\x01 \x01(\tR\x06scanId\"\xc2\x01\n" +
+	"\ascan_id\x18\x01 \x01(\tR\x06scanId\"\x97\x02\n" +
 	"\x15GetScanStatusResponse\x12\x17\n" +
 	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x129\n" +
 	"\n" +
 	"started_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
-	"\fcompleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\"\x12\n" +
+	"\fcompleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\x120\n" +
+	"\x14temporal_workflow_id\x18\x05 \x01(\tR\x12temporalWorkflowId\x12!\n" +
+	"\ftarget_image\x18\x06 \x01(\tR\vtargetImage\"\x12\n" +
 	"\x10ListScansRequest\"\x8d\x02\n" +
 	"\vScanDetails\x12\x17\n" +
 	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x120\n" +
