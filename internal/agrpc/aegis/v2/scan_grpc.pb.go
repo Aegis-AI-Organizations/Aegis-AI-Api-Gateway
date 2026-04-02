@@ -29,11 +29,18 @@ const (
 // ScanServiceClient is the client API for ScanService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ScanService handles orchestration of security scans.
 type ScanServiceClient interface {
+	// StartScan initiates a new security scan for a target image.
 	StartScan(ctx context.Context, in *StartScanRequest, opts ...grpc.CallOption) (*StartScanResponse, error)
+	// GetScanStatus returns the current status and timing of a scan.
 	GetScanStatus(ctx context.Context, in *GetScanStatusRequest, opts ...grpc.CallOption) (*GetScanStatusResponse, error)
+	// ListScans retrieves a history of all scans.
 	ListScans(ctx context.Context, in *ListScansRequest, opts ...grpc.CallOption) (*ListScansResponse, error)
+	// GetScanReport returns the PDF report data for a completed scan.
 	GetScanReport(ctx context.Context, in *GetScanReportRequest, opts ...grpc.CallOption) (*GetScanReportResponse, error)
+	// WatchScanStatus provides a stream of scan status updates.
 	WatchScanStatus(ctx context.Context, in *WatchScanStatusRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchScanStatusResponse], error)
 }
 
@@ -107,11 +114,18 @@ type ScanService_WatchScanStatusClient = grpc.ServerStreamingClient[WatchScanSta
 // ScanServiceServer is the server API for ScanService service.
 // All implementations must embed UnimplementedScanServiceServer
 // for forward compatibility.
+//
+// ScanService handles orchestration of security scans.
 type ScanServiceServer interface {
+	// StartScan initiates a new security scan for a target image.
 	StartScan(context.Context, *StartScanRequest) (*StartScanResponse, error)
+	// GetScanStatus returns the current status and timing of a scan.
 	GetScanStatus(context.Context, *GetScanStatusRequest) (*GetScanStatusResponse, error)
+	// ListScans retrieves a history of all scans.
 	ListScans(context.Context, *ListScansRequest) (*ListScansResponse, error)
+	// GetScanReport returns the PDF report data for a completed scan.
 	GetScanReport(context.Context, *GetScanReportRequest) (*GetScanReportResponse, error)
+	// WatchScanStatus provides a stream of scan status updates.
 	WatchScanStatus(*WatchScanStatusRequest, grpc.ServerStreamingServer[WatchScanStatusResponse]) error
 	mustEmbedUnimplementedScanServiceServer()
 }

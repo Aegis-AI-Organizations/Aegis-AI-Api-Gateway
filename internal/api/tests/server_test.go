@@ -89,6 +89,9 @@ func (m *MockAuthServiceClient) Refresh(ctx context.Context, in *v1.RefreshReque
 func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest, opts ...grpc.CallOption) (*v1.LogoutResponse, error) {
 	return &v1.LogoutResponse{Success: true}, nil
 }
+func (m *MockAuthServiceClient) GetMe(ctx context.Context, in *v1.GetMeRequest, opts ...grpc.CallOption) (*v1.GetMeResponse, error) {
+	return &v1.GetMeResponse{}, nil
+}
 
 
 func TestNewRouterFull(t *testing.T) {
