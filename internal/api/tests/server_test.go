@@ -23,7 +23,7 @@ func generateTestToken(secret string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":        "test-user",
 		"company_id": "test-company",
-		"role":       "admin",
+		"role":       "superadmin",
 	})
 	tokenString, _ := token.SignedString([]byte(secret))
 	return tokenString
@@ -88,6 +88,9 @@ func (m *MockAuthServiceClient) Refresh(ctx context.Context, in *v1.RefreshReque
 }
 func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest, opts ...grpc.CallOption) (*v1.LogoutResponse, error) {
 	return &v1.LogoutResponse{Success: true}, nil
+}
+func (m *MockAuthServiceClient) GetMe(ctx context.Context, in *v1.GetMeRequest, opts ...grpc.CallOption) (*v1.GetMeResponse, error) {
+	return &v1.GetMeResponse{}, nil
 }
 
 

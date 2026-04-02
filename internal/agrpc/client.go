@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -22,15 +23,18 @@ type Client struct {
 func WithMetadata(ctx context.Context) context.Context {
 	md := metadata.Pairs()
 
-	// Extract from context (matching keys in middleware/auth.go)
-	if userID, ok := ctx.Value("user_id").(string); ok {
+	// Extract from context (matching strongly-typed keys in middleware/auth.go)
+	if userID, ok := ctx.Value(middleware.UserIDKey).(string); ok {
 		md.Set("user-id", userID)
 	}
-	if companyID, ok := ctx.Value("company_id").(string); ok {
+	if companyID, ok := ctx.Value(middleware.CompanyIDKey).(string); ok {
 		md.Set("company-id", companyID)
 	}
-	if role, ok := ctx.Value("role").(string); ok {
+	if role, ok := ctx.Value(middleware.RoleKey).(string); ok {
 		md.Set("role", role)
+	}
+	if token, ok := ctx.Value(middleware.TokenKey).(string); ok {
+		md.Set("authorization", "Bearer "+token)
 	}
 
 	if md.Len() > 0 {
@@ -160,4 +164,11 @@ func (c *Client) Logout(ctx context.Context, refreshToken string) (*v1.LogoutRes
 		return nil, fmt.Errorf("auth service not initialized")
 	}
 	return c.AuthService.Logout(WithMetadata(ctx), &v1.LogoutRequest{RefreshToken: refreshToken})
+}
+
+func (c *Client) GetMe(ctx context.Context) (*v1.GetMeResponse, error) {
+	if c.AuthService == nil {
+		return nil, fmt.Errorf("auth service not initialized")
+	}
+	return c.AuthService.GetMe(WithMetadata(ctx), &v1.GetMeRequest{})
 }

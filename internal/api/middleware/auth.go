@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 )
 
 // ContextKey defines the type for storing values in the standard context.
@@ -18,6 +19,7 @@ const (
 	UserIDKey    ContextKey = "user_id"
 	CompanyIDKey ContextKey = "company_id"
 	RoleKey      ContextKey = "role"
+	TokenKey     ContextKey = "token"
 )
 
 // AuthMiddleware validates the JWT token and injects claims into context.
@@ -75,12 +77,44 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Set("user_id", userID)
 		c.Set("company_id", companyID)
 		c.Set("role", role)
+		c.Set("token", tokenString)
 
 		ctx := c.Request.Context()
 		ctx = context.WithValue(ctx, UserIDKey, userID)
 		ctx = context.WithValue(ctx, CompanyIDKey, companyID)
 		ctx = context.WithValue(ctx, RoleKey, role)
+		ctx = context.WithValue(ctx, TokenKey, tokenString)
 		c.Request = c.Request.WithContext(ctx)
+
+		c.Next()
+	}
+}
+
+// RequirePermission validates that the current user (authenticated) has the necessary scope.
+func RequirePermission(requiredScope string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		roleValue, exists := c.Get("role")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+			c.Abort()
+			return
+		}
+
+		role, ok := roleValue.(string)
+		if !ok || role == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid role in identity"})
+			c.Abort()
+			return
+		}
+
+		if !HasScope(types.UserRole(role), requiredScope) {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "Forbidden: missing required permission",
+				"scope": requiredScope,
+			})
+			c.Abort()
+			return
+		}
 
 		c.Next()
 	}

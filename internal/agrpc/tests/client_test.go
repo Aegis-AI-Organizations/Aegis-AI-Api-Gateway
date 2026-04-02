@@ -95,6 +95,14 @@ func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest
 	return args.Get(0).(*v1.LogoutResponse), args.Error(1)
 }
 
+func (m *MockAuthServiceClient) GetMe(ctx context.Context, in *v1.GetMeRequest, opts ...grpc.CallOption) (*v1.GetMeResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetMeResponse), args.Error(1)
+}
+
 func TestClient_Ping(t *testing.T) {
 	mockPing := new(MockPingServiceClient)
 	client := &agrpc.Client{
