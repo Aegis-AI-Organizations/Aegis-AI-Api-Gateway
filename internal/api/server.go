@@ -33,6 +33,7 @@ func NewRouter(gc *agrpc.Client) *gin.Engine {
 	auth.Use(middleware.AuthMiddleware())
 	{
 		auth.POST("/auth/logout", h.LogoutHandler)
+		auth.GET("/auth/me", h.GetMeHandler)
 
 		// Scan routes
 		auth.POST("/scans", h.CreateScanHandler)
