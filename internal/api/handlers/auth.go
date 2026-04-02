@@ -100,3 +100,24 @@ func (a *API) LogoutHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
+
+// GetMeHandler retrieves the current user's profile information.
+func (a *API) GetMeHandler(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := a.GRPCClient.GetMe(ctx)
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.NotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		} else if ok && st.Code() == codes.Unauthenticated {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		} else {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Authentication service unavailable"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
