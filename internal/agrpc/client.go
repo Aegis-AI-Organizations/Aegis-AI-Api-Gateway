@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"time"
+
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"google.golang.org/grpc"
@@ -46,11 +47,10 @@ func WithMetadata(ctx context.Context) context.Context {
 }
 
 func NewClient(addr string) (*Client, error) {
-	// Configure gRPC keepalive for long-lived streams (SSE)
 	kpc := keepalive.ClientParameters{
-		Time:                10 * time.Second, // Send pings every 10 seconds if there's no activity
-		Timeout:             5 * time.Second,  // Wait 5 seconds for a response before closing
-		PermitWithoutStream: true,             // Send pings even without active streams
+		Time:                10 * time.Second,
+		Timeout:             5 * time.Second,
+		PermitWithoutStream: true,
 	}
 
 	conn, err := grpc.NewClient(
