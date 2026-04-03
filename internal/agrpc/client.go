@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"time"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -44,7 +46,18 @@ func WithMetadata(ctx context.Context) context.Context {
 }
 
 func NewClient(addr string) (*Client, error) {
-	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// Configure gRPC keepalive for long-lived streams (SSE)
+	kpc := keepalive.ClientParameters{
+		Time:                10 * time.Second, // Send pings every 10 seconds if there's no activity
+		Timeout:             5 * time.Second,  // Wait 5 seconds for a response before closing
+		PermitWithoutStream: true,             // Send pings even without active streams
+	}
+
+	conn, err := grpc.NewClient(
+		addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithKeepaliveParams(kpc),
+	)
 	if err != nil {
 		return nil, err
 	}
