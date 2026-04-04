@@ -2,13 +2,16 @@ package agrpc
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
-
+	"os"
 	"time"
 
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
@@ -20,6 +23,15 @@ type Client struct {
 	ScanService          v1.ScanServiceClient
 	VulnerabilityService v1.VulnerabilityServiceClient
 	AuthService          v1.AuthServiceClient
+}
+
+// TLSConfig holds the paths to the certificates for mTLS.
+type TLSConfig struct {
+	Enable   bool
+	CAPath   string
+	CertPath string
+	KeyPath  string
+	ServerName string
 }
 
 // WithMetadata extracts identity claims from context and injects them into gRPC metadata.
@@ -46,16 +58,47 @@ func WithMetadata(ctx context.Context) context.Context {
 	return ctx
 }
 
-func NewClient(addr string) (*Client, error) {
+func NewClient(addr string, tlsConf TLSConfig) (*Client, error) {
 	kpc := keepalive.ClientParameters{
 		Time:                10 * time.Second,
 		Timeout:             5 * time.Second,
 		PermitWithoutStream: true,
 	}
 
+	var creds credentials.TransportCredentials
+	if tlsConf.Enable {
+		tlsConfig := &tls.Config{
+			ServerName: tlsConf.ServerName,
+		}
+
+		// Load CA
+		caCert, err := os.ReadFile(tlsConf.CAPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read CA cert: %v", err)
+		}
+		caCertPool := x509.NewCertPool()
+		if !caCertPool.AppendCertsFromPEM(caCert) {
+			return nil, fmt.Errorf("failed to append CA cert")
+		}
+		tlsConfig.RootCAs = caCertPool
+
+		// Load Client Cert/Key for mTLS
+		if tlsConf.CertPath != "" && tlsConf.KeyPath != "" {
+			clientCert, err := tls.LoadX509KeyPair(tlsConf.CertPath, tlsConf.KeyPath)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load client cert/key: %v", err)
+			}
+			tlsConfig.Certificates = []tls.Certificate{clientCert}
+		}
+
+		creds = credentials.NewTLS(tlsConfig)
+	} else {
+		creds = insecure.NewCredentials()
+	}
+
 	conn, err := grpc.NewClient(
 		addr,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(creds),
 		grpc.WithKeepaliveParams(kpc),
 	)
 	if err != nil {
