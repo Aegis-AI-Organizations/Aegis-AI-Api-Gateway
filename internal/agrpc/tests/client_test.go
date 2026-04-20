@@ -103,6 +103,50 @@ func (m *MockAuthServiceClient) GetMe(ctx context.Context, in *v1.GetMeRequest, 
 	return args.Get(0).(*v1.GetMeResponse), args.Error(1)
 }
 
+func (m *MockAuthServiceClient) UpdateProfile(ctx context.Context, in *v1.UpdateProfileRequest, opts ...grpc.CallOption) (*v1.UpdateProfileResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdateProfileResponse), args.Error(1)
+}
+
+func (m *MockAuthServiceClient) UpdateEmail(ctx context.Context, in *v1.UpdateEmailRequest, opts ...grpc.CallOption) (*v1.UpdateEmailResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdateEmailResponse), args.Error(1)
+}
+
+func (m *MockAuthServiceClient) UpdatePassword(ctx context.Context, in *v1.UpdatePasswordRequest, opts ...grpc.CallOption) (*v1.UpdatePasswordResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdatePasswordResponse), args.Error(1)
+}
+
+type MockCompanyServiceClient struct {
+	mock.Mock
+}
+
+func (m *MockCompanyServiceClient) CreateCompany(ctx context.Context, in *v1.CreateCompanyRequest, opts ...grpc.CallOption) (*v1.CreateCompanyResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.CreateCompanyResponse), args.Error(1)
+}
+
+func (m *MockCompanyServiceClient) ListCompanies(ctx context.Context, in *v1.ListCompaniesRequest, opts ...grpc.CallOption) (*v1.ListCompaniesResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.ListCompaniesResponse), args.Error(1)
+}
+
 func TestClient_Ping(t *testing.T) {
 	mockPing := new(MockPingServiceClient)
 	client := &agrpc.Client{

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -88,6 +89,36 @@ func AuthMiddleware() gin.HandlerFunc {
 		ctx = context.WithValue(ctx, RoleKey, role)
 		ctx = context.WithValue(ctx, TokenKey, tokenString)
 		c.Request = c.Request.WithContext(ctx)
+
+		c.Next()
+	}
+}
+
+// RequirePermission validates that the current user (authenticated) has the necessary scope.
+func RequirePermission(requiredScope string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		roleValue, exists := c.Get("role")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+			c.Abort()
+			return
+		}
+
+		role, ok := roleValue.(string)
+		if !ok || role == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid role in identity"})
+			c.Abort()
+			return
+		}
+
+		if !HasScope(types.UserRole(role), requiredScope) {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "Forbidden: missing required permission",
+				"scope": requiredScope,
+			})
+			c.Abort()
+			return
+		}
 
 		c.Next()
 	}

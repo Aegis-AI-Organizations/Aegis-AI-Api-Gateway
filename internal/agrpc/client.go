@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
-	"time"
 
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
@@ -23,6 +22,7 @@ type Client struct {
 	ScanService          v1.ScanServiceClient
 	VulnerabilityService v1.VulnerabilityServiceClient
 	AuthService          v1.AuthServiceClient
+	CompanyService       v1.CompanyServiceClient
 }
 
 // TLSConfig holds the paths to the certificates for mTLS.
@@ -58,49 +58,28 @@ func WithMetadata(ctx context.Context) context.Context {
 	return ctx
 }
 
-func NewClient(addr string, tlsConf TLSConfig) (*Client, error) {
+func NewClient(addr string, conf TLSConfig) (*Client, error) {
+	var opts []grpc.DialOption
+
+	// Add keepalive parameters
 	kpc := keepalive.ClientParameters{
-		Time:                10 * time.Second,
-		Timeout:             5 * time.Second,
+		Time:                10 * 1000000000, // 10s
+		Timeout:             20 * 1000000000, // 20s
 		PermitWithoutStream: true,
 	}
+	opts = append(opts, grpc.WithKeepaliveParams(kpc))
 
-	var creds credentials.TransportCredentials
-	if tlsConf.Enable {
-		tlsConfig := &tls.Config{
-			ServerName: tlsConf.ServerName,
-		}
-
-		// Load CA
-		caCert, err := os.ReadFile(tlsConf.CAPath)
+	if conf.Enable {
+		creds, err := loadTLSCredentials(conf)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read CA cert: %v", err)
+			return nil, fmt.Errorf("failed to load TLS credentials: %w", err)
 		}
-		caCertPool := x509.NewCertPool()
-		if !caCertPool.AppendCertsFromPEM(caCert) {
-			return nil, fmt.Errorf("failed to append CA cert")
-		}
-		tlsConfig.RootCAs = caCertPool
-
-		// Load Client Cert/Key for mTLS
-		if tlsConf.CertPath != "" && tlsConf.KeyPath != "" {
-			clientCert, err := tls.LoadX509KeyPair(tlsConf.CertPath, tlsConf.KeyPath)
-			if err != nil {
-				return nil, fmt.Errorf("failed to load client cert/key: %v", err)
-			}
-			tlsConfig.Certificates = []tls.Certificate{clientCert}
-		}
-
-		creds = credentials.NewTLS(tlsConfig)
+		opts = append(opts, grpc.WithTransportCredentials(creds))
 	} else {
-		creds = insecure.NewCredentials()
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	conn, err := grpc.NewClient(
-		addr,
-		grpc.WithTransportCredentials(creds),
-		grpc.WithKeepaliveParams(kpc),
-	)
+	conn, err := grpc.NewClient(addr, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +90,39 @@ func NewClient(addr string, tlsConf TLSConfig) (*Client, error) {
 		ScanService:          v1.NewScanServiceClient(conn),
 		VulnerabilityService: v1.NewVulnerabilityServiceClient(conn),
 		AuthService:          v1.NewAuthServiceClient(conn),
+		CompanyService:       v1.NewCompanyServiceClient(conn),
 	}, nil
+}
+
+func loadTLSCredentials(conf TLSConfig) (credentials.TransportCredentials, error) {
+	// Load certificate of the CA who signed server's certificate
+	pemServerCA, err := os.ReadFile(conf.CAPath)
+	if err != nil {
+		return nil, err
+	}
+
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(pemServerCA) {
+		return nil, fmt.Errorf("failed to add server CA's certificate")
+	}
+
+	// Load client's certificate and private key
+	clientCert, err := tls.LoadX509KeyPair(conf.CertPath, conf.KeyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the credentials and return it
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{clientCert},
+		RootCAs:      certPool,
+	}
+
+	if conf.ServerName != "" {
+		tlsConfig.ServerName = conf.ServerName
+	}
+
+	return credentials.NewTLS(tlsConfig), nil
 }
 
 func (c *Client) Close() error {
@@ -227,4 +238,43 @@ func (c *Client) GetMe(ctx context.Context) (*v1.GetMeResponse, error) {
 		return nil, fmt.Errorf("auth service not initialized")
 	}
 	return c.AuthService.GetMe(WithMetadata(ctx), &v1.GetMeRequest{})
+}
+
+func (c *Client) UpdateProfile(ctx context.Context, name string) (*v1.UpdateProfileResponse, error) {
+	if c.AuthService == nil {
+		return nil, fmt.Errorf("auth service not initialized")
+	}
+	return c.AuthService.UpdateProfile(WithMetadata(ctx), &v1.UpdateProfileRequest{Name: name})
+}
+
+func (c *Client) UpdateEmail(ctx context.Context, newEmail string) (*v1.UpdateEmailResponse, error) {
+	if c.AuthService == nil {
+		return nil, fmt.Errorf("auth service not initialized")
+	}
+	return c.AuthService.UpdateEmail(WithMetadata(ctx), &v1.UpdateEmailRequest{NewEmail: newEmail})
+}
+
+func (c *Client) UpdatePassword(ctx context.Context, oldPwd, newPwd string) (*v1.UpdatePasswordResponse, error) {
+	if c.AuthService == nil {
+		return nil, fmt.Errorf("auth service not initialized")
+	}
+	return c.AuthService.UpdatePassword(WithMetadata(ctx), &v1.UpdatePasswordRequest{OldPassword: oldPwd, NewPassword: newPwd})
+}
+
+func (c *Client) CreateCompany(ctx context.Context, name, ownerEmail string) (*v1.CreateCompanyResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	return c.CompanyService.CreateCompany(WithMetadata(ctx), &v1.CreateCompanyRequest{Name: name, OwnerEmail: ownerEmail})
+}
+
+func (c *Client) ListCompanies(ctx context.Context) ([]*v1.CompanySummary, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	resp, err := c.CompanyService.ListCompanies(WithMetadata(ctx), &v1.ListCompaniesRequest{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Companies, nil
 }
