@@ -8,9 +8,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -306,4 +306,72 @@ func TestLogoutHandler_MissingCookie(t *testing.T) {
 	api.LogoutHandler(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestGetMeHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/auth/me", nil)
+
+	mockAuth.On("GetMe", mock.Anything, &v1.GetMeRequest{}).
+		Return(&v1.GetMeResponse{Id: "u1", Name: "Test User", Email: "test@e.com"}, nil)
+
+	api.GetMeHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "u1", resp["id"])
+	assert.Equal(t, "Test User", resp["name"])
+}
+
+func TestGetMeHandler_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/auth/me", nil)
+
+	mockAuth.On("GetMe", mock.Anything, mock.Anything).
+		Return(nil, status.Error(codes.NotFound, "not found"))
+
+	api.GetMeHandler(c)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestGetMeHandler_GRPCError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/auth/me", nil)
+
+	mockAuth.On("GetMe", mock.Anything, mock.Anything).
+		Return(nil, status.Error(codes.Internal, "fail"))
+
+	api.GetMeHandler(c)
+
+	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
 }

@@ -309,10 +309,92 @@ func TestClient_NilServices(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestClient_UpdateMethods(t *testing.T) {
+	mockAuth := new(MockAuthServiceClient)
+	client := &agrpc.Client{
+		AuthService: mockAuth,
+	}
+
+	ctx := context.Background()
+
+	// UpdateProfile
+	mockAuth.On("UpdateProfile", ctx, &v1.UpdateProfileRequest{Name: "New"}).
+		Return(&v1.UpdateProfileResponse{Success: true}, nil)
+	respP, err := client.UpdateProfile(ctx, "New")
+	assert.NoError(t, err)
+	assert.True(t, respP.Success)
+
+	// UpdateEmail
+	mockAuth.On("UpdateEmail", ctx, &v1.UpdateEmailRequest{NewEmail: "new@e.com"}).
+		Return(&v1.UpdateEmailResponse{Success: true}, nil)
+	respE, err := client.UpdateEmail(ctx, "new@e.com")
+	assert.NoError(t, err)
+	assert.True(t, respE.Success)
+
+	// UpdatePassword
+	mockAuth.On("UpdatePassword", ctx, &v1.UpdatePasswordRequest{OldPassword: "o", NewPassword: "n"}).
+		Return(&v1.UpdatePasswordResponse{Success: true}, nil)
+	respW, err := client.UpdatePassword(ctx, "o", "n")
+	assert.NoError(t, err)
+	assert.True(t, respW.Success)
+}
+
+func TestClient_CompanyMethods(t *testing.T) {
+	mockCompany := new(MockCompanyServiceClient)
+	client := &agrpc.Client{
+		CompanyService: mockCompany,
+	}
+
+	ctx := context.Background()
+
+	// CreateCompany
+	mockCompany.On("CreateCompany", ctx, &v1.CreateCompanyRequest{Name: "C", OwnerEmail: "e"}).
+		Return(&v1.CreateCompanyResponse{Id: "id", Name: "C"}, nil)
+	respC, err := client.CreateCompany(ctx, "C", "e")
+	assert.NoError(t, err)
+	assert.Equal(t, "id", respC.Id)
+
+	// ListCompanies
+	mockCompany.On("ListCompanies", ctx, &v1.ListCompaniesRequest{}).
+		Return(&v1.ListCompaniesResponse{Companies: []*v1.CompanySummary{}}, nil)
+	respL, err := client.ListCompanies(ctx)
+	assert.NoError(t, err)
+	assert.Len(t, respL, 0)
+}
+
 func TestNewClient(t *testing.T) {
 	// Should succeed in creating the structure even if connection is lazy/not established yet
 	c, err := agrpc.NewClient("localhost:1234", agrpc.TLSConfig{})
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	defer func() { _ = c.Close() }()
+}
+
+func TestClient_GetMe(t *testing.T) {
+	mockAuth := new(MockAuthServiceClient)
+	client := &agrpc.Client{
+		AuthService: mockAuth,
+	}
+
+	ctx := context.Background()
+	mockAuth.On("GetMe", mock.Anything, &v1.GetMeRequest{}).
+		Return(&v1.GetMeResponse{Id: "u1"}, nil)
+
+	resp, err := client.GetMe(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, "u1", resp.Id)
+}
+
+func TestClient_TLSLoading_Error(t *testing.T) {
+	// Provide invalid paths to trigger errors in loadTLSCredentials
+	conf := agrpc.TLSConfig{
+		Enable:   true,
+		CAPath:   "nonexistent_ca",
+		CertPath: "nonexistent_cert",
+		KeyPath:  "nonexistent_key",
+	}
+
+	_, err := agrpc.NewClient("localhost:1234", conf)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to load TLS credentials")
 }
