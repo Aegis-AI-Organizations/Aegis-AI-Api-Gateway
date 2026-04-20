@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -22,6 +23,15 @@ type Client struct {
 	VulnerabilityService v1.VulnerabilityServiceClient
 	AuthService          v1.AuthServiceClient
 	CompanyService       v1.CompanyServiceClient
+}
+
+// TLSConfig holds the paths to the certificates for mTLS.
+type TLSConfig struct {
+	Enable   bool
+	CAPath   string
+	CertPath string
+	KeyPath  string
+	ServerName string
 }
 
 // WithMetadata extracts identity claims from context and injects them into gRPC metadata.
