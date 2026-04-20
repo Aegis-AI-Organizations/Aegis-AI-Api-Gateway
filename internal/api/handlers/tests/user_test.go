@@ -120,7 +120,7 @@ func TestUpdatePasswordHandler_Success(t *testing.T) {
 
 	payload := map[string]string{
 		"old_password": "correct",
-		"new_password": "verysecret123",
+		"new_password": "AegisSecur1ty!",
 	}
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()
@@ -129,7 +129,7 @@ func TestUpdatePasswordHandler_Success(t *testing.T) {
 
 	mockAuth.On("UpdatePassword", mock.Anything, &v1.UpdatePasswordRequest{
 		OldPassword: "correct",
-		NewPassword: "verysecret123",
+		NewPassword: "AegisSecur1ty!",
 	}).Return(&v1.UpdatePasswordResponse{Success: true}, nil)
 
 	api.UpdatePasswordHandler(c)
@@ -148,7 +148,7 @@ func TestUpdatePasswordHandler_WrongPassword(t *testing.T) {
 
 	payload := map[string]string{
 		"old_password": "wrong",
-		"new_password": "verysecret123",
+		"new_password": "AegisSecur1ty!",
 	}
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()
@@ -157,7 +157,7 @@ func TestUpdatePasswordHandler_WrongPassword(t *testing.T) {
 
 	mockAuth.On("UpdatePassword", mock.Anything, &v1.UpdatePasswordRequest{
 		OldPassword: "wrong",
-		NewPassword: "verysecret123",
+		NewPassword: "AegisSecur1ty!",
 	}).Return(nil, status.Error(codes.Unauthenticated, "wrong password"))
 
 	api.UpdatePasswordHandler(c)
