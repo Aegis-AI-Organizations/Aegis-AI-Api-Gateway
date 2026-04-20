@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 )
 
 // ContextKey defines the type for storing values in the standard context.

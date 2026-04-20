@@ -58,11 +58,19 @@ func WithMetadata(ctx context.Context) context.Context {
 	return ctx
 }
 
-func NewClient(addr string) (*Client, error) {
+func NewClient(addr string, conf TLSConfig) (*Client, error) {
 	var opts []grpc.DialOption
 
-	if os.Getenv("GATEWAY_TLS_ENABLE") == "true" {
-		creds, err := loadTLSCredentials()
+	// Add keepalive parameters
+	kpc := keepalive.ClientParameters{
+		Time:                10 * 1000000000, // 10s
+		Timeout:             20 * 1000000000, // 20s
+		PermitWithoutStream: true,
+	}
+	opts = append(opts, grpc.WithKeepaliveParams(kpc))
+
+	if conf.Enable {
+		creds, err := loadTLSCredentials(conf)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load TLS credentials: %w", err)
 		}
@@ -86,10 +94,9 @@ func NewClient(addr string) (*Client, error) {
 	}, nil
 }
 
-func loadTLSCredentials() (credentials.TransportCredentials, error) {
+func loadTLSCredentials(conf TLSConfig) (credentials.TransportCredentials, error) {
 	// Load certificate of the CA who signed server's certificate
-	caPath := os.Getenv("GATEWAY_CA_CERT")
-	pemServerCA, err := os.ReadFile(caPath)
+	pemServerCA, err := os.ReadFile(conf.CAPath)
 	if err != nil {
 		return nil, err
 	}
@@ -100,20 +107,22 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 	}
 
 	// Load client's certificate and private key
-	clientCertPath := os.Getenv("GATEWAY_CLIENT_CERT")
-	clientKeyPath := os.Getenv("GATEWAY_CLIENT_KEY")
-	clientCert, err := tls.LoadX509KeyPair(clientCertPath, clientKeyPath)
+	clientCert, err := tls.LoadX509KeyPair(conf.CertPath, conf.KeyPath)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create the credentials and return it
-	config := &tls.Config{
+	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{clientCert},
 		RootCAs:      certPool,
 	}
 
-	return credentials.NewTLS(config), nil
+	if conf.ServerName != "" {
+		tlsConfig.ServerName = conf.ServerName
+	}
+
+	return credentials.NewTLS(tlsConfig), nil
 }
 
 func (c *Client) Close() error {
