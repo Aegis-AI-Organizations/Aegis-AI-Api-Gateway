@@ -23,7 +23,7 @@ func generateTestToken(secret string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":        "test-user",
 		"company_id": "test-company",
-		"role":       "admin",
+		"role":       "superadmin",
 	})
 	tokenString, _ := token.SignedString([]byte(secret))
 	return tokenString

@@ -32,22 +32,22 @@ func NewRouter(gc *agrpc.Client) *gin.Engine {
 	auth := r.Group("/")
 	auth.Use(middleware.AuthMiddleware())
 	{
-		auth.POST("/auth/logout", h.LogoutHandler)
-		auth.GET("/auth/me", h.GetMeHandler)
+		auth.POST("/auth/logout", middleware.RequirePermission(middleware.ScopeAuthRead), h.LogoutHandler)
+		auth.GET("/auth/me", middleware.RequirePermission(middleware.ScopeAuthRead), h.GetMeHandler)
 
 		// Scan routes
-		auth.POST("/scans", h.CreateScanHandler)
-		auth.GET("/scans", h.GetScansHandler)
-		auth.GET("/scans/:id", h.GetScanByIDHandler)
-		auth.GET("/scans/:id/vulnerabilities", h.GetVulnerabilitiesHandler)
-		auth.GET("/scans/:id/report", h.GetScanReportHandler)
+		auth.POST("/scans", middleware.RequirePermission(middleware.ScopeScanWrite), h.CreateScanHandler)
+		auth.GET("/scans", middleware.RequirePermission(middleware.ScopeScanRead), h.GetScansHandler)
+		auth.GET("/scans/:id", middleware.RequirePermission(middleware.ScopeScanRead), h.GetScanByIDHandler)
+		auth.GET("/scans/:id/vulnerabilities", middleware.RequirePermission(middleware.ScopeVulnerabilityRead), h.GetVulnerabilitiesHandler)
+		auth.GET("/scans/:id/report", middleware.RequirePermission(middleware.ScopeReportRead), h.GetScanReportHandler)
 
 		// Vulnerability routes
-		auth.GET("/vulnerabilities/:id/evidences", h.GetEvidencesHandler)
+		auth.GET("/vulnerabilities/:id/evidences", middleware.RequirePermission(middleware.ScopeVulnerabilityRead), h.GetEvidencesHandler)
 
 		// Streaming routes
-		auth.GET("/scans/stream", h.ScanStreamHandler)
-		auth.GET("/scans/:id/stream", h.ScanStreamHandler)
+		auth.GET("/scans/stream", middleware.RequirePermission(middleware.ScopeScanRead), h.ScanStreamHandler)
+		auth.GET("/scans/:id/stream", middleware.RequirePermission(middleware.ScopeScanRead), h.ScanStreamHandler)
 	}
 
 	return r
