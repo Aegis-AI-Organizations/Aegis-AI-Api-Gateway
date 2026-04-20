@@ -19,11 +19,11 @@ import (
 )
 
 // Helper to generate a test token
-func generateTestToken(secret string) string {
+func generateTestToken(role, secret string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub":        "test-user",
 		"company_id": "test-company",
-		"role":       "superadmin",
+		"role":       role,
 	})
 	tokenString, _ := token.SignedString([]byte(secret))
 	return tokenString
@@ -92,17 +92,37 @@ func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest
 func (m *MockAuthServiceClient) GetMe(ctx context.Context, in *v1.GetMeRequest, opts ...grpc.CallOption) (*v1.GetMeResponse, error) {
 	return &v1.GetMeResponse{}, nil
 }
+func (m *MockAuthServiceClient) UpdateProfile(ctx context.Context, in *v1.UpdateProfileRequest, opts ...grpc.CallOption) (*v1.UpdateProfileResponse, error) {
+	return &v1.UpdateProfileResponse{Success: true}, nil
+}
+func (m *MockAuthServiceClient) UpdateEmail(ctx context.Context, in *v1.UpdateEmailRequest, opts ...grpc.CallOption) (*v1.UpdateEmailResponse, error) {
+	return &v1.UpdateEmailResponse{Success: true}, nil
+}
+func (m *MockAuthServiceClient) UpdatePassword(ctx context.Context, in *v1.UpdatePasswordRequest, opts ...grpc.CallOption) (*v1.UpdatePasswordResponse, error) {
+	return &v1.UpdatePasswordResponse{Success: true}, nil
+}
+
+type MockCompanyServiceClient struct {
+	mock.Mock
+}
+func (m *MockCompanyServiceClient) CreateCompany(ctx context.Context, in *v1.CreateCompanyRequest, opts ...grpc.CallOption) (*v1.CreateCompanyResponse, error) {
+	return &v1.CreateCompanyResponse{Id: "1", Name: in.Name}, nil
+}
+func (m *MockCompanyServiceClient) ListCompanies(ctx context.Context, in *v1.ListCompaniesRequest, opts ...grpc.CallOption) (*v1.ListCompaniesResponse, error) {
+	return &v1.ListCompaniesResponse{Companies: []*v1.CompanySummary{{Id: "1", Name: "Test"}}}, nil
+}
 
 
 func TestNewRouterFull(t *testing.T) {
 	testSecret := "test-secret-123"
 	t.Setenv("JWT_SECRET", testSecret)
-	token := generateTestToken(testSecret)
+	token := generateTestToken("superadmin", testSecret)
 
 	dummyClient := &agrpc.Client{
 		ScanService:          &MockScanServiceClient{},
 		VulnerabilityService: &MockVulnerabilityServiceClient{},
 		AuthService:          &MockAuthServiceClient{},
+		CompanyService:       &MockCompanyServiceClient{},
 	}
 	mux := api.NewRouter(dummyClient)
 
@@ -138,5 +158,74 @@ func TestNewRouterFull(t *testing.T) {
 		mux.ServeHTTP(rr, req)
 		assert.NotEqual(t, http.StatusNotFound, rr.Code, "Path %s %s should be registered", tt.method, tt.path)
 		assert.Equal(t, tt.code, rr.Code, "Path %s %s should return code %d", tt.method, tt.path, tt.code)
+	}
+}
+
+func TestScopesForbidden(t *testing.T) {
+	testSecret := "test-secret-123"
+	t.Setenv("JWT_SECRET", testSecret)
+
+	dummyClient := &agrpc.Client{
+		ScanService:          &MockScanServiceClient{},
+		VulnerabilityService: &MockVulnerabilityServiceClient{},
+		AuthService:          &MockAuthServiceClient{},
+		CompanyService:       &MockCompanyServiceClient{},
+	}
+	mux := api.NewRouter(dummyClient)
+
+	// A viewer should NOT be able to post a scan (requires scan:write)
+	viewerToken := generateTestToken("viewer", testSecret)
+
+	tests := []struct {
+		name   string
+		method string
+		path   string
+		token  string
+		want   int
+	}{
+		{
+			name:   "Viewer cannot launch scan",
+			method: "POST",
+			path:   "/scans",
+			token:  viewerToken,
+			want:   http.StatusForbidden,
+		},
+		{
+			name:   "Operator can launch scan",
+			method: "POST",
+			path:   "/scans",
+			token:  generateTestToken("operator", testSecret),
+			want:   http.StatusCreated,
+		},
+		{
+			name:   "Viewer cannot create company",
+			method: "POST",
+			path:   "/companies",
+			token:  viewerToken,
+			want:   http.StatusForbidden,
+		},
+		{
+			name:   "SuperAdmin can create company",
+			method: "POST",
+			path:   "/companies",
+			token:  generateTestToken("superadmin", testSecret),
+			want:   http.StatusCreated,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var body []byte
+			if tt.method == "POST" {
+				body = []byte(`{"target_image":"test", "name":"test", "owner_email":"test@test.com"}`)
+			}
+			req, _ := http.NewRequest(tt.method, tt.path, bytes.NewBuffer(body))
+			req.Header.Set("Authorization", "Bearer "+tt.token)
+
+			rr := testutils.NewCloseNotifierRecorder()
+			mux.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.want, rr.Code)
+		})
 	}
 }

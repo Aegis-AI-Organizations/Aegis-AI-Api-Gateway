@@ -17,11 +17,12 @@ const (
 	ScopeUserWrite         = "user:write"
 	ScopeCompanyRead       = "company:read"
 	ScopeCompanyWrite      = "company:write"
+	ScopeAdminWrite        = "admin:write"
 	ScopeAll               = "*"
 )
 
-// RoleScopes maps each standard user role to a set of granular permissions (scopes).
-var RoleScopes = map[types.UserRole][]string{
+// roleScopes maps each standard user role to a set of granular permissions (scopes).
+var roleScopes = map[types.UserRole][]string{
 	types.RoleViewer: {
 		ScopeScanRead,
 		ScopeVulnerabilityRead,
@@ -57,7 +58,7 @@ var RoleScopes = map[types.UserRole][]string{
 
 // HasScope checks if a given role has the required permission.
 func HasScope(role types.UserRole, requiredScope string) bool {
-	scopes, ok := RoleScopes[role]
+	scopes, ok := roleScopes[role]
 	if !ok {
 		return false
 	}

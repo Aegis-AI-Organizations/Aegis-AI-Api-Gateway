@@ -55,6 +55,30 @@ func (m *MockAuthServiceClient) GetMe(ctx context.Context, in *v1.GetMeRequest, 
 	return args.Get(0).(*v1.GetMeResponse), args.Error(1)
 }
 
+func (m *MockAuthServiceClient) UpdateProfile(ctx context.Context, in *v1.UpdateProfileRequest, opts ...grpc.CallOption) (*v1.UpdateProfileResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdateProfileResponse), args.Error(1)
+}
+
+func (m *MockAuthServiceClient) UpdateEmail(ctx context.Context, in *v1.UpdateEmailRequest, opts ...grpc.CallOption) (*v1.UpdateEmailResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdateEmailResponse), args.Error(1)
+}
+
+func (m *MockAuthServiceClient) UpdatePassword(ctx context.Context, in *v1.UpdatePasswordRequest, opts ...grpc.CallOption) (*v1.UpdatePasswordResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdatePasswordResponse), args.Error(1)
+}
+
 func TestLoginHandler_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockAuth := new(MockAuthServiceClient)
