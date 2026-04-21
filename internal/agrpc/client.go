@@ -133,11 +133,11 @@ func (c *Client) SearchCompanies(ctx context.Context, query string) ([]*v1.Compa
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")
 	}
-	md := metadata.Pairs(
+	authCtx := WithMetadata(ctx)
+	newCtx := metadata.AppendToOutgoingContext(authCtx,
 		"x-action", "list-companies",
 		"x-query", query,
 	)
-	newCtx := metadata.NewOutgoingContext(WithMetadata(ctx), md)
 	resp, err := c.CompanyService.ListCompanies(newCtx, &v1.ListCompaniesRequest{})
 	if err != nil {
 		return nil, err
@@ -149,12 +149,12 @@ func (c *Client) SearchUsers(ctx context.Context, query, companyID string) ([]*v
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")
 	}
-	md := metadata.Pairs(
+	authCtx := WithMetadata(ctx)
+	newCtx := metadata.AppendToOutgoingContext(authCtx,
 		"x-action", "list-users",
 		"x-query", query,
 		"x-company-id", companyID,
 	)
-	newCtx := metadata.NewOutgoingContext(WithMetadata(ctx), md)
 	resp, err := c.CompanyService.ListCompanies(newCtx, &v1.ListCompaniesRequest{})
 	if err != nil {
 		return nil, err
@@ -166,13 +166,13 @@ func (c *Client) AdminCreateUser(ctx context.Context, name, email, password, rol
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")
 	}
-	md := metadata.Pairs(
+	authCtx := WithMetadata(ctx)
+	newCtx := metadata.AppendToOutgoingContext(authCtx,
 		"x-action", "create-user",
 		"x-user-password", password,
 		"x-user-role", role,
 		"x-company-id", companyID,
 	)
-	newCtx := metadata.NewOutgoingContext(WithMetadata(ctx), md)
 	return c.CompanyService.CreateCompany(newCtx, &v1.CreateCompanyRequest{
 		Name:       name,
 		OwnerEmail: email,
