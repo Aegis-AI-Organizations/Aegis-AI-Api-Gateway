@@ -28,6 +28,7 @@ var roleScopes = map[types.UserRole][]string{
 		ScopeVulnerabilityRead,
 		ScopeReportRead,
 		ScopeAuthRead,
+		ScopeCompanyRead,
 	},
 	types.RoleOperateur: {
 		ScopeScanRead,
@@ -37,6 +38,7 @@ var roleScopes = map[types.UserRole][]string{
 		ScopeScanWrite,
 		ScopeScanExecute,
 		ScopeVulnerabilityWrite,
+		ScopeCompanyRead,
 	},
 	types.RoleOwner: {
 		ScopeScanRead,
