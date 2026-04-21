@@ -240,11 +240,14 @@ func (c *Client) GetMe(ctx context.Context) (*v1.GetMeResponse, error) {
 	return c.AuthService.GetMe(WithMetadata(ctx), &v1.GetMeRequest{})
 }
 
-func (c *Client) UpdateProfile(ctx context.Context, name string) (*v1.UpdateProfileResponse, error) {
+func (c *Client) UpdateProfile(ctx context.Context, name, avatarURL string) (*v1.UpdateProfileResponse, error) {
 	if c.AuthService == nil {
 		return nil, fmt.Errorf("auth service not initialized")
 	}
-	return c.AuthService.UpdateProfile(WithMetadata(ctx), &v1.UpdateProfileRequest{Name: name})
+	return c.AuthService.UpdateProfile(WithMetadata(ctx), &v1.UpdateProfileRequest{
+		Name:      name,
+		AvatarUrl: avatarURL,
+	})
 }
 
 func (c *Client) UpdateEmail(ctx context.Context, newEmail string) (*v1.UpdateEmailResponse, error) {

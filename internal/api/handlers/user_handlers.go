@@ -13,7 +13,8 @@ import (
 // UpdateProfileHandler updates the current user's name.
 func (a *API) UpdateProfileHandler(c *gin.Context) {
 	var req struct {
-		Name string `json:"name" binding:"required"`
+		Name      string `json:"name" binding:"required"`
+		AvatarURL string `json:"avatar_url"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -24,7 +25,7 @@ func (a *API) UpdateProfileHandler(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	resp, err := a.GRPCClient.UpdateProfile(ctx, req.Name)
+	resp, err := a.GRPCClient.UpdateProfile(ctx, req.Name, req.AvatarURL)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update profile"})
 		return

@@ -318,9 +318,9 @@ func TestClient_UpdateMethods(t *testing.T) {
 	ctx := context.Background()
 
 	// UpdateProfile
-	mockAuth.On("UpdateProfile", ctx, &v1.UpdateProfileRequest{Name: "New"}).
+	mockAuth.On("UpdateProfile", ctx, &v1.UpdateProfileRequest{Name: "New", AvatarUrl: ""}).
 		Return(&v1.UpdateProfileResponse{Success: true}, nil)
-	respP, err := client.UpdateProfile(ctx, "New")
+	respP, err := client.UpdateProfile(ctx, "New", "")
 	assert.NoError(t, err)
 	assert.True(t, respP.Success)
 
