@@ -179,3 +179,44 @@ func TestUpdatePasswordHandler_InvalidRequest(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
+func TestRemoveAvatarHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("DELETE", "/users/me/profile/avatar", nil)
+
+	mockAuth.On("RemoveAvatar", mock.Anything, mock.Anything).
+		Return(&v1.RemoveAvatarResponse{Success: true}, nil)
+
+	api.RemoveAvatarHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestRemoveAvatarHandler_Error(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("DELETE", "/users/me/profile/avatar", nil)
+
+	mockAuth.On("RemoveAvatar", mock.Anything, mock.Anything).
+		Return(nil, status.Error(codes.Internal, "internal error"))
+
+	api.RemoveAvatarHandler(c)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
