@@ -11,6 +11,7 @@ type CompanySearchResult struct {
 	Name            string `json:"name"`
 	DeploymentToken string `json:"deployment_token"`
 	OwnerEmail      string `json:"owner_email"`
+	AvatarURL       string `json:"avatar_url"`
 }
 
 type UserSearchResult struct {
@@ -19,6 +20,7 @@ type UserSearchResult struct {
 	Email     string `json:"email"`
 	Role      string `json:"role"`
 	CompanyID string `json:"company_id"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 // SearchCompaniesHandler searches for companies by name or ID via Brain gRPC.
@@ -38,6 +40,7 @@ func (a *API) SearchCompaniesHandler(c *gin.Context) {
 			Name:            res.Name,
 			DeploymentToken: res.DeploymentToken,
 			OwnerEmail:      res.OwnerEmail,
+			AvatarURL:       res.AvatarUrl,
 		})
 	}
 
@@ -63,6 +66,7 @@ func (a *API) SearchUsersHandler(c *gin.Context) {
 			Email:     u.OwnerEmail,      // mapped from response
 			Role:      u.DeploymentToken, // mapped from response
 			CompanyID: u.OwnerId,         // mapped from response
+			AvatarURL: u.AvatarUrl,
 		})
 	}
 

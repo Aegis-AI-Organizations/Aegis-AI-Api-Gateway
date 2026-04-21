@@ -341,6 +341,7 @@ type CompanySummary struct {
 	OwnerEmail      string                 `protobuf:"bytes,4,opt,name=owner_email,json=ownerEmail,proto3" json:"owner_email,omitempty"`
 	MemberCount     int32                  `protobuf:"varint,5,opt,name=member_count,json=memberCount,proto3" json:"member_count,omitempty"`
 	DeploymentToken string                 `protobuf:"bytes,6,opt,name=deployment_token,json=deploymentToken,proto3" json:"deployment_token,omitempty"`
+	AvatarUrl       string                 `protobuf:"bytes,7,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -413,6 +414,13 @@ func (x *CompanySummary) GetMemberCount() int32 {
 func (x *CompanySummary) GetDeploymentToken() string {
 	if x != nil {
 		return x.DeploymentToken
+	}
+	return ""
+}
+
+func (x *CompanySummary) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
 	}
 	return ""
 }
