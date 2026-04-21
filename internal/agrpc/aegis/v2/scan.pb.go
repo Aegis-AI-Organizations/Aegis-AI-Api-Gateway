@@ -298,6 +298,7 @@ type ScanDetails struct {
 	Status             string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
 	StartedAt          *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
 	CompletedAt        *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
+	CompanyName        string                 `protobuf:"bytes,7,opt,name=company_name,json=companyName,proto3" json:"company_name,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -372,6 +373,13 @@ func (x *ScanDetails) GetCompletedAt() *timestamppb.Timestamp {
 		return x.CompletedAt
 	}
 	return nil
+}
+
+func (x *ScanDetails) GetCompanyName() string {
+	if x != nil {
+		return x.CompanyName
+	}
+	return ""
 }
 
 type ListScansResponse struct {

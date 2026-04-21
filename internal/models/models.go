@@ -23,6 +23,7 @@ type Scan struct {
 	Status             string  `json:"status"`
 	StartedAt          string  `json:"started_at"`
 	CompletedAt        *string `json:"completed_at,omitempty"`
+	CompanyName        string  `json:"company_name"`
 }
 
 type Vulnerability struct {

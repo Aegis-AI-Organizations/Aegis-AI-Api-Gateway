@@ -37,6 +37,7 @@ func (a *API) GetScansHandler(c *gin.Context) {
 			Status:             s.Status,
 			StartedAt:          startStr,
 			CompletedAt:        compStr,
+			CompanyName:        s.CompanyName,
 		})
 	}
 
