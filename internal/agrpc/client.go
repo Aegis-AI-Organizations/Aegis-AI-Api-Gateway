@@ -129,6 +129,56 @@ func loadTLSCredentials(conf TLSConfig) (credentials.TransportCredentials, error
 	return credentials.NewTLS(tlsConfig), nil
 }
 
+func (c *Client) SearchCompanies(ctx context.Context, query string) ([]*v1.CompanySummary, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	md := metadata.Pairs(
+		"x-action", "list-companies",
+		"x-query", query,
+	)
+	newCtx := metadata.NewOutgoingContext(WithMetadata(ctx), md)
+	resp, err := c.CompanyService.ListCompanies(newCtx, &v1.ListCompaniesRequest{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Companies, nil
+}
+
+func (c *Client) SearchUsers(ctx context.Context, query, companyID string) ([]*v1.CompanySummary, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	md := metadata.Pairs(
+		"x-action", "list-users",
+		"x-query", query,
+		"x-company-id", companyID,
+	)
+	newCtx := metadata.NewOutgoingContext(WithMetadata(ctx), md)
+	resp, err := c.CompanyService.ListCompanies(newCtx, &v1.ListCompaniesRequest{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Companies, nil
+}
+
+func (c *Client) AdminCreateUser(ctx context.Context, name, email, password, role, companyID string) (*v1.CreateCompanyResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	md := metadata.Pairs(
+		"x-action", "create-user",
+		"x-user-password", password,
+		"x-user-role", role,
+		"x-company-id", companyID,
+	)
+	newCtx := metadata.NewOutgoingContext(WithMetadata(ctx), md)
+	return c.CompanyService.CreateCompany(newCtx, &v1.CreateCompanyRequest{
+		Name:       name,
+		OwnerEmail: email,
+	})
+}
+
 func (c *Client) Close() error {
 	if c.conn == nil {
 		return nil
