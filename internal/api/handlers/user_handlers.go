@@ -111,3 +111,22 @@ func (a *API) UpdatePasswordHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
 }
+
+// RemoveAvatarHandler deletes the current user's profile picture.
+func (a *API) RemoveAvatarHandler(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := a.GRPCClient.RemoveAvatar(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove avatar"})
+		return
+	}
+
+	if !resp.Success {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Removal failed"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Profile picture removed successfully"})
+}

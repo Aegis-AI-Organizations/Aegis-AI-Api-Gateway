@@ -127,6 +127,14 @@ func (m *MockAuthServiceClient) UpdatePassword(ctx context.Context, in *v1.Updat
 	return args.Get(0).(*v1.UpdatePasswordResponse), args.Error(1)
 }
 
+func (m *MockAuthServiceClient) RemoveAvatar(ctx context.Context, in *v1.RemoveAvatarRequest, opts ...grpc.CallOption) (*v1.RemoveAvatarResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.RemoveAvatarResponse), args.Error(1)
+}
+
 type MockCompanyServiceClient struct {
 	mock.Mock
 }
@@ -145,6 +153,14 @@ func (m *MockCompanyServiceClient) ListCompanies(ctx context.Context, in *v1.Lis
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*v1.ListCompaniesResponse), args.Error(1)
+}
+
+func (m *MockCompanyServiceClient) OnboardCompany(ctx context.Context, in *v1.OnboardCompanyRequest, opts ...grpc.CallOption) (*v1.OnboardCompanyResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.OnboardCompanyResponse), args.Error(1)
 }
 
 func TestClient_Ping(t *testing.T) {

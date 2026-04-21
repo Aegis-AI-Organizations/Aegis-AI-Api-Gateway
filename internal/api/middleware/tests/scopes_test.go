@@ -20,8 +20,8 @@ func TestHasScope(t *testing.T) {
 	}{
 		{"Viewer can read scans", types.RoleViewer, middleware.ScopeScanRead, true},
 		{"Viewer cannot write scans", types.RoleViewer, middleware.ScopeScanWrite, false},
-		{"Operator can write scans", types.RoleOperator, middleware.ScopeScanWrite, true},
-		{"Operator can execute scans", types.RoleOperator, middleware.ScopeScanExecute, true},
+		{"Operator can write scans", types.RoleOperateur, middleware.ScopeScanWrite, true},
+		{"Operator can execute scans", types.RoleOperateur, middleware.ScopeScanExecute, true},
 		{"Owner can read users", types.RoleOwner, middleware.ScopeUserRead, true},
 		{"Owner can write users", types.RoleOwner, middleware.ScopeUserWrite, true},
 		{"SuperAdmin has all access", types.RoleSuperAdmin, "any:scope", true},
@@ -59,7 +59,7 @@ func TestRequirePermissionMiddleware(t *testing.T) {
 		},
 		{
 			name:           "Valid scope for Operator",
-			role:           string(types.RoleOperator),
+			role:           string(types.RoleOperateur),
 			requiredScope:  middleware.ScopeScanWrite,
 			expectedStatus: http.StatusOK,
 		},

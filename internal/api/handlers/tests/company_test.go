@@ -39,6 +39,14 @@ func (m *MockCompanyServiceClient) ListCompanies(ctx context.Context, in *v1.Lis
 	return args.Get(0).(*v1.ListCompaniesResponse), args.Error(1)
 }
 
+func (m *MockCompanyServiceClient) OnboardCompany(ctx context.Context, in *v1.OnboardCompanyRequest, opts ...grpc.CallOption) (*v1.OnboardCompanyResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.OnboardCompanyResponse), args.Error(1)
+}
+
 func TestListCompaniesHandler_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockCompany := new(MockCompanyServiceClient)

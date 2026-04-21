@@ -37,12 +37,14 @@ func NewRouter(gc *agrpc.Client) *gin.Engine {
 
 		// User profile management
 		auth.PUT("/users/me/profile", middleware.RequirePermission(middleware.ScopeAuthRead), h.UpdateProfileHandler)
+		auth.DELETE("/users/me/profile/avatar", middleware.RequirePermission(middleware.ScopeAuthRead), h.RemoveAvatarHandler)
 		auth.PUT("/users/me/email", middleware.RequirePermission(middleware.ScopeAuthRead), h.UpdateEmailHandler)
 		auth.PUT("/users/me/password", middleware.RequirePermission(middleware.ScopeAuthRead), h.UpdatePasswordHandler)
 
 		// Company management
 		auth.GET("/companies", middleware.RequirePermission(middleware.ScopeCompanyRead), h.ListCompaniesHandler)
 		auth.POST("/companies", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.CreateCompanyHandler)
+		auth.POST("/companies/onboard", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.OnboardCompanyHandler)
 
 		// Scan routes
 		auth.POST("/scans", middleware.RequirePermission(middleware.ScopeScanWrite), h.CreateScanHandler)

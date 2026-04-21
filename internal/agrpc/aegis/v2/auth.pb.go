@@ -709,6 +709,86 @@ func (x *UpdatePasswordResponse) GetSuccess() bool {
 	return false
 }
 
+type RemoveAvatarRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveAvatarRequest) Reset() {
+	*x = RemoveAvatarRequest{}
+	mi := &file_aegis_v2_auth_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveAvatarRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveAvatarRequest) ProtoMessage() {}
+
+func (x *RemoveAvatarRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_auth_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveAvatarRequest.ProtoReflect.Descriptor instead.
+func (*RemoveAvatarRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_auth_proto_rawDescGZIP(), []int{14}
+}
+
+type RemoveAvatarResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveAvatarResponse) Reset() {
+	*x = RemoveAvatarResponse{}
+	mi := &file_aegis_v2_auth_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveAvatarResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveAvatarResponse) ProtoMessage() {}
+
+func (x *RemoveAvatarResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_auth_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveAvatarResponse.ProtoReflect.Descriptor instead.
+func (*RemoveAvatarResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_auth_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *RemoveAvatarResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_aegis_v2_auth_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_auth_proto_rawDesc = "" +
@@ -753,7 +833,10 @@ const file_aegis_v2_auth_proto_rawDesc = "" +
 	"\fold_password\x18\x01 \x01(\tR\voldPassword\x12!\n" +
 	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"2\n" +
 	"\x16UpdatePasswordResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xf1\x03\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x15\n" +
+	"\x13RemoveAvatarRequest\"0\n" +
+	"\x14RemoveAvatarResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xc0\x04\n" +
 	"\vAuthService\x128\n" +
 	"\x05Login\x12\x16.aegis.v2.LoginRequest\x1a\x17.aegis.v2.LoginResponse\x12>\n" +
 	"\aRefresh\x12\x18.aegis.v2.RefreshRequest\x1a\x19.aegis.v2.RefreshResponse\x12;\n" +
@@ -761,7 +844,8 @@ const file_aegis_v2_auth_proto_rawDesc = "" +
 	"\x05GetMe\x12\x16.aegis.v2.GetMeRequest\x1a\x17.aegis.v2.GetMeResponse\x12P\n" +
 	"\rUpdateProfile\x12\x1e.aegis.v2.UpdateProfileRequest\x1a\x1f.aegis.v2.UpdateProfileResponse\x12J\n" +
 	"\vUpdateEmail\x12\x1c.aegis.v2.UpdateEmailRequest\x1a\x1d.aegis.v2.UpdateEmailResponse\x12S\n" +
-	"\x0eUpdatePassword\x12\x1f.aegis.v2.UpdatePasswordRequest\x1a .aegis.v2.UpdatePasswordResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v2b\x06proto3"
+	"\x0eUpdatePassword\x12\x1f.aegis.v2.UpdatePasswordRequest\x1a .aegis.v2.UpdatePasswordResponse\x12M\n" +
+	"\fRemoveAvatar\x12\x1d.aegis.v2.RemoveAvatarRequest\x1a\x1e.aegis.v2.RemoveAvatarResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_auth_proto_rawDescOnce sync.Once
@@ -775,7 +859,7 @@ func file_aegis_v2_auth_proto_rawDescGZIP() []byte {
 	return file_aegis_v2_auth_proto_rawDescData
 }
 
-var file_aegis_v2_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_aegis_v2_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_aegis_v2_auth_proto_goTypes = []any{
 	(*LoginRequest)(nil),           // 0: aegis.v2.LoginRequest
 	(*LoginResponse)(nil),          // 1: aegis.v2.LoginResponse
@@ -791,6 +875,8 @@ var file_aegis_v2_auth_proto_goTypes = []any{
 	(*UpdateEmailResponse)(nil),    // 11: aegis.v2.UpdateEmailResponse
 	(*UpdatePasswordRequest)(nil),  // 12: aegis.v2.UpdatePasswordRequest
 	(*UpdatePasswordResponse)(nil), // 13: aegis.v2.UpdatePasswordResponse
+	(*RemoveAvatarRequest)(nil),    // 14: aegis.v2.RemoveAvatarRequest
+	(*RemoveAvatarResponse)(nil),   // 15: aegis.v2.RemoveAvatarResponse
 }
 var file_aegis_v2_auth_proto_depIdxs = []int32{
 	0,  // 0: aegis.v2.AuthService.Login:input_type -> aegis.v2.LoginRequest
@@ -800,15 +886,17 @@ var file_aegis_v2_auth_proto_depIdxs = []int32{
 	8,  // 4: aegis.v2.AuthService.UpdateProfile:input_type -> aegis.v2.UpdateProfileRequest
 	10, // 5: aegis.v2.AuthService.UpdateEmail:input_type -> aegis.v2.UpdateEmailRequest
 	12, // 6: aegis.v2.AuthService.UpdatePassword:input_type -> aegis.v2.UpdatePasswordRequest
-	1,  // 7: aegis.v2.AuthService.Login:output_type -> aegis.v2.LoginResponse
-	3,  // 8: aegis.v2.AuthService.Refresh:output_type -> aegis.v2.RefreshResponse
-	5,  // 9: aegis.v2.AuthService.Logout:output_type -> aegis.v2.LogoutResponse
-	7,  // 10: aegis.v2.AuthService.GetMe:output_type -> aegis.v2.GetMeResponse
-	9,  // 11: aegis.v2.AuthService.UpdateProfile:output_type -> aegis.v2.UpdateProfileResponse
-	11, // 12: aegis.v2.AuthService.UpdateEmail:output_type -> aegis.v2.UpdateEmailResponse
-	13, // 13: aegis.v2.AuthService.UpdatePassword:output_type -> aegis.v2.UpdatePasswordResponse
-	7,  // [7:14] is the sub-list for method output_type
-	0,  // [0:7] is the sub-list for method input_type
+	14, // 7: aegis.v2.AuthService.RemoveAvatar:input_type -> aegis.v2.RemoveAvatarRequest
+	1,  // 8: aegis.v2.AuthService.Login:output_type -> aegis.v2.LoginResponse
+	3,  // 9: aegis.v2.AuthService.Refresh:output_type -> aegis.v2.RefreshResponse
+	5,  // 10: aegis.v2.AuthService.Logout:output_type -> aegis.v2.LogoutResponse
+	7,  // 11: aegis.v2.AuthService.GetMe:output_type -> aegis.v2.GetMeResponse
+	9,  // 12: aegis.v2.AuthService.UpdateProfile:output_type -> aegis.v2.UpdateProfileResponse
+	11, // 13: aegis.v2.AuthService.UpdateEmail:output_type -> aegis.v2.UpdateEmailResponse
+	13, // 14: aegis.v2.AuthService.UpdatePassword:output_type -> aegis.v2.UpdatePasswordResponse
+	15, // 15: aegis.v2.AuthService.RemoveAvatar:output_type -> aegis.v2.RemoveAvatarResponse
+	8,  // [8:16] is the sub-list for method output_type
+	0,  // [0:8] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -825,7 +913,7 @@ func file_aegis_v2_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v2_auth_proto_rawDesc), len(file_aegis_v2_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

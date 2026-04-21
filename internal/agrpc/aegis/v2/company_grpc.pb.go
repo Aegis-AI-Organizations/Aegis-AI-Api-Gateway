@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CompanyService_CreateCompany_FullMethodName = "/aegis.v2.CompanyService/CreateCompany"
-	CompanyService_ListCompanies_FullMethodName = "/aegis.v2.CompanyService/ListCompanies"
+	CompanyService_CreateCompany_FullMethodName  = "/aegis.v2.CompanyService/CreateCompany"
+	CompanyService_ListCompanies_FullMethodName  = "/aegis.v2.CompanyService/ListCompanies"
+	CompanyService_OnboardCompany_FullMethodName = "/aegis.v2.CompanyService/OnboardCompany"
 )
 
 // CompanyServiceClient is the client API for CompanyService service.
@@ -33,6 +34,8 @@ type CompanyServiceClient interface {
 	CreateCompany(ctx context.Context, in *CreateCompanyRequest, opts ...grpc.CallOption) (*CreateCompanyResponse, error)
 	// ListCompanies retrieves all companies (SuperAdmin only).
 	ListCompanies(ctx context.Context, in *ListCompaniesRequest, opts ...grpc.CallOption) (*ListCompaniesResponse, error)
+	// OnboardCompany handles the creation of a new company and its owner in one step.
+	OnboardCompany(ctx context.Context, in *OnboardCompanyRequest, opts ...grpc.CallOption) (*OnboardCompanyResponse, error)
 }
 
 type companyServiceClient struct {
@@ -63,6 +66,16 @@ func (c *companyServiceClient) ListCompanies(ctx context.Context, in *ListCompan
 	return out, nil
 }
 
+func (c *companyServiceClient) OnboardCompany(ctx context.Context, in *OnboardCompanyRequest, opts ...grpc.CallOption) (*OnboardCompanyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OnboardCompanyResponse)
+	err := c.cc.Invoke(ctx, CompanyService_OnboardCompany_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CompanyServiceServer is the server API for CompanyService service.
 // All implementations must embed UnimplementedCompanyServiceServer
 // for forward compatibility.
@@ -73,6 +86,8 @@ type CompanyServiceServer interface {
 	CreateCompany(context.Context, *CreateCompanyRequest) (*CreateCompanyResponse, error)
 	// ListCompanies retrieves all companies (SuperAdmin only).
 	ListCompanies(context.Context, *ListCompaniesRequest) (*ListCompaniesResponse, error)
+	// OnboardCompany handles the creation of a new company and its owner in one step.
+	OnboardCompany(context.Context, *OnboardCompanyRequest) (*OnboardCompanyResponse, error)
 	mustEmbedUnimplementedCompanyServiceServer()
 }
 
@@ -88,6 +103,9 @@ func (UnimplementedCompanyServiceServer) CreateCompany(context.Context, *CreateC
 }
 func (UnimplementedCompanyServiceServer) ListCompanies(context.Context, *ListCompaniesRequest) (*ListCompaniesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListCompanies not implemented")
+}
+func (UnimplementedCompanyServiceServer) OnboardCompany(context.Context, *OnboardCompanyRequest) (*OnboardCompanyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method OnboardCompany not implemented")
 }
 func (UnimplementedCompanyServiceServer) mustEmbedUnimplementedCompanyServiceServer() {}
 func (UnimplementedCompanyServiceServer) testEmbeddedByValue()                        {}
@@ -146,6 +164,24 @@ func _CompanyService_ListCompanies_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CompanyService_OnboardCompany_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OnboardCompanyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompanyServiceServer).OnboardCompany(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CompanyService_OnboardCompany_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompanyServiceServer).OnboardCompany(ctx, req.(*OnboardCompanyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CompanyService_ServiceDesc is the grpc.ServiceDesc for CompanyService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -160,6 +196,10 @@ var CompanyService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListCompanies",
 			Handler:    _CompanyService_ListCompanies_Handler,
+		},
+		{
+			MethodName: "OnboardCompany",
+			Handler:    _CompanyService_OnboardCompany_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
