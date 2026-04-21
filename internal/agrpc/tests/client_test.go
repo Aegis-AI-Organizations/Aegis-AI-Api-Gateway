@@ -7,9 +7,11 @@ import (
 
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 type MockPingServiceClient struct {
@@ -413,4 +415,150 @@ func TestClient_TLSLoading_Error(t *testing.T) {
 	_, err := agrpc.NewClient("localhost:1234", conf)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to load TLS credentials")
+}
+func TestClient_AdminMethods(t *testing.T) {
+	mockCompany := new(MockCompanyServiceClient)
+	client := &agrpc.Client{
+		CompanyService: mockCompany,
+	}
+
+	ctx := context.Background()
+
+	// SearchCompanies
+	mockCompany.On("ListCompanies", mock.Anything, &v1.ListCompaniesRequest{}).
+		Return(&v1.ListCompaniesResponse{
+			Companies: []*v1.CompanySummary{
+				{Id: "c1", Name: "Company 1"},
+			},
+		}, nil).Once()
+
+	respS, err := client.SearchCompanies(ctx, "test")
+	assert.NoError(t, err)
+	assert.Len(t, respS, 1)
+	assert.Equal(t, "c1", respS[0].Id)
+
+	// SearchUsers
+	mockCompany.On("ListCompanies", mock.Anything, &v1.ListCompaniesRequest{}).
+		Return(&v1.ListCompaniesResponse{
+			Companies: []*v1.CompanySummary{
+				{Id: "u1", Name: "User 1"},
+			},
+		}, nil).Once()
+
+	respU, err := client.SearchUsers(ctx, "test", "c1")
+	assert.NoError(t, err)
+	assert.Len(t, respU, 1)
+	assert.Equal(t, "u1", respU[0].Id)
+
+	// AdminCreateUser
+	mockCompany.On("CreateCompany", mock.Anything, &v1.CreateCompanyRequest{
+		Name:       "New User",
+		OwnerEmail: "user@test.com",
+	}).Return(&v1.CreateCompanyResponse{Id: "u2"}, nil)
+
+	respC, err := client.AdminCreateUser(ctx, "New User", "user@test.com", "pass1234", "admin", "c1")
+	assert.NoError(t, err)
+	assert.Equal(t, "u2", respC.Id)
+}
+
+func TestClient_RemoveAvatar(t *testing.T) {
+	mockAuth := new(MockAuthServiceClient)
+	client := &agrpc.Client{
+		AuthService: mockAuth,
+	}
+
+	mockAuth.On("RemoveAvatar", mock.Anything, &v1.RemoveAvatarRequest{}).
+		Return(&v1.RemoveAvatarResponse{Success: true}, nil)
+
+	resp, err := client.RemoveAvatar(context.Background())
+	assert.NoError(t, err)
+	assert.True(t, resp.Success)
+}
+
+func TestClient_OnboardCompany(t *testing.T) {
+	mockCompany := new(MockCompanyServiceClient)
+	client := &agrpc.Client{
+		CompanyService: mockCompany,
+	}
+
+	mockCompany.On("OnboardCompany", mock.Anything, &v1.OnboardCompanyRequest{
+		CompanyName:   "Co",
+		OwnerName:     "Owner",
+		OwnerEmail:    "e",
+		OwnerPassword: "p",
+	}).Return(&v1.OnboardCompanyResponse{CompanyId: "c1"}, nil)
+
+	resp, err := client.OnboardCompany(context.Background(), "Co", "Owner", "e", "p")
+	assert.NoError(t, err)
+	assert.Equal(t, "c1", resp.CompanyId)
+}
+
+func TestClient_AdminMethods_Errors(t *testing.T) {
+	mockCompany := new(MockCompanyServiceClient)
+	client := &agrpc.Client{
+		CompanyService: mockCompany,
+	}
+	ctx := context.Background()
+
+	mockCompany.On("ListCompanies", mock.Anything, mock.Anything).Return((*v1.ListCompaniesResponse)(nil), fmt.Errorf("rpc error"))
+	mockCompany.On("CreateCompany", mock.Anything, mock.Anything).Return((*v1.CreateCompanyResponse)(nil), fmt.Errorf("rpc error"))
+	mockCompany.On("OnboardCompany", mock.Anything, mock.Anything).Return((*v1.OnboardCompanyResponse)(nil), fmt.Errorf("rpc error"))
+
+	_, err := client.SearchCompanies(ctx, "q")
+	assert.Error(t, err)
+
+	_, err = client.SearchUsers(ctx, "q", "c1")
+	assert.Error(t, err)
+
+	_, err = client.AdminCreateUser(ctx, "n", "e", "p", "r", "c1")
+	assert.Error(t, err)
+
+	_, err = client.OnboardCompany(ctx, "c", "n", "e", "p")
+	assert.Error(t, err)
+
+	// Nil service error cases
+	client.CompanyService = nil
+	_, err = client.SearchCompanies(ctx, "q")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.SearchUsers(ctx, "q", "c1")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.AdminCreateUser(ctx, "n", "e", "p", "r", "c1")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.OnboardCompany(ctx, "c", "n", "e", "p")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	client.AuthService = nil
+	_, err = client.RemoveAvatar(ctx)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+}
+
+func TestWithMetadata(t *testing.T) {
+	ctx := context.Background()
+	// Test empty context
+	newCtx := agrpc.WithMetadata(ctx)
+	assert.Equal(t, ctx, newCtx)
+
+	// Test full context
+	ctx = context.WithValue(ctx, middleware.UserIDKey, "u1")
+	ctx = context.WithValue(ctx, middleware.CompanyIDKey, "c1")
+	ctx = context.WithValue(ctx, middleware.RoleKey, "admin")
+	ctx = context.WithValue(ctx, middleware.TokenKey, "secret_token")
+
+	newCtx = agrpc.WithMetadata(ctx)
+	assert.NotEqual(t, ctx, newCtx)
+
+	md, ok := metadata.FromOutgoingContext(newCtx)
+	assert.True(t, ok)
+	assert.Equal(t, []string{"u1"}, md.Get("user-id"))
+	assert.Equal(t, []string{"c1"}, md.Get("company-id"))
+	assert.Equal(t, []string{"admin"}, md.Get("role"))
+	assert.Equal(t, []string{"Bearer secret_token"}, md.Get("authorization"))
 }

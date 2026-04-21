@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -223,4 +224,31 @@ func TestOnboardCompanyHandler_InvalidRequest(t *testing.T) {
 	api.OnboardCompanyHandler(c)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+func TestOnboardCompanyHandler_Error(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	payload := map[string]string{
+		"company_name":   "Onboard Co",
+		"owner_name":     "John Doe",
+		"owner_email":    "john@example.com",
+		"owner_password": "securepassword123",
+	}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/companies/onboard", bytes.NewBuffer(body))
+
+	mockCompany.On("OnboardCompany", mock.Anything, mock.Anything).
+		Return(nil, fmt.Errorf("grpc error"))
+
+	api.OnboardCompanyHandler(c)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
