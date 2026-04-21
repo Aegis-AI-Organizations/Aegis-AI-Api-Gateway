@@ -79,6 +79,14 @@ func (m *MockAuthServiceClient) UpdatePassword(ctx context.Context, in *v1.Updat
 	return args.Get(0).(*v1.UpdatePasswordResponse), args.Error(1)
 }
 
+func (m *MockAuthServiceClient) RemoveAvatar(ctx context.Context, in *v1.RemoveAvatarRequest, opts ...grpc.CallOption) (*v1.RemoveAvatarResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.RemoveAvatarResponse), args.Error(1)
+}
+
 func TestLoginHandler_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockAuth := new(MockAuthServiceClient)

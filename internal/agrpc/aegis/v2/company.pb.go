@@ -125,6 +125,134 @@ func (x *CreateCompanyResponse) GetName() string {
 	return ""
 }
 
+type OnboardCompanyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CompanyName   string                 `protobuf:"bytes,1,opt,name=company_name,json=companyName,proto3" json:"company_name,omitempty"`
+	OwnerName     string                 `protobuf:"bytes,2,opt,name=owner_name,json=ownerName,proto3" json:"owner_name,omitempty"`
+	OwnerEmail    string                 `protobuf:"bytes,3,opt,name=owner_email,json=ownerEmail,proto3" json:"owner_email,omitempty"`
+	OwnerPassword string                 `protobuf:"bytes,4,opt,name=owner_password,json=ownerPassword,proto3" json:"owner_password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OnboardCompanyRequest) Reset() {
+	*x = OnboardCompanyRequest{}
+	mi := &file_aegis_v2_company_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OnboardCompanyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OnboardCompanyRequest) ProtoMessage() {}
+
+func (x *OnboardCompanyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_company_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OnboardCompanyRequest.ProtoReflect.Descriptor instead.
+func (*OnboardCompanyRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *OnboardCompanyRequest) GetCompanyName() string {
+	if x != nil {
+		return x.CompanyName
+	}
+	return ""
+}
+
+func (x *OnboardCompanyRequest) GetOwnerName() string {
+	if x != nil {
+		return x.OwnerName
+	}
+	return ""
+}
+
+func (x *OnboardCompanyRequest) GetOwnerEmail() string {
+	if x != nil {
+		return x.OwnerEmail
+	}
+	return ""
+}
+
+func (x *OnboardCompanyRequest) GetOwnerPassword() string {
+	if x != nil {
+		return x.OwnerPassword
+	}
+	return ""
+}
+
+type OnboardCompanyResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	CompanyId       string                 `protobuf:"bytes,1,opt,name=company_id,json=companyId,proto3" json:"company_id,omitempty"`
+	OwnerId         string                 `protobuf:"bytes,2,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
+	DeploymentToken string                 `protobuf:"bytes,3,opt,name=deployment_token,json=deploymentToken,proto3" json:"deployment_token,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *OnboardCompanyResponse) Reset() {
+	*x = OnboardCompanyResponse{}
+	mi := &file_aegis_v2_company_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OnboardCompanyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OnboardCompanyResponse) ProtoMessage() {}
+
+func (x *OnboardCompanyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_company_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OnboardCompanyResponse.ProtoReflect.Descriptor instead.
+func (*OnboardCompanyResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *OnboardCompanyResponse) GetCompanyId() string {
+	if x != nil {
+		return x.CompanyId
+	}
+	return ""
+}
+
+func (x *OnboardCompanyResponse) GetOwnerId() string {
+	if x != nil {
+		return x.OwnerId
+	}
+	return ""
+}
+
+func (x *OnboardCompanyResponse) GetDeploymentToken() string {
+	if x != nil {
+		return x.DeploymentToken
+	}
+	return ""
+}
+
 type ListCompaniesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -133,7 +261,7 @@ type ListCompaniesRequest struct {
 
 func (x *ListCompaniesRequest) Reset() {
 	*x = ListCompaniesRequest{}
-	mi := &file_aegis_v2_company_proto_msgTypes[2]
+	mi := &file_aegis_v2_company_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -145,7 +273,7 @@ func (x *ListCompaniesRequest) String() string {
 func (*ListCompaniesRequest) ProtoMessage() {}
 
 func (x *ListCompaniesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[2]
+	mi := &file_aegis_v2_company_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -158,7 +286,7 @@ func (x *ListCompaniesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCompaniesRequest.ProtoReflect.Descriptor instead.
 func (*ListCompaniesRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{2}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{4}
 }
 
 type ListCompaniesResponse struct {
@@ -170,7 +298,7 @@ type ListCompaniesResponse struct {
 
 func (x *ListCompaniesResponse) Reset() {
 	*x = ListCompaniesResponse{}
-	mi := &file_aegis_v2_company_proto_msgTypes[3]
+	mi := &file_aegis_v2_company_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -182,7 +310,7 @@ func (x *ListCompaniesResponse) String() string {
 func (*ListCompaniesResponse) ProtoMessage() {}
 
 func (x *ListCompaniesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[3]
+	mi := &file_aegis_v2_company_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -195,7 +323,7 @@ func (x *ListCompaniesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCompaniesResponse.ProtoReflect.Descriptor instead.
 func (*ListCompaniesResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{3}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ListCompaniesResponse) GetCompanies() []*CompanySummary {
@@ -206,19 +334,20 @@ func (x *ListCompaniesResponse) GetCompanies() []*CompanySummary {
 }
 
 type CompanySummary struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	OwnerId       string                 `protobuf:"bytes,3,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
-	OwnerEmail    string                 `protobuf:"bytes,4,opt,name=owner_email,json=ownerEmail,proto3" json:"owner_email,omitempty"`
-	MemberCount   int32                  `protobuf:"varint,5,opt,name=member_count,json=memberCount,proto3" json:"member_count,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name            string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	OwnerId         string                 `protobuf:"bytes,3,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
+	OwnerEmail      string                 `protobuf:"bytes,4,opt,name=owner_email,json=ownerEmail,proto3" json:"owner_email,omitempty"`
+	MemberCount     int32                  `protobuf:"varint,5,opt,name=member_count,json=memberCount,proto3" json:"member_count,omitempty"`
+	DeploymentToken string                 `protobuf:"bytes,6,opt,name=deployment_token,json=deploymentToken,proto3" json:"deployment_token,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *CompanySummary) Reset() {
 	*x = CompanySummary{}
-	mi := &file_aegis_v2_company_proto_msgTypes[4]
+	mi := &file_aegis_v2_company_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -230,7 +359,7 @@ func (x *CompanySummary) String() string {
 func (*CompanySummary) ProtoMessage() {}
 
 func (x *CompanySummary) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[4]
+	mi := &file_aegis_v2_company_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -243,7 +372,7 @@ func (x *CompanySummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompanySummary.ProtoReflect.Descriptor instead.
 func (*CompanySummary) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{4}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CompanySummary) GetId() string {
@@ -281,6 +410,13 @@ func (x *CompanySummary) GetMemberCount() int32 {
 	return 0
 }
 
+func (x *CompanySummary) GetDeploymentToken() string {
+	if x != nil {
+		return x.DeploymentToken
+	}
+	return ""
+}
+
 var File_aegis_v2_company_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_company_proto_rawDesc = "" +
@@ -292,20 +428,34 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"ownerEmail\";\n" +
 	"\x15CreateCompanyResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"\x16\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"\xa1\x01\n" +
+	"\x15OnboardCompanyRequest\x12!\n" +
+	"\fcompany_name\x18\x01 \x01(\tR\vcompanyName\x12\x1d\n" +
+	"\n" +
+	"owner_name\x18\x02 \x01(\tR\townerName\x12\x1f\n" +
+	"\vowner_email\x18\x03 \x01(\tR\n" +
+	"ownerEmail\x12%\n" +
+	"\x0eowner_password\x18\x04 \x01(\tR\rownerPassword\"}\n" +
+	"\x16OnboardCompanyResponse\x12\x1d\n" +
+	"\n" +
+	"company_id\x18\x01 \x01(\tR\tcompanyId\x12\x19\n" +
+	"\bowner_id\x18\x02 \x01(\tR\aownerId\x12)\n" +
+	"\x10deployment_token\x18\x03 \x01(\tR\x0fdeploymentToken\"\x16\n" +
 	"\x14ListCompaniesRequest\"O\n" +
 	"\x15ListCompaniesResponse\x126\n" +
-	"\tcompanies\x18\x01 \x03(\v2\x18.aegis.v2.CompanySummaryR\tcompanies\"\x93\x01\n" +
+	"\tcompanies\x18\x01 \x03(\v2\x18.aegis.v2.CompanySummaryR\tcompanies\"\xbe\x01\n" +
 	"\x0eCompanySummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
 	"\bowner_id\x18\x03 \x01(\tR\aownerId\x12\x1f\n" +
 	"\vowner_email\x18\x04 \x01(\tR\n" +
 	"ownerEmail\x12!\n" +
-	"\fmember_count\x18\x05 \x01(\x05R\vmemberCount2\xb4\x01\n" +
+	"\fmember_count\x18\x05 \x01(\x05R\vmemberCount\x12)\n" +
+	"\x10deployment_token\x18\x06 \x01(\tR\x0fdeploymentToken2\x89\x02\n" +
 	"\x0eCompanyService\x12P\n" +
 	"\rCreateCompany\x12\x1e.aegis.v2.CreateCompanyRequest\x1a\x1f.aegis.v2.CreateCompanyResponse\x12P\n" +
-	"\rListCompanies\x12\x1e.aegis.v2.ListCompaniesRequest\x1a\x1f.aegis.v2.ListCompaniesResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v2b\x06proto3"
+	"\rListCompanies\x12\x1e.aegis.v2.ListCompaniesRequest\x1a\x1f.aegis.v2.ListCompaniesResponse\x12S\n" +
+	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_company_proto_rawDescOnce sync.Once
@@ -319,22 +469,26 @@ func file_aegis_v2_company_proto_rawDescGZIP() []byte {
 	return file_aegis_v2_company_proto_rawDescData
 }
 
-var file_aegis_v2_company_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_aegis_v2_company_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_aegis_v2_company_proto_goTypes = []any{
-	(*CreateCompanyRequest)(nil),  // 0: aegis.v2.CreateCompanyRequest
-	(*CreateCompanyResponse)(nil), // 1: aegis.v2.CreateCompanyResponse
-	(*ListCompaniesRequest)(nil),  // 2: aegis.v2.ListCompaniesRequest
-	(*ListCompaniesResponse)(nil), // 3: aegis.v2.ListCompaniesResponse
-	(*CompanySummary)(nil),        // 4: aegis.v2.CompanySummary
+	(*CreateCompanyRequest)(nil),   // 0: aegis.v2.CreateCompanyRequest
+	(*CreateCompanyResponse)(nil),  // 1: aegis.v2.CreateCompanyResponse
+	(*OnboardCompanyRequest)(nil),  // 2: aegis.v2.OnboardCompanyRequest
+	(*OnboardCompanyResponse)(nil), // 3: aegis.v2.OnboardCompanyResponse
+	(*ListCompaniesRequest)(nil),   // 4: aegis.v2.ListCompaniesRequest
+	(*ListCompaniesResponse)(nil),  // 5: aegis.v2.ListCompaniesResponse
+	(*CompanySummary)(nil),         // 6: aegis.v2.CompanySummary
 }
 var file_aegis_v2_company_proto_depIdxs = []int32{
-	4, // 0: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
+	6, // 0: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
 	0, // 1: aegis.v2.CompanyService.CreateCompany:input_type -> aegis.v2.CreateCompanyRequest
-	2, // 2: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
-	1, // 3: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
-	3, // 4: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
+	4, // 2: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
+	2, // 3: aegis.v2.CompanyService.OnboardCompany:input_type -> aegis.v2.OnboardCompanyRequest
+	1, // 4: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
+	5, // 5: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
+	3, // 6: aegis.v2.CompanyService.OnboardCompany:output_type -> aegis.v2.OnboardCompanyResponse
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -351,7 +505,7 @@ func file_aegis_v2_company_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v2_company_proto_rawDesc), len(file_aegis_v2_company_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

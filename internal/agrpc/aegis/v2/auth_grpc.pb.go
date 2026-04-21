@@ -26,6 +26,7 @@ const (
 	AuthService_UpdateProfile_FullMethodName  = "/aegis.v2.AuthService/UpdateProfile"
 	AuthService_UpdateEmail_FullMethodName    = "/aegis.v2.AuthService/UpdateEmail"
 	AuthService_UpdatePassword_FullMethodName = "/aegis.v2.AuthService/UpdatePassword"
+	AuthService_RemoveAvatar_FullMethodName   = "/aegis.v2.AuthService/RemoveAvatar"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -48,6 +49,8 @@ type AuthServiceClient interface {
 	UpdateEmail(ctx context.Context, in *UpdateEmailRequest, opts ...grpc.CallOption) (*UpdateEmailResponse, error)
 	// UpdatePassword updates the authenticated user's password.
 	UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
+	// RemoveAvatar deletes the authenticated user's profile picture.
+	RemoveAvatar(ctx context.Context, in *RemoveAvatarRequest, opts ...grpc.CallOption) (*RemoveAvatarResponse, error)
 }
 
 type authServiceClient struct {
@@ -128,6 +131,16 @@ func (c *authServiceClient) UpdatePassword(ctx context.Context, in *UpdatePasswo
 	return out, nil
 }
 
+func (c *authServiceClient) RemoveAvatar(ctx context.Context, in *RemoveAvatarRequest, opts ...grpc.CallOption) (*RemoveAvatarResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveAvatarResponse)
+	err := c.cc.Invoke(ctx, AuthService_RemoveAvatar_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
@@ -148,6 +161,8 @@ type AuthServiceServer interface {
 	UpdateEmail(context.Context, *UpdateEmailRequest) (*UpdateEmailResponse, error)
 	// UpdatePassword updates the authenticated user's password.
 	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error)
+	// RemoveAvatar deletes the authenticated user's profile picture.
+	RemoveAvatar(context.Context, *RemoveAvatarRequest) (*RemoveAvatarResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -178,6 +193,9 @@ func (UnimplementedAuthServiceServer) UpdateEmail(context.Context, *UpdateEmailR
 }
 func (UnimplementedAuthServiceServer) UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdatePassword not implemented")
+}
+func (UnimplementedAuthServiceServer) RemoveAvatar(context.Context, *RemoveAvatarRequest) (*RemoveAvatarResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveAvatar not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -326,6 +344,24 @@ func _AuthService_UpdatePassword_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_RemoveAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveAvatarRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RemoveAvatar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_RemoveAvatar_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RemoveAvatar(ctx, req.(*RemoveAvatarRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -360,6 +396,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdatePassword",
 			Handler:    _AuthService_UpdatePassword_Handler,
+		},
+		{
+			MethodName: "RemoveAvatar",
+			Handler:    _AuthService_RemoveAvatar_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

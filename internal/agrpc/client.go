@@ -268,6 +268,13 @@ func (c *Client) UpdatePassword(ctx context.Context, oldPwd, newPwd string) (*v1
 	return c.AuthService.UpdatePassword(WithMetadata(ctx), &v1.UpdatePasswordRequest{OldPassword: oldPwd, NewPassword: newPwd})
 }
 
+func (c *Client) RemoveAvatar(ctx context.Context) (*v1.RemoveAvatarResponse, error) {
+	if c.AuthService == nil {
+		return nil, fmt.Errorf("auth service not initialized")
+	}
+	return c.AuthService.RemoveAvatar(WithMetadata(ctx), &v1.RemoveAvatarRequest{})
+}
+
 func (c *Client) CreateCompany(ctx context.Context, name, ownerEmail string) (*v1.CreateCompanyResponse, error) {
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")
@@ -284,4 +291,16 @@ func (c *Client) ListCompanies(ctx context.Context) ([]*v1.CompanySummary, error
 		return nil, err
 	}
 	return resp.Companies, nil
+}
+
+func (c *Client) OnboardCompany(ctx context.Context, companyName, ownerName, ownerEmail, ownerPassword string) (*v1.OnboardCompanyResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	return c.CompanyService.OnboardCompany(WithMetadata(ctx), &v1.OnboardCompanyRequest{
+		CompanyName:   companyName,
+		OwnerName:     ownerName,
+		OwnerEmail:    ownerEmail,
+		OwnerPassword: ownerPassword,
+	})
 }
