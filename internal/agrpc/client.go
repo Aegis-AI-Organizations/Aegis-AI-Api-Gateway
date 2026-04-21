@@ -68,6 +68,10 @@ func NewClient(addr string, conf TLSConfig) (*Client, error) {
 		PermitWithoutStream: true,
 	}
 	opts = append(opts, grpc.WithKeepaliveParams(kpc))
+	opts = append(opts, grpc.WithDefaultCallOptions(
+		grpc.MaxCallSendMsgSize(50*1024*1024),
+		grpc.MaxCallRecvMsgSize(50*1024*1024),
+	))
 
 	if conf.Enable {
 		creds, err := loadTLSCredentials(conf)
