@@ -172,3 +172,55 @@ func TestCreateCompanyHandler_GRPCError(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
+func TestOnboardCompanyHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	payload := map[string]string{
+		"company_name":   "Onboard Co",
+		"owner_name":     "John Doe",
+		"owner_email":    "john@example.com",
+		"owner_password": "securepassword123",
+	}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/companies/onboard", bytes.NewBuffer(body))
+
+	mockCompany.On("OnboardCompany", mock.Anything, &v1.OnboardCompanyRequest{
+		CompanyName:   "Onboard Co",
+		OwnerName:     "John Doe",
+		OwnerEmail:    "john@example.com",
+		OwnerPassword: "securepassword123",
+	}).Return(&v1.OnboardCompanyResponse{
+		CompanyId:       "c3",
+		OwnerId:         "u1",
+		DeploymentToken: "ag_test_token",
+	}, nil)
+
+	api.OnboardCompanyHandler(c)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+}
+
+func TestOnboardCompanyHandler_InvalidRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+
+	payload := map[string]string{
+		"company_name": "Missing Fields",
+	}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/companies/onboard", bytes.NewBuffer(body))
+
+	api.OnboardCompanyHandler(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
