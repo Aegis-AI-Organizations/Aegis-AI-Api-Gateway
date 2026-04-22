@@ -56,6 +56,7 @@ func NewRouter(gc *agrpc.Client) *gin.Engine {
 			admin.GET("/users", middleware.RequirePermission(middleware.ScopeAuthRead), h.SearchUsersHandler)
 			admin.POST("/users", middleware.RequirePermission(middleware.ScopeUserWrite), h.CreateUserHandler)
 			admin.GET("/teams/stream", middleware.RequirePermission(middleware.ScopeCompanyRead), h.TeamStreamHandler)
+			admin.GET("/audit-logs", middleware.RequirePermission(middleware.ScopeCompanyRead), h.ListAuditLogsHandler)
 		}
 
 		// Scan routes

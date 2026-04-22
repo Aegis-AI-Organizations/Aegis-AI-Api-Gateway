@@ -23,6 +23,7 @@ const (
 	CompanyService_ListCompanies_FullMethodName  = "/aegis.v2.CompanyService/ListCompanies"
 	CompanyService_OnboardCompany_FullMethodName = "/aegis.v2.CompanyService/OnboardCompany"
 	CompanyService_WatchTeams_FullMethodName     = "/aegis.v2.CompanyService/WatchTeams"
+	CompanyService_ListAuditLogs_FullMethodName  = "/aegis.v2.CompanyService/ListAuditLogs"
 )
 
 // CompanyServiceClient is the client API for CompanyService service.
@@ -39,6 +40,8 @@ type CompanyServiceClient interface {
 	OnboardCompany(ctx context.Context, in *OnboardCompanyRequest, opts ...grpc.CallOption) (*OnboardCompanyResponse, error)
 	// WatchTeams streams updates about companies and users.
 	WatchTeams(ctx context.Context, in *WatchTeamsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchTeamsResponse], error)
+	// ListAuditLogs retrieves system audit trails (Admin only).
+	ListAuditLogs(ctx context.Context, in *ListAuditLogsRequest, opts ...grpc.CallOption) (*ListAuditLogsResponse, error)
 }
 
 type companyServiceClient struct {
@@ -98,6 +101,16 @@ func (c *companyServiceClient) WatchTeams(ctx context.Context, in *WatchTeamsReq
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type CompanyService_WatchTeamsClient = grpc.ServerStreamingClient[WatchTeamsResponse]
 
+func (c *companyServiceClient) ListAuditLogs(ctx context.Context, in *ListAuditLogsRequest, opts ...grpc.CallOption) (*ListAuditLogsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAuditLogsResponse)
+	err := c.cc.Invoke(ctx, CompanyService_ListAuditLogs_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CompanyServiceServer is the server API for CompanyService service.
 // All implementations must embed UnimplementedCompanyServiceServer
 // for forward compatibility.
@@ -112,6 +125,8 @@ type CompanyServiceServer interface {
 	OnboardCompany(context.Context, *OnboardCompanyRequest) (*OnboardCompanyResponse, error)
 	// WatchTeams streams updates about companies and users.
 	WatchTeams(*WatchTeamsRequest, grpc.ServerStreamingServer[WatchTeamsResponse]) error
+	// ListAuditLogs retrieves system audit trails (Admin only).
+	ListAuditLogs(context.Context, *ListAuditLogsRequest) (*ListAuditLogsResponse, error)
 	mustEmbedUnimplementedCompanyServiceServer()
 }
 
@@ -133,6 +148,9 @@ func (UnimplementedCompanyServiceServer) OnboardCompany(context.Context, *Onboar
 }
 func (UnimplementedCompanyServiceServer) WatchTeams(*WatchTeamsRequest, grpc.ServerStreamingServer[WatchTeamsResponse]) error {
 	return status.Error(codes.Unimplemented, "method WatchTeams not implemented")
+}
+func (UnimplementedCompanyServiceServer) ListAuditLogs(context.Context, *ListAuditLogsRequest) (*ListAuditLogsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListAuditLogs not implemented")
 }
 func (UnimplementedCompanyServiceServer) mustEmbedUnimplementedCompanyServiceServer() {}
 func (UnimplementedCompanyServiceServer) testEmbeddedByValue()                        {}
@@ -220,6 +238,24 @@ func _CompanyService_WatchTeams_Handler(srv interface{}, stream grpc.ServerStrea
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type CompanyService_WatchTeamsServer = grpc.ServerStreamingServer[WatchTeamsResponse]
 
+func _CompanyService_ListAuditLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAuditLogsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompanyServiceServer).ListAuditLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CompanyService_ListAuditLogs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompanyServiceServer).ListAuditLogs(ctx, req.(*ListAuditLogsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CompanyService_ServiceDesc is the grpc.ServiceDesc for CompanyService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -238,6 +274,10 @@ var CompanyService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "OnboardCompany",
 			Handler:    _CompanyService_OnboardCompany_Handler,
+		},
+		{
+			MethodName: "ListAuditLogs",
+			Handler:    _CompanyService_ListAuditLogs_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

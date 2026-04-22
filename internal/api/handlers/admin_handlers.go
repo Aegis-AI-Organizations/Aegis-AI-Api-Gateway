@@ -2,9 +2,28 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
+
+// ListAuditLogsHandler retrieves system audit logs via Brain gRPC.
+func (a *API) ListAuditLogsHandler(c *gin.Context) {
+	limitStr := c.DefaultQuery("limit", "50")
+	offsetStr := c.DefaultQuery("offset", "0")
+	companyID := c.Query("company_id")
+
+	limit, _ := strconv.Atoi(limitStr)
+	offset, _ := strconv.Atoi(offsetStr)
+
+	resp, err := a.GRPCClient.ListAuditLogs(c.Request.Context(), int32(limit), int32(offset), companyID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve audit logs"})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
 
 type CompanySearchResult struct {
 	ID              string `json:"id"`

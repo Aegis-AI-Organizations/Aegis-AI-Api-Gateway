@@ -56,6 +56,14 @@ func (m *MockCompanyServiceClient) WatchTeams(ctx context.Context, in *v1.WatchT
 	return args.Get(0).(v1.CompanyService_WatchTeamsClient), args.Error(1)
 }
 
+func (m *MockCompanyServiceClient) ListAuditLogs(ctx context.Context, in *v1.ListAuditLogsRequest, opts ...grpc.CallOption) (*v1.ListAuditLogsResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.ListAuditLogsResponse), args.Error(1)
+}
+
 func TestListCompaniesHandler_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockCompany := new(MockCompanyServiceClient)

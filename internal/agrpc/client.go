@@ -361,3 +361,14 @@ func (c *Client) WatchTeams(ctx context.Context) (v1.CompanyService_WatchTeamsCl
 	}
 	return c.CompanyService.WatchTeams(WithMetadata(ctx), &v1.WatchTeamsRequest{})
 }
+
+func (c *Client) ListAuditLogs(ctx context.Context, limit, offset int32, companyID string) (*v1.ListAuditLogsResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	return c.CompanyService.ListAuditLogs(WithMetadata(ctx), &v1.ListAuditLogsRequest{
+		Limit:     limit,
+		Offset:    offset,
+		CompanyId: companyID,
+	})
+}
