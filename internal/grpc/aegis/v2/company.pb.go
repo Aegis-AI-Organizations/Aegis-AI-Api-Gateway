@@ -21,6 +21,226 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ListAuditLogsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	CompanyId     string                 `protobuf:"bytes,3,opt,name=company_id,json=companyId,proto3" json:"company_id,omitempty"` // Optional filter
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAuditLogsRequest) Reset() {
+	*x = ListAuditLogsRequest{}
+	mi := &file_aegis_v2_company_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAuditLogsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAuditLogsRequest) ProtoMessage() {}
+
+func (x *ListAuditLogsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_company_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAuditLogsRequest.ProtoReflect.Descriptor instead.
+func (*ListAuditLogsRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ListAuditLogsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListAuditLogsRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *ListAuditLogsRequest) GetCompanyId() string {
+	if x != nil {
+		return x.CompanyId
+	}
+	return ""
+}
+
+type ListAuditLogsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Logs          []*AuditLogEntry       `protobuf:"bytes,1,rep,name=logs,proto3" json:"logs,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAuditLogsResponse) Reset() {
+	*x = ListAuditLogsResponse{}
+	mi := &file_aegis_v2_company_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAuditLogsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAuditLogsResponse) ProtoMessage() {}
+
+func (x *ListAuditLogsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_company_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAuditLogsResponse.ProtoReflect.Descriptor instead.
+func (*ListAuditLogsResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ListAuditLogsResponse) GetLogs() []*AuditLogEntry {
+	if x != nil {
+		return x.Logs
+	}
+	return nil
+}
+
+func (x *ListAuditLogsResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type AuditLogEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	CompanyId     string                 `protobuf:"bytes,3,opt,name=company_id,json=companyId,proto3" json:"company_id,omitempty"`
+	Action        string                 `protobuf:"bytes,4,opt,name=action,proto3" json:"action,omitempty"`
+	TargetType    string                 `protobuf:"bytes,5,opt,name=target_type,json=targetType,proto3" json:"target_type,omitempty"`
+	TargetId      string                 `protobuf:"bytes,6,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	Details       string                 `protobuf:"bytes,7,opt,name=details,proto3" json:"details,omitempty"` // JSON string
+	IpAddress     string                 `protobuf:"bytes,8,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
+	Timestamp     string                 `protobuf:"bytes,9,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuditLogEntry) Reset() {
+	*x = AuditLogEntry{}
+	mi := &file_aegis_v2_company_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuditLogEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuditLogEntry) ProtoMessage() {}
+
+func (x *AuditLogEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_company_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuditLogEntry.ProtoReflect.Descriptor instead.
+func (*AuditLogEntry) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *AuditLogEntry) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *AuditLogEntry) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *AuditLogEntry) GetCompanyId() string {
+	if x != nil {
+		return x.CompanyId
+	}
+	return ""
+}
+
+func (x *AuditLogEntry) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *AuditLogEntry) GetTargetType() string {
+	if x != nil {
+		return x.TargetType
+	}
+	return ""
+}
+
+func (x *AuditLogEntry) GetTargetId() string {
+	if x != nil {
+		return x.TargetId
+	}
+	return ""
+}
+
+func (x *AuditLogEntry) GetDetails() string {
+	if x != nil {
+		return x.Details
+	}
+	return ""
+}
+
+func (x *AuditLogEntry) GetIpAddress() string {
+	if x != nil {
+		return x.IpAddress
+	}
+	return ""
+}
+
+func (x *AuditLogEntry) GetTimestamp() string {
+	if x != nil {
+		return x.Timestamp
+	}
+	return ""
+}
+
 type WatchTeamsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -29,7 +249,7 @@ type WatchTeamsRequest struct {
 
 func (x *WatchTeamsRequest) Reset() {
 	*x = WatchTeamsRequest{}
-	mi := &file_aegis_v2_company_proto_msgTypes[0]
+	mi := &file_aegis_v2_company_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -41,7 +261,7 @@ func (x *WatchTeamsRequest) String() string {
 func (*WatchTeamsRequest) ProtoMessage() {}
 
 func (x *WatchTeamsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[0]
+	mi := &file_aegis_v2_company_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -54,7 +274,7 @@ func (x *WatchTeamsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchTeamsRequest.ProtoReflect.Descriptor instead.
 func (*WatchTeamsRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{0}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{3}
 }
 
 type WatchTeamsResponse struct {
@@ -68,7 +288,7 @@ type WatchTeamsResponse struct {
 
 func (x *WatchTeamsResponse) Reset() {
 	*x = WatchTeamsResponse{}
-	mi := &file_aegis_v2_company_proto_msgTypes[1]
+	mi := &file_aegis_v2_company_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -80,7 +300,7 @@ func (x *WatchTeamsResponse) String() string {
 func (*WatchTeamsResponse) ProtoMessage() {}
 
 func (x *WatchTeamsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[1]
+	mi := &file_aegis_v2_company_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -93,7 +313,7 @@ func (x *WatchTeamsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WatchTeamsResponse.ProtoReflect.Descriptor instead.
 func (*WatchTeamsResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{1}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *WatchTeamsResponse) GetEventType() string {
@@ -127,7 +347,7 @@ type CreateCompanyRequest struct {
 
 func (x *CreateCompanyRequest) Reset() {
 	*x = CreateCompanyRequest{}
-	mi := &file_aegis_v2_company_proto_msgTypes[2]
+	mi := &file_aegis_v2_company_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -139,7 +359,7 @@ func (x *CreateCompanyRequest) String() string {
 func (*CreateCompanyRequest) ProtoMessage() {}
 
 func (x *CreateCompanyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[2]
+	mi := &file_aegis_v2_company_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +372,7 @@ func (x *CreateCompanyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCompanyRequest.ProtoReflect.Descriptor instead.
 func (*CreateCompanyRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{2}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CreateCompanyRequest) GetName() string {
@@ -179,7 +399,7 @@ type CreateCompanyResponse struct {
 
 func (x *CreateCompanyResponse) Reset() {
 	*x = CreateCompanyResponse{}
-	mi := &file_aegis_v2_company_proto_msgTypes[3]
+	mi := &file_aegis_v2_company_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -191,7 +411,7 @@ func (x *CreateCompanyResponse) String() string {
 func (*CreateCompanyResponse) ProtoMessage() {}
 
 func (x *CreateCompanyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[3]
+	mi := &file_aegis_v2_company_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -204,7 +424,7 @@ func (x *CreateCompanyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCompanyResponse.ProtoReflect.Descriptor instead.
 func (*CreateCompanyResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{3}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *CreateCompanyResponse) GetId() string {
@@ -233,7 +453,7 @@ type OnboardCompanyRequest struct {
 
 func (x *OnboardCompanyRequest) Reset() {
 	*x = OnboardCompanyRequest{}
-	mi := &file_aegis_v2_company_proto_msgTypes[4]
+	mi := &file_aegis_v2_company_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -245,7 +465,7 @@ func (x *OnboardCompanyRequest) String() string {
 func (*OnboardCompanyRequest) ProtoMessage() {}
 
 func (x *OnboardCompanyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[4]
+	mi := &file_aegis_v2_company_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -258,7 +478,7 @@ func (x *OnboardCompanyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnboardCompanyRequest.ProtoReflect.Descriptor instead.
 func (*OnboardCompanyRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{4}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *OnboardCompanyRequest) GetCompanyName() string {
@@ -300,7 +520,7 @@ type OnboardCompanyResponse struct {
 
 func (x *OnboardCompanyResponse) Reset() {
 	*x = OnboardCompanyResponse{}
-	mi := &file_aegis_v2_company_proto_msgTypes[5]
+	mi := &file_aegis_v2_company_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -312,7 +532,7 @@ func (x *OnboardCompanyResponse) String() string {
 func (*OnboardCompanyResponse) ProtoMessage() {}
 
 func (x *OnboardCompanyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[5]
+	mi := &file_aegis_v2_company_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -325,7 +545,7 @@ func (x *OnboardCompanyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OnboardCompanyResponse.ProtoReflect.Descriptor instead.
 func (*OnboardCompanyResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{5}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *OnboardCompanyResponse) GetCompanyId() string {
@@ -357,7 +577,7 @@ type ListCompaniesRequest struct {
 
 func (x *ListCompaniesRequest) Reset() {
 	*x = ListCompaniesRequest{}
-	mi := &file_aegis_v2_company_proto_msgTypes[6]
+	mi := &file_aegis_v2_company_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -369,7 +589,7 @@ func (x *ListCompaniesRequest) String() string {
 func (*ListCompaniesRequest) ProtoMessage() {}
 
 func (x *ListCompaniesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[6]
+	mi := &file_aegis_v2_company_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -382,7 +602,7 @@ func (x *ListCompaniesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCompaniesRequest.ProtoReflect.Descriptor instead.
 func (*ListCompaniesRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{6}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{9}
 }
 
 type ListCompaniesResponse struct {
@@ -394,7 +614,7 @@ type ListCompaniesResponse struct {
 
 func (x *ListCompaniesResponse) Reset() {
 	*x = ListCompaniesResponse{}
-	mi := &file_aegis_v2_company_proto_msgTypes[7]
+	mi := &file_aegis_v2_company_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -406,7 +626,7 @@ func (x *ListCompaniesResponse) String() string {
 func (*ListCompaniesResponse) ProtoMessage() {}
 
 func (x *ListCompaniesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[7]
+	mi := &file_aegis_v2_company_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -419,7 +639,7 @@ func (x *ListCompaniesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCompaniesResponse.ProtoReflect.Descriptor instead.
 func (*ListCompaniesResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{7}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListCompaniesResponse) GetCompanies() []*CompanySummary {
@@ -444,7 +664,7 @@ type CompanySummary struct {
 
 func (x *CompanySummary) Reset() {
 	*x = CompanySummary{}
-	mi := &file_aegis_v2_company_proto_msgTypes[8]
+	mi := &file_aegis_v2_company_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -456,7 +676,7 @@ func (x *CompanySummary) String() string {
 func (*CompanySummary) ProtoMessage() {}
 
 func (x *CompanySummary) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[8]
+	mi := &file_aegis_v2_company_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -469,7 +689,7 @@ func (x *CompanySummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompanySummary.ProtoReflect.Descriptor instead.
 func (*CompanySummary) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{8}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *CompanySummary) GetId() string {
@@ -525,7 +745,28 @@ var File_aegis_v2_company_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_company_proto_rawDesc = "" +
 	"\n" +
-	"\x16aegis/v2/company.proto\x12\baegis.v2\"\x13\n" +
+	"\x16aegis/v2/company.proto\x12\baegis.v2\"c\n" +
+	"\x14ListAuditLogsRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x02 \x01(\x05R\x06offset\x12\x1d\n" +
+	"\n" +
+	"company_id\x18\x03 \x01(\tR\tcompanyId\"Z\n" +
+	"\x15ListAuditLogsResponse\x12+\n" +
+	"\x04logs\x18\x01 \x03(\v2\x17.aegis.v2.AuditLogEntryR\x04logs\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\x84\x02\n" +
+	"\rAuditLogEntry\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1d\n" +
+	"\n" +
+	"company_id\x18\x03 \x01(\tR\tcompanyId\x12\x16\n" +
+	"\x06action\x18\x04 \x01(\tR\x06action\x12\x1f\n" +
+	"\vtarget_type\x18\x05 \x01(\tR\n" +
+	"targetType\x12\x1b\n" +
+	"\ttarget_id\x18\x06 \x01(\tR\btargetId\x12\x18\n" +
+	"\adetails\x18\a \x01(\tR\adetails\x12\x1d\n" +
+	"\n" +
+	"ip_address\x18\b \x01(\tR\tipAddress\x12\x1c\n" +
+	"\ttimestamp\x18\t \x01(\tR\ttimestamp\"\x13\n" +
 	"\x11WatchTeamsRequest\"q\n" +
 	"\x12WatchTeamsResponse\x12\x1d\n" +
 	"\n" +
@@ -564,13 +805,14 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\fmember_count\x18\x05 \x01(\x05R\vmemberCount\x12)\n" +
 	"\x10deployment_token\x18\x06 \x01(\tR\x0fdeploymentToken\x12\x1d\n" +
 	"\n" +
-	"avatar_url\x18\a \x01(\tR\tavatarUrl2\xd4\x02\n" +
+	"avatar_url\x18\a \x01(\tR\tavatarUrl2\xa6\x03\n" +
 	"\x0eCompanyService\x12P\n" +
 	"\rCreateCompany\x12\x1e.aegis.v2.CreateCompanyRequest\x1a\x1f.aegis.v2.CreateCompanyResponse\x12P\n" +
 	"\rListCompanies\x12\x1e.aegis.v2.ListCompaniesRequest\x1a\x1f.aegis.v2.ListCompaniesResponse\x12S\n" +
 	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponse\x12I\n" +
 	"\n" +
-	"WatchTeams\x12\x1b.aegis.v2.WatchTeamsRequest\x1a\x1c.aegis.v2.WatchTeamsResponse0\x01BPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
+	"WatchTeams\x12\x1b.aegis.v2.WatchTeamsRequest\x1a\x1c.aegis.v2.WatchTeamsResponse0\x01\x12P\n" +
+	"\rListAuditLogs\x12\x1e.aegis.v2.ListAuditLogsRequest\x1a\x1f.aegis.v2.ListAuditLogsResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_company_proto_rawDescOnce sync.Once
@@ -584,33 +826,39 @@ func file_aegis_v2_company_proto_rawDescGZIP() []byte {
 	return file_aegis_v2_company_proto_rawDescData
 }
 
-var file_aegis_v2_company_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_aegis_v2_company_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_aegis_v2_company_proto_goTypes = []any{
-	(*WatchTeamsRequest)(nil),      // 0: aegis.v2.WatchTeamsRequest
-	(*WatchTeamsResponse)(nil),     // 1: aegis.v2.WatchTeamsResponse
-	(*CreateCompanyRequest)(nil),   // 2: aegis.v2.CreateCompanyRequest
-	(*CreateCompanyResponse)(nil),  // 3: aegis.v2.CreateCompanyResponse
-	(*OnboardCompanyRequest)(nil),  // 4: aegis.v2.OnboardCompanyRequest
-	(*OnboardCompanyResponse)(nil), // 5: aegis.v2.OnboardCompanyResponse
-	(*ListCompaniesRequest)(nil),   // 6: aegis.v2.ListCompaniesRequest
-	(*ListCompaniesResponse)(nil),  // 7: aegis.v2.ListCompaniesResponse
-	(*CompanySummary)(nil),         // 8: aegis.v2.CompanySummary
+	(*ListAuditLogsRequest)(nil),   // 0: aegis.v2.ListAuditLogsRequest
+	(*ListAuditLogsResponse)(nil),  // 1: aegis.v2.ListAuditLogsResponse
+	(*AuditLogEntry)(nil),          // 2: aegis.v2.AuditLogEntry
+	(*WatchTeamsRequest)(nil),      // 3: aegis.v2.WatchTeamsRequest
+	(*WatchTeamsResponse)(nil),     // 4: aegis.v2.WatchTeamsResponse
+	(*CreateCompanyRequest)(nil),   // 5: aegis.v2.CreateCompanyRequest
+	(*CreateCompanyResponse)(nil),  // 6: aegis.v2.CreateCompanyResponse
+	(*OnboardCompanyRequest)(nil),  // 7: aegis.v2.OnboardCompanyRequest
+	(*OnboardCompanyResponse)(nil), // 8: aegis.v2.OnboardCompanyResponse
+	(*ListCompaniesRequest)(nil),   // 9: aegis.v2.ListCompaniesRequest
+	(*ListCompaniesResponse)(nil),  // 10: aegis.v2.ListCompaniesResponse
+	(*CompanySummary)(nil),         // 11: aegis.v2.CompanySummary
 }
 var file_aegis_v2_company_proto_depIdxs = []int32{
-	8, // 0: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
-	2, // 1: aegis.v2.CompanyService.CreateCompany:input_type -> aegis.v2.CreateCompanyRequest
-	6, // 2: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
-	4, // 3: aegis.v2.CompanyService.OnboardCompany:input_type -> aegis.v2.OnboardCompanyRequest
-	0, // 4: aegis.v2.CompanyService.WatchTeams:input_type -> aegis.v2.WatchTeamsRequest
-	3, // 5: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
-	7, // 6: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
-	5, // 7: aegis.v2.CompanyService.OnboardCompany:output_type -> aegis.v2.OnboardCompanyResponse
-	1, // 8: aegis.v2.CompanyService.WatchTeams:output_type -> aegis.v2.WatchTeamsResponse
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	2,  // 0: aegis.v2.ListAuditLogsResponse.logs:type_name -> aegis.v2.AuditLogEntry
+	11, // 1: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
+	5,  // 2: aegis.v2.CompanyService.CreateCompany:input_type -> aegis.v2.CreateCompanyRequest
+	9,  // 3: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
+	7,  // 4: aegis.v2.CompanyService.OnboardCompany:input_type -> aegis.v2.OnboardCompanyRequest
+	3,  // 5: aegis.v2.CompanyService.WatchTeams:input_type -> aegis.v2.WatchTeamsRequest
+	0,  // 6: aegis.v2.CompanyService.ListAuditLogs:input_type -> aegis.v2.ListAuditLogsRequest
+	6,  // 7: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
+	10, // 8: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
+	8,  // 9: aegis.v2.CompanyService.OnboardCompany:output_type -> aegis.v2.OnboardCompanyResponse
+	4,  // 10: aegis.v2.CompanyService.WatchTeams:output_type -> aegis.v2.WatchTeamsResponse
+	1,  // 11: aegis.v2.CompanyService.ListAuditLogs:output_type -> aegis.v2.ListAuditLogsResponse
+	7,  // [7:12] is the sub-list for method output_type
+	2,  // [2:7] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_aegis_v2_company_proto_init() }
@@ -624,7 +872,7 @@ func file_aegis_v2_company_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v2_company_proto_rawDesc), len(file_aegis_v2_company_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
