@@ -465,7 +465,7 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\x0eCompanyService\x12P\n" +
 	"\rCreateCompany\x12\x1e.aegis.v2.CreateCompanyRequest\x1a\x1f.aegis.v2.CreateCompanyResponse\x12P\n" +
 	"\rListCompanies\x12\x1e.aegis.v2.ListCompaniesRequest\x1a\x1f.aegis.v2.ListCompaniesResponse\x12S\n" +
-	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v2b\x06proto3"
+	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_company_proto_rawDescOnce sync.Once

@@ -845,7 +845,7 @@ const file_aegis_v2_auth_proto_rawDesc = "" +
 	"\rUpdateProfile\x12\x1e.aegis.v2.UpdateProfileRequest\x1a\x1f.aegis.v2.UpdateProfileResponse\x12J\n" +
 	"\vUpdateEmail\x12\x1c.aegis.v2.UpdateEmailRequest\x1a\x1d.aegis.v2.UpdateEmailResponse\x12S\n" +
 	"\x0eUpdatePassword\x12\x1f.aegis.v2.UpdatePasswordRequest\x1a .aegis.v2.UpdatePasswordResponse\x12M\n" +
-	"\fRemoveAvatar\x12\x1d.aegis.v2.RemoveAvatarRequest\x1a\x1e.aegis.v2.RemoveAvatarResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v2b\x06proto3"
+	"\fRemoveAvatar\x12\x1d.aegis.v2.RemoveAvatarRequest\x1a\x1e.aegis.v2.RemoveAvatarResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_auth_proto_rawDescOnce sync.Once
