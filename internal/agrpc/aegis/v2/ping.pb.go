@@ -110,7 +110,7 @@ const file_aegis_v2_ping_proto_rawDesc = "" +
 	"\fPingResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage2D\n" +
 	"\vPingService\x125\n" +
-	"\x04Ping\x12\x15.aegis.v2.PingRequest\x1a\x16.aegis.v2.PingResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v2b\x06proto3"
+	"\x04Ping\x12\x15.aegis.v2.PingRequest\x1a\x16.aegis.v2.PingResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_ping_proto_rawDescOnce sync.Once

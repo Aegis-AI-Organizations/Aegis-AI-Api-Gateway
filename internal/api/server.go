@@ -16,6 +16,9 @@ func NewRouter(gc *agrpc.Client) *gin.Engine {
 	// Apply CORS middleware
 	r.Use(middleware.CORSMiddleware())
 
+	// Apply Rate Limiting (10 req/s, burst of 20)
+	r.Use(middleware.RateLimiter(10, 20))
+
 	h := &handlers.API{
 		GRPCClient: gc,
 	}

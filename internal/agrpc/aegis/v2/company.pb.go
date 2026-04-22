@@ -451,7 +451,7 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\x10deployment_token\x18\x03 \x01(\tR\x0fdeploymentToken\"\x16\n" +
 	"\x14ListCompaniesRequest\"O\n" +
 	"\x15ListCompaniesResponse\x126\n" +
-	"\tcompanies\x18\x01 \x03(\v2\x18.aegis.v2.CompanySummaryR\tcompanies\"\xbe\x01\n" +
+	"\tcompanies\x18\x01 \x03(\v2\x18.aegis.v2.CompanySummaryR\tcompanies\"\xdd\x01\n" +
 	"\x0eCompanySummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
@@ -459,11 +459,13 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\vowner_email\x18\x04 \x01(\tR\n" +
 	"ownerEmail\x12!\n" +
 	"\fmember_count\x18\x05 \x01(\x05R\vmemberCount\x12)\n" +
-	"\x10deployment_token\x18\x06 \x01(\tR\x0fdeploymentToken2\x89\x02\n" +
+	"\x10deployment_token\x18\x06 \x01(\tR\x0fdeploymentToken\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\a \x01(\tR\tavatarUrl2\x89\x02\n" +
 	"\x0eCompanyService\x12P\n" +
 	"\rCreateCompany\x12\x1e.aegis.v2.CreateCompanyRequest\x1a\x1f.aegis.v2.CreateCompanyResponse\x12P\n" +
 	"\rListCompanies\x12\x1e.aegis.v2.ListCompaniesRequest\x1a\x1f.aegis.v2.ListCompaniesResponse\x12S\n" +
-	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponseB;Z9github.com/Aegis-AI-Organizations/aegis-ai-proto/aegis/v2b\x06proto3"
+	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_company_proto_rawDescOnce sync.Once
