@@ -22,6 +22,7 @@ const (
 	CompanyService_CreateCompany_FullMethodName  = "/aegis.v2.CompanyService/CreateCompany"
 	CompanyService_ListCompanies_FullMethodName  = "/aegis.v2.CompanyService/ListCompanies"
 	CompanyService_OnboardCompany_FullMethodName = "/aegis.v2.CompanyService/OnboardCompany"
+	CompanyService_WatchTeams_FullMethodName     = "/aegis.v2.CompanyService/WatchTeams"
 )
 
 // CompanyServiceClient is the client API for CompanyService service.
@@ -36,6 +37,8 @@ type CompanyServiceClient interface {
 	ListCompanies(ctx context.Context, in *ListCompaniesRequest, opts ...grpc.CallOption) (*ListCompaniesResponse, error)
 	// OnboardCompany handles the creation of a new company and its owner in one step.
 	OnboardCompany(ctx context.Context, in *OnboardCompanyRequest, opts ...grpc.CallOption) (*OnboardCompanyResponse, error)
+	// WatchTeams streams updates about companies and users.
+	WatchTeams(ctx context.Context, in *WatchTeamsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchTeamsResponse], error)
 }
 
 type companyServiceClient struct {
@@ -76,6 +79,25 @@ func (c *companyServiceClient) OnboardCompany(ctx context.Context, in *OnboardCo
 	return out, nil
 }
 
+func (c *companyServiceClient) WatchTeams(ctx context.Context, in *WatchTeamsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchTeamsResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &CompanyService_ServiceDesc.Streams[0], CompanyService_WatchTeams_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[WatchTeamsRequest, WatchTeamsResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CompanyService_WatchTeamsClient = grpc.ServerStreamingClient[WatchTeamsResponse]
+
 // CompanyServiceServer is the server API for CompanyService service.
 // All implementations must embed UnimplementedCompanyServiceServer
 // for forward compatibility.
@@ -88,6 +110,8 @@ type CompanyServiceServer interface {
 	ListCompanies(context.Context, *ListCompaniesRequest) (*ListCompaniesResponse, error)
 	// OnboardCompany handles the creation of a new company and its owner in one step.
 	OnboardCompany(context.Context, *OnboardCompanyRequest) (*OnboardCompanyResponse, error)
+	// WatchTeams streams updates about companies and users.
+	WatchTeams(*WatchTeamsRequest, grpc.ServerStreamingServer[WatchTeamsResponse]) error
 	mustEmbedUnimplementedCompanyServiceServer()
 }
 
@@ -106,6 +130,9 @@ func (UnimplementedCompanyServiceServer) ListCompanies(context.Context, *ListCom
 }
 func (UnimplementedCompanyServiceServer) OnboardCompany(context.Context, *OnboardCompanyRequest) (*OnboardCompanyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method OnboardCompany not implemented")
+}
+func (UnimplementedCompanyServiceServer) WatchTeams(*WatchTeamsRequest, grpc.ServerStreamingServer[WatchTeamsResponse]) error {
+	return status.Error(codes.Unimplemented, "method WatchTeams not implemented")
 }
 func (UnimplementedCompanyServiceServer) mustEmbedUnimplementedCompanyServiceServer() {}
 func (UnimplementedCompanyServiceServer) testEmbeddedByValue()                        {}
@@ -182,6 +209,17 @@ func _CompanyService_OnboardCompany_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CompanyService_WatchTeams_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(WatchTeamsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(CompanyServiceServer).WatchTeams(m, &grpc.GenericServerStream[WatchTeamsRequest, WatchTeamsResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type CompanyService_WatchTeamsServer = grpc.ServerStreamingServer[WatchTeamsResponse]
+
 // CompanyService_ServiceDesc is the grpc.ServiceDesc for CompanyService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +240,12 @@ var CompanyService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _CompanyService_OnboardCompany_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "WatchTeams",
+			Handler:       _CompanyService_WatchTeams_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "aegis/v2/company.proto",
 }
