@@ -354,3 +354,10 @@ func (c *Client) OnboardCompany(ctx context.Context, companyName, ownerName, own
 		OwnerPassword: ownerPassword,
 	})
 }
+
+func (c *Client) WatchTeams(ctx context.Context) (v1.CompanyService_WatchTeamsClient, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	return c.CompanyService.WatchTeams(WithMetadata(ctx), &v1.WatchTeamsRequest{})
+}
