@@ -66,6 +66,13 @@ func NewRouter(gc *agrpc.Client) *gin.Engine {
 		auth.GET("/scans/:id/vulnerabilities", middleware.RequirePermission(middleware.ScopeVulnerabilityRead), h.GetVulnerabilitiesHandler)
 		auth.GET("/scans/:id/report", middleware.RequirePermission(middleware.ScopeReportRead), h.GetScanReportHandler)
 
+		// Billing routes
+		auth.GET("/billing/balance", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetBalanceHandler)
+		auth.GET("/billing/ledger", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetLedgerHandler)
+
+		// Admin billing adjustment
+		admin.POST("/companies/:id/tokens/adjust", middleware.RequirePermission(middleware.ScopeAdminWrite), h.AdjustTokensHandler)
+
 		// Vulnerability routes
 		auth.GET("/vulnerabilities/:id/evidences", middleware.RequirePermission(middleware.ScopeVulnerabilityRead), h.GetEvidencesHandler)
 

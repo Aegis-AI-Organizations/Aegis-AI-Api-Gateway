@@ -17,6 +17,8 @@ const (
 	ScopeUserWrite         = "user:write"
 	ScopeCompanyRead       = "company:read"
 	ScopeCompanyWrite      = "company:write"
+	ScopeBillingRead       = "billing:read"
+	ScopeBillingWrite      = "billing:write"
 	ScopeAdminWrite        = "admin:write"
 	ScopeAll               = "*"
 )
@@ -52,6 +54,7 @@ var roleScopes = map[types.UserRole][]string{
 		ScopeUserWrite,
 		ScopeCompanyRead,
 		ScopeCompanyWrite,
+		ScopeBillingRead,
 	},
 	types.RoleAdmin: {
 		ScopeAll,

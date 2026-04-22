@@ -9,6 +9,9 @@ import (
 
 type CreateScanRequest struct {
 	TargetImage string `json:"target_image"`
+	IpCount     int32  `json:"ip_count"`
+	ApiCount    int32  `json:"api_count"`
+	WebappCount int32  `json:"webapp_count"`
 }
 
 type CreateScanResponse struct {

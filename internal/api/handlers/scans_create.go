@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
 	"github.com/gin-gonic/gin"
 )
@@ -20,6 +21,34 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 		return
 	}
 
+	companyID, _ := c.Get(string(middleware.CompanyIDKey))
+	idStr := companyID.(string)
+
+	// 1. Billing Pre-flight Check
+	check, err := a.GRPCClient.PreFlightCheck(c.Request.Context(), idStr, req.IpCount, req.ApiCount, req.WebappCount)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Billing system unavailable"})
+		return
+	}
+
+	if !check.SufficientBalance {
+		c.JSON(http.StatusPaymentRequired, gin.H{
+			"error":               "Insufficient token balance",
+			"estimated_cost":      check.EstimatedCost,
+			"current_balance":     check.CurrentBalance,
+			"required_additional": check.EstimatedCost - check.CurrentBalance,
+		})
+		return
+	}
+
+	// 2. Deduct tokens
+	_, err = a.GRPCClient.AdjustTokens(c.Request.Context(), idStr, -check.EstimatedCost, "Scan consumption: "+req.TargetImage)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process token consumption"})
+		return
+	}
+
+	// 3. Launch Scan
 	resp, err := a.GRPCClient.StartScan(c.Request.Context(), req.TargetImage)
 	if err != nil {
 		log.Printf("Failed to start scan via gRPC: %v", err)

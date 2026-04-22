@@ -23,6 +23,7 @@ type Client struct {
 	VulnerabilityService v1.VulnerabilityServiceClient
 	AuthService          v1.AuthServiceClient
 	CompanyService       v1.CompanyServiceClient
+	BillingService       v1.BillingServiceClient
 }
 
 // TLSConfig holds the paths to the certificates for mTLS.
@@ -95,6 +96,7 @@ func NewClient(addr string, conf TLSConfig) (*Client, error) {
 		VulnerabilityService: v1.NewVulnerabilityServiceClient(conn),
 		AuthService:          v1.NewAuthServiceClient(conn),
 		CompanyService:       v1.NewCompanyServiceClient(conn),
+		BillingService:       v1.NewBillingServiceClient(conn),
 	}, nil
 }
 
@@ -370,5 +372,48 @@ func (c *Client) ListAuditLogs(ctx context.Context, limit, offset int32, company
 		Limit:     limit,
 		Offset:    offset,
 		CompanyId: companyID,
+	})
+}
+
+func (c *Client) GetBalance(ctx context.Context, companyID string) (*v1.GetBalanceResponse, error) {
+	if c.BillingService == nil {
+		return nil, fmt.Errorf("billing service not initialized")
+	}
+	return c.BillingService.GetBalance(WithMetadata(ctx), &v1.GetBalanceRequest{CompanyId: companyID})
+}
+
+func (c *Client) GetLedger(ctx context.Context, companyID string, limit, offset int32) (*v1.GetLedgerResponse, error) {
+	if c.BillingService == nil {
+		return nil, fmt.Errorf("billing service not initialized")
+	}
+	return c.BillingService.GetLedger(WithMetadata(ctx), &v1.GetLedgerRequest{
+		CompanyId: companyID,
+		Limit:     limit,
+		Offset:    offset,
+	})
+}
+
+func (c *Client) AdjustTokens(ctx context.Context, companyID string, amount int64, reason string) (*v1.AdjustTokensResponse, error) {
+	if c.BillingService == nil {
+		return nil, fmt.Errorf("billing service not initialized")
+	}
+	return c.BillingService.AdjustTokens(WithMetadata(ctx), &v1.AdjustTokensRequest{
+		CompanyId: companyID,
+		Amount:    amount,
+		Reason:    reason,
+	})
+}
+
+func (c *Client) PreFlightCheck(ctx context.Context, companyID string, ipCount, apiCount, webappCount int32) (*v1.PreFlightCheckResponse, error) {
+	if c.BillingService == nil {
+		return nil, fmt.Errorf("billing service not initialized")
+	}
+	return c.BillingService.PreFlightCheck(WithMetadata(ctx), &v1.PreFlightCheckRequest{
+		CompanyId: companyID,
+		TargetConfig: &v1.TargetConfig{
+			IpCount:     ipCount,
+			ApiCount:    apiCount,
+			WebappCount: webappCount,
+		},
 	})
 }

@@ -21,6 +21,143 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type OrganizationSize int32
+
+const (
+	OrganizationSize_ORGANIZATION_SIZE_UNSPECIFIED OrganizationSize = 0
+	OrganizationSize_ORGANIZATION_SIZE_1           OrganizationSize = 1
+	OrganizationSize_ORGANIZATION_SIZE_2_10        OrganizationSize = 2
+	OrganizationSize_ORGANIZATION_SIZE_11_50       OrganizationSize = 3
+	OrganizationSize_ORGANIZATION_SIZE_51_200      OrganizationSize = 4
+	OrganizationSize_ORGANIZATION_SIZE_201_500     OrganizationSize = 5
+	OrganizationSize_ORGANIZATION_SIZE_501_1000    OrganizationSize = 6
+	OrganizationSize_ORGANIZATION_SIZE_1001_5000   OrganizationSize = 7
+	OrganizationSize_ORGANIZATION_SIZE_5001_10000  OrganizationSize = 8
+	OrganizationSize_ORGANIZATION_SIZE_10001_PLUS  OrganizationSize = 9
+)
+
+// Enum value maps for OrganizationSize.
+var (
+	OrganizationSize_name = map[int32]string{
+		0: "ORGANIZATION_SIZE_UNSPECIFIED",
+		1: "ORGANIZATION_SIZE_1",
+		2: "ORGANIZATION_SIZE_2_10",
+		3: "ORGANIZATION_SIZE_11_50",
+		4: "ORGANIZATION_SIZE_51_200",
+		5: "ORGANIZATION_SIZE_201_500",
+		6: "ORGANIZATION_SIZE_501_1000",
+		7: "ORGANIZATION_SIZE_1001_5000",
+		8: "ORGANIZATION_SIZE_5001_10000",
+		9: "ORGANIZATION_SIZE_10001_PLUS",
+	}
+	OrganizationSize_value = map[string]int32{
+		"ORGANIZATION_SIZE_UNSPECIFIED": 0,
+		"ORGANIZATION_SIZE_1":           1,
+		"ORGANIZATION_SIZE_2_10":        2,
+		"ORGANIZATION_SIZE_11_50":       3,
+		"ORGANIZATION_SIZE_51_200":      4,
+		"ORGANIZATION_SIZE_201_500":     5,
+		"ORGANIZATION_SIZE_501_1000":    6,
+		"ORGANIZATION_SIZE_1001_5000":   7,
+		"ORGANIZATION_SIZE_5001_10000":  8,
+		"ORGANIZATION_SIZE_10001_PLUS":  9,
+	}
+)
+
+func (x OrganizationSize) Enum() *OrganizationSize {
+	p := new(OrganizationSize)
+	*p = x
+	return p
+}
+
+func (x OrganizationSize) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (OrganizationSize) Descriptor() protoreflect.EnumDescriptor {
+	return file_aegis_v2_company_proto_enumTypes[0].Descriptor()
+}
+
+func (OrganizationSize) Type() protoreflect.EnumType {
+	return &file_aegis_v2_company_proto_enumTypes[0]
+}
+
+func (x OrganizationSize) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use OrganizationSize.Descriptor instead.
+func (OrganizationSize) EnumDescriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{0}
+}
+
+type OrganizationType int32
+
+const (
+	OrganizationType_ORGANIZATION_TYPE_UNSPECIFIED                OrganizationType = 0
+	OrganizationType_ORGANIZATION_TYPE_IT_SERVICES_AND_CONSULTING OrganizationType = 1
+	OrganizationType_ORGANIZATION_TYPE_SOFTWARE_DEVELOPMENT       OrganizationType = 2
+	OrganizationType_ORGANIZATION_TYPE_FINANCIAL_SERVICES         OrganizationType = 3
+	OrganizationType_ORGANIZATION_TYPE_HOSPITALS_AND_HEALTH_CARE  OrganizationType = 4
+	OrganizationType_ORGANIZATION_TYPE_RETAIL                     OrganizationType = 5
+	OrganizationType_ORGANIZATION_TYPE_GOVERNMENT_ADMINISTRATION  OrganizationType = 6
+	OrganizationType_ORGANIZATION_TYPE_MANUFACTURING              OrganizationType = 7
+	OrganizationType_ORGANIZATION_TYPE_OTHER                      OrganizationType = 8
+)
+
+// Enum value maps for OrganizationType.
+var (
+	OrganizationType_name = map[int32]string{
+		0: "ORGANIZATION_TYPE_UNSPECIFIED",
+		1: "ORGANIZATION_TYPE_IT_SERVICES_AND_CONSULTING",
+		2: "ORGANIZATION_TYPE_SOFTWARE_DEVELOPMENT",
+		3: "ORGANIZATION_TYPE_FINANCIAL_SERVICES",
+		4: "ORGANIZATION_TYPE_HOSPITALS_AND_HEALTH_CARE",
+		5: "ORGANIZATION_TYPE_RETAIL",
+		6: "ORGANIZATION_TYPE_GOVERNMENT_ADMINISTRATION",
+		7: "ORGANIZATION_TYPE_MANUFACTURING",
+		8: "ORGANIZATION_TYPE_OTHER",
+	}
+	OrganizationType_value = map[string]int32{
+		"ORGANIZATION_TYPE_UNSPECIFIED":                0,
+		"ORGANIZATION_TYPE_IT_SERVICES_AND_CONSULTING": 1,
+		"ORGANIZATION_TYPE_SOFTWARE_DEVELOPMENT":       2,
+		"ORGANIZATION_TYPE_FINANCIAL_SERVICES":         3,
+		"ORGANIZATION_TYPE_HOSPITALS_AND_HEALTH_CARE":  4,
+		"ORGANIZATION_TYPE_RETAIL":                     5,
+		"ORGANIZATION_TYPE_GOVERNMENT_ADMINISTRATION":  6,
+		"ORGANIZATION_TYPE_MANUFACTURING":              7,
+		"ORGANIZATION_TYPE_OTHER":                      8,
+	}
+)
+
+func (x OrganizationType) Enum() *OrganizationType {
+	p := new(OrganizationType)
+	*p = x
+	return p
+}
+
+func (x OrganizationType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (OrganizationType) Descriptor() protoreflect.EnumDescriptor {
+	return file_aegis_v2_company_proto_enumTypes[1].Descriptor()
+}
+
+func (OrganizationType) Type() protoreflect.EnumType {
+	return &file_aegis_v2_company_proto_enumTypes[1]
+}
+
+func (x OrganizationType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use OrganizationType.Descriptor instead.
+func (OrganizationType) EnumDescriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{1}
+}
+
 type ListAuditLogsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
@@ -341,6 +478,8 @@ type CreateCompanyRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	OwnerEmail    string                 `protobuf:"bytes,2,opt,name=owner_email,json=ownerEmail,proto3" json:"owner_email,omitempty"` // Email of the user who will own this company
+	OrgSize       OrganizationSize       `protobuf:"varint,3,opt,name=org_size,json=orgSize,proto3,enum=aegis.v2.OrganizationSize" json:"org_size,omitempty"`
+	OrgType       OrganizationType       `protobuf:"varint,4,opt,name=org_type,json=orgType,proto3,enum=aegis.v2.OrganizationType" json:"org_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -387,6 +526,20 @@ func (x *CreateCompanyRequest) GetOwnerEmail() string {
 		return x.OwnerEmail
 	}
 	return ""
+}
+
+func (x *CreateCompanyRequest) GetOrgSize() OrganizationSize {
+	if x != nil {
+		return x.OrgSize
+	}
+	return OrganizationSize_ORGANIZATION_SIZE_UNSPECIFIED
+}
+
+func (x *CreateCompanyRequest) GetOrgType() OrganizationType {
+	if x != nil {
+		return x.OrgType
+	}
+	return OrganizationType_ORGANIZATION_TYPE_UNSPECIFIED
 }
 
 type CreateCompanyResponse struct {
@@ -447,6 +600,8 @@ type OnboardCompanyRequest struct {
 	OwnerName     string                 `protobuf:"bytes,2,opt,name=owner_name,json=ownerName,proto3" json:"owner_name,omitempty"`
 	OwnerEmail    string                 `protobuf:"bytes,3,opt,name=owner_email,json=ownerEmail,proto3" json:"owner_email,omitempty"`
 	OwnerPassword string                 `protobuf:"bytes,4,opt,name=owner_password,json=ownerPassword,proto3" json:"owner_password,omitempty"`
+	OrgSize       OrganizationSize       `protobuf:"varint,5,opt,name=org_size,json=orgSize,proto3,enum=aegis.v2.OrganizationSize" json:"org_size,omitempty"`
+	OrgType       OrganizationType       `protobuf:"varint,6,opt,name=org_type,json=orgType,proto3,enum=aegis.v2.OrganizationType" json:"org_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -507,6 +662,20 @@ func (x *OnboardCompanyRequest) GetOwnerPassword() string {
 		return x.OwnerPassword
 	}
 	return ""
+}
+
+func (x *OnboardCompanyRequest) GetOrgSize() OrganizationSize {
+	if x != nil {
+		return x.OrgSize
+	}
+	return OrganizationSize_ORGANIZATION_SIZE_UNSPECIFIED
+}
+
+func (x *OnboardCompanyRequest) GetOrgType() OrganizationType {
+	if x != nil {
+		return x.OrgType
+	}
+	return OrganizationType_ORGANIZATION_TYPE_UNSPECIFIED
 }
 
 type OnboardCompanyResponse struct {
@@ -658,6 +827,9 @@ type CompanySummary struct {
 	MemberCount     int32                  `protobuf:"varint,5,opt,name=member_count,json=memberCount,proto3" json:"member_count,omitempty"`
 	DeploymentToken string                 `protobuf:"bytes,6,opt,name=deployment_token,json=deploymentToken,proto3" json:"deployment_token,omitempty"`
 	AvatarUrl       string                 `protobuf:"bytes,7,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	OrgSize         OrganizationSize       `protobuf:"varint,8,opt,name=org_size,json=orgSize,proto3,enum=aegis.v2.OrganizationSize" json:"org_size,omitempty"`
+	OrgType         OrganizationType       `protobuf:"varint,9,opt,name=org_type,json=orgType,proto3,enum=aegis.v2.OrganizationType" json:"org_type,omitempty"`
+	TokenBalance    int64                  `protobuf:"varint,10,opt,name=token_balance,json=tokenBalance,proto3" json:"token_balance,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -741,6 +913,27 @@ func (x *CompanySummary) GetAvatarUrl() string {
 	return ""
 }
 
+func (x *CompanySummary) GetOrgSize() OrganizationSize {
+	if x != nil {
+		return x.OrgSize
+	}
+	return OrganizationSize_ORGANIZATION_SIZE_UNSPECIFIED
+}
+
+func (x *CompanySummary) GetOrgType() OrganizationType {
+	if x != nil {
+		return x.OrgType
+	}
+	return OrganizationType_ORGANIZATION_TYPE_UNSPECIFIED
+}
+
+func (x *CompanySummary) GetTokenBalance() int64 {
+	if x != nil {
+		return x.TokenBalance
+	}
+	return 0
+}
+
 var File_aegis_v2_company_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_company_proto_rawDesc = "" +
@@ -773,21 +966,25 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"event_type\x18\x01 \x01(\tR\teventType\x12\x1b\n" +
 	"\tentity_id\x18\x02 \x01(\tR\bentityId\x12\x1f\n" +
 	"\ventity_name\x18\x03 \x01(\tR\n" +
-	"entityName\"K\n" +
+	"entityName\"\xb9\x01\n" +
 	"\x14CreateCompanyRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1f\n" +
 	"\vowner_email\x18\x02 \x01(\tR\n" +
-	"ownerEmail\";\n" +
+	"ownerEmail\x125\n" +
+	"\borg_size\x18\x03 \x01(\x0e2\x1a.aegis.v2.OrganizationSizeR\aorgSize\x125\n" +
+	"\borg_type\x18\x04 \x01(\x0e2\x1a.aegis.v2.OrganizationTypeR\aorgType\";\n" +
 	"\x15CreateCompanyResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"\xa1\x01\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"\x8f\x02\n" +
 	"\x15OnboardCompanyRequest\x12!\n" +
 	"\fcompany_name\x18\x01 \x01(\tR\vcompanyName\x12\x1d\n" +
 	"\n" +
 	"owner_name\x18\x02 \x01(\tR\townerName\x12\x1f\n" +
 	"\vowner_email\x18\x03 \x01(\tR\n" +
 	"ownerEmail\x12%\n" +
-	"\x0eowner_password\x18\x04 \x01(\tR\rownerPassword\"}\n" +
+	"\x0eowner_password\x18\x04 \x01(\tR\rownerPassword\x125\n" +
+	"\borg_size\x18\x05 \x01(\x0e2\x1a.aegis.v2.OrganizationSizeR\aorgSize\x125\n" +
+	"\borg_type\x18\x06 \x01(\x0e2\x1a.aegis.v2.OrganizationTypeR\aorgType\"}\n" +
 	"\x16OnboardCompanyResponse\x12\x1d\n" +
 	"\n" +
 	"company_id\x18\x01 \x01(\tR\tcompanyId\x12\x19\n" +
@@ -795,7 +992,7 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\x10deployment_token\x18\x03 \x01(\tR\x0fdeploymentToken\"\x16\n" +
 	"\x14ListCompaniesRequest\"O\n" +
 	"\x15ListCompaniesResponse\x126\n" +
-	"\tcompanies\x18\x01 \x03(\v2\x18.aegis.v2.CompanySummaryR\tcompanies\"\xdd\x01\n" +
+	"\tcompanies\x18\x01 \x03(\v2\x18.aegis.v2.CompanySummaryR\tcompanies\"\xf0\x02\n" +
 	"\x0eCompanySummary\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
@@ -805,7 +1002,32 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\fmember_count\x18\x05 \x01(\x05R\vmemberCount\x12)\n" +
 	"\x10deployment_token\x18\x06 \x01(\tR\x0fdeploymentToken\x12\x1d\n" +
 	"\n" +
-	"avatar_url\x18\a \x01(\tR\tavatarUrl2\xa6\x03\n" +
+	"avatar_url\x18\a \x01(\tR\tavatarUrl\x125\n" +
+	"\borg_size\x18\b \x01(\x0e2\x1a.aegis.v2.OrganizationSizeR\aorgSize\x125\n" +
+	"\borg_type\x18\t \x01(\x0e2\x1a.aegis.v2.OrganizationTypeR\aorgType\x12#\n" +
+	"\rtoken_balance\x18\n" +
+	" \x01(\x03R\ftokenBalance*\xc9\x02\n" +
+	"\x10OrganizationSize\x12!\n" +
+	"\x1dORGANIZATION_SIZE_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13ORGANIZATION_SIZE_1\x10\x01\x12\x1a\n" +
+	"\x16ORGANIZATION_SIZE_2_10\x10\x02\x12\x1b\n" +
+	"\x17ORGANIZATION_SIZE_11_50\x10\x03\x12\x1c\n" +
+	"\x18ORGANIZATION_SIZE_51_200\x10\x04\x12\x1d\n" +
+	"\x19ORGANIZATION_SIZE_201_500\x10\x05\x12\x1e\n" +
+	"\x1aORGANIZATION_SIZE_501_1000\x10\x06\x12\x1f\n" +
+	"\x1bORGANIZATION_SIZE_1001_5000\x10\a\x12 \n" +
+	"\x1cORGANIZATION_SIZE_5001_10000\x10\b\x12 \n" +
+	"\x1cORGANIZATION_SIZE_10001_PLUS\x10\t*\xff\x02\n" +
+	"\x10OrganizationType\x12!\n" +
+	"\x1dORGANIZATION_TYPE_UNSPECIFIED\x10\x00\x120\n" +
+	",ORGANIZATION_TYPE_IT_SERVICES_AND_CONSULTING\x10\x01\x12*\n" +
+	"&ORGANIZATION_TYPE_SOFTWARE_DEVELOPMENT\x10\x02\x12(\n" +
+	"$ORGANIZATION_TYPE_FINANCIAL_SERVICES\x10\x03\x12/\n" +
+	"+ORGANIZATION_TYPE_HOSPITALS_AND_HEALTH_CARE\x10\x04\x12\x1c\n" +
+	"\x18ORGANIZATION_TYPE_RETAIL\x10\x05\x12/\n" +
+	"+ORGANIZATION_TYPE_GOVERNMENT_ADMINISTRATION\x10\x06\x12#\n" +
+	"\x1fORGANIZATION_TYPE_MANUFACTURING\x10\a\x12\x1b\n" +
+	"\x17ORGANIZATION_TYPE_OTHER\x10\b2\xa6\x03\n" +
 	"\x0eCompanyService\x12P\n" +
 	"\rCreateCompany\x12\x1e.aegis.v2.CreateCompanyRequest\x1a\x1f.aegis.v2.CreateCompanyResponse\x12P\n" +
 	"\rListCompanies\x12\x1e.aegis.v2.ListCompaniesRequest\x1a\x1f.aegis.v2.ListCompaniesResponse\x12S\n" +
@@ -826,39 +1048,48 @@ func file_aegis_v2_company_proto_rawDescGZIP() []byte {
 	return file_aegis_v2_company_proto_rawDescData
 }
 
+var file_aegis_v2_company_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_aegis_v2_company_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_aegis_v2_company_proto_goTypes = []any{
-	(*ListAuditLogsRequest)(nil),   // 0: aegis.v2.ListAuditLogsRequest
-	(*ListAuditLogsResponse)(nil),  // 1: aegis.v2.ListAuditLogsResponse
-	(*AuditLogEntry)(nil),          // 2: aegis.v2.AuditLogEntry
-	(*WatchTeamsRequest)(nil),      // 3: aegis.v2.WatchTeamsRequest
-	(*WatchTeamsResponse)(nil),     // 4: aegis.v2.WatchTeamsResponse
-	(*CreateCompanyRequest)(nil),   // 5: aegis.v2.CreateCompanyRequest
-	(*CreateCompanyResponse)(nil),  // 6: aegis.v2.CreateCompanyResponse
-	(*OnboardCompanyRequest)(nil),  // 7: aegis.v2.OnboardCompanyRequest
-	(*OnboardCompanyResponse)(nil), // 8: aegis.v2.OnboardCompanyResponse
-	(*ListCompaniesRequest)(nil),   // 9: aegis.v2.ListCompaniesRequest
-	(*ListCompaniesResponse)(nil),  // 10: aegis.v2.ListCompaniesResponse
-	(*CompanySummary)(nil),         // 11: aegis.v2.CompanySummary
+	(OrganizationSize)(0),          // 0: aegis.v2.OrganizationSize
+	(OrganizationType)(0),          // 1: aegis.v2.OrganizationType
+	(*ListAuditLogsRequest)(nil),   // 2: aegis.v2.ListAuditLogsRequest
+	(*ListAuditLogsResponse)(nil),  // 3: aegis.v2.ListAuditLogsResponse
+	(*AuditLogEntry)(nil),          // 4: aegis.v2.AuditLogEntry
+	(*WatchTeamsRequest)(nil),      // 5: aegis.v2.WatchTeamsRequest
+	(*WatchTeamsResponse)(nil),     // 6: aegis.v2.WatchTeamsResponse
+	(*CreateCompanyRequest)(nil),   // 7: aegis.v2.CreateCompanyRequest
+	(*CreateCompanyResponse)(nil),  // 8: aegis.v2.CreateCompanyResponse
+	(*OnboardCompanyRequest)(nil),  // 9: aegis.v2.OnboardCompanyRequest
+	(*OnboardCompanyResponse)(nil), // 10: aegis.v2.OnboardCompanyResponse
+	(*ListCompaniesRequest)(nil),   // 11: aegis.v2.ListCompaniesRequest
+	(*ListCompaniesResponse)(nil),  // 12: aegis.v2.ListCompaniesResponse
+	(*CompanySummary)(nil),         // 13: aegis.v2.CompanySummary
 }
 var file_aegis_v2_company_proto_depIdxs = []int32{
-	2,  // 0: aegis.v2.ListAuditLogsResponse.logs:type_name -> aegis.v2.AuditLogEntry
-	11, // 1: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
-	5,  // 2: aegis.v2.CompanyService.CreateCompany:input_type -> aegis.v2.CreateCompanyRequest
-	9,  // 3: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
-	7,  // 4: aegis.v2.CompanyService.OnboardCompany:input_type -> aegis.v2.OnboardCompanyRequest
-	3,  // 5: aegis.v2.CompanyService.WatchTeams:input_type -> aegis.v2.WatchTeamsRequest
-	0,  // 6: aegis.v2.CompanyService.ListAuditLogs:input_type -> aegis.v2.ListAuditLogsRequest
-	6,  // 7: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
-	10, // 8: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
-	8,  // 9: aegis.v2.CompanyService.OnboardCompany:output_type -> aegis.v2.OnboardCompanyResponse
-	4,  // 10: aegis.v2.CompanyService.WatchTeams:output_type -> aegis.v2.WatchTeamsResponse
-	1,  // 11: aegis.v2.CompanyService.ListAuditLogs:output_type -> aegis.v2.ListAuditLogsResponse
-	7,  // [7:12] is the sub-list for method output_type
-	2,  // [2:7] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	4,  // 0: aegis.v2.ListAuditLogsResponse.logs:type_name -> aegis.v2.AuditLogEntry
+	0,  // 1: aegis.v2.CreateCompanyRequest.org_size:type_name -> aegis.v2.OrganizationSize
+	1,  // 2: aegis.v2.CreateCompanyRequest.org_type:type_name -> aegis.v2.OrganizationType
+	0,  // 3: aegis.v2.OnboardCompanyRequest.org_size:type_name -> aegis.v2.OrganizationSize
+	1,  // 4: aegis.v2.OnboardCompanyRequest.org_type:type_name -> aegis.v2.OrganizationType
+	13, // 5: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
+	0,  // 6: aegis.v2.CompanySummary.org_size:type_name -> aegis.v2.OrganizationSize
+	1,  // 7: aegis.v2.CompanySummary.org_type:type_name -> aegis.v2.OrganizationType
+	7,  // 8: aegis.v2.CompanyService.CreateCompany:input_type -> aegis.v2.CreateCompanyRequest
+	11, // 9: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
+	9,  // 10: aegis.v2.CompanyService.OnboardCompany:input_type -> aegis.v2.OnboardCompanyRequest
+	5,  // 11: aegis.v2.CompanyService.WatchTeams:input_type -> aegis.v2.WatchTeamsRequest
+	2,  // 12: aegis.v2.CompanyService.ListAuditLogs:input_type -> aegis.v2.ListAuditLogsRequest
+	8,  // 13: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
+	12, // 14: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
+	10, // 15: aegis.v2.CompanyService.OnboardCompany:output_type -> aegis.v2.OnboardCompanyResponse
+	6,  // 16: aegis.v2.CompanyService.WatchTeams:output_type -> aegis.v2.WatchTeamsResponse
+	3,  // 17: aegis.v2.CompanyService.ListAuditLogs:output_type -> aegis.v2.ListAuditLogsResponse
+	13, // [13:18] is the sub-list for method output_type
+	8,  // [8:13] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_aegis_v2_company_proto_init() }
@@ -871,13 +1102,14 @@ func file_aegis_v2_company_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v2_company_proto_rawDesc), len(file_aegis_v2_company_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      2,
 			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_aegis_v2_company_proto_goTypes,
 		DependencyIndexes: file_aegis_v2_company_proto_depIdxs,
+		EnumInfos:         file_aegis_v2_company_proto_enumTypes,
 		MessageInfos:      file_aegis_v2_company_proto_msgTypes,
 	}.Build()
 	File_aegis_v2_company_proto = out.File
