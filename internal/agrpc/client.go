@@ -63,9 +63,9 @@ func NewClient(addr string, conf TLSConfig) (*Client, error) {
 
 	// Add keepalive parameters
 	kpc := keepalive.ClientParameters{
-		Time:                10 * 1000000000, // 10s
+		Time:                60 * 1000000000, // 60s
 		Timeout:             20 * 1000000000, // 20s
-		PermitWithoutStream: true,
+		PermitWithoutStream: false,
 	}
 	opts = append(opts, grpc.WithKeepaliveParams(kpc))
 	opts = append(opts, grpc.WithDefaultCallOptions(
