@@ -23,6 +23,7 @@ const (
 	BillingService_GetLedger_FullMethodName      = "/aegis.v2.BillingService/GetLedger"
 	BillingService_AdjustTokens_FullMethodName   = "/aegis.v2.BillingService/AdjustTokens"
 	BillingService_PreFlightCheck_FullMethodName = "/aegis.v2.BillingService/PreFlightCheck"
+	BillingService_GetUsageStats_FullMethodName  = "/aegis.v2.BillingService/GetUsageStats"
 )
 
 // BillingServiceClient is the client API for BillingService service.
@@ -39,6 +40,8 @@ type BillingServiceClient interface {
 	AdjustTokens(ctx context.Context, in *AdjustTokensRequest, opts ...grpc.CallOption) (*AdjustTokensResponse, error)
 	// PreFlightCheck estimates the cost of a scan and checks if the balance is sufficient.
 	PreFlightCheck(ctx context.Context, in *PreFlightCheckRequest, opts ...grpc.CallOption) (*PreFlightCheckResponse, error)
+	// GetUsageStats retrieves aggregated consumption data for graphs.
+	GetUsageStats(ctx context.Context, in *GetUsageStatsRequest, opts ...grpc.CallOption) (*GetUsageStatsResponse, error)
 }
 
 type billingServiceClient struct {
@@ -89,6 +92,16 @@ func (c *billingServiceClient) PreFlightCheck(ctx context.Context, in *PreFlight
 	return out, nil
 }
 
+func (c *billingServiceClient) GetUsageStats(ctx context.Context, in *GetUsageStatsRequest, opts ...grpc.CallOption) (*GetUsageStatsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUsageStatsResponse)
+	err := c.cc.Invoke(ctx, BillingService_GetUsageStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BillingServiceServer is the server API for BillingService service.
 // All implementations must embed UnimplementedBillingServiceServer
 // for forward compatibility.
@@ -103,6 +116,8 @@ type BillingServiceServer interface {
 	AdjustTokens(context.Context, *AdjustTokensRequest) (*AdjustTokensResponse, error)
 	// PreFlightCheck estimates the cost of a scan and checks if the balance is sufficient.
 	PreFlightCheck(context.Context, *PreFlightCheckRequest) (*PreFlightCheckResponse, error)
+	// GetUsageStats retrieves aggregated consumption data for graphs.
+	GetUsageStats(context.Context, *GetUsageStatsRequest) (*GetUsageStatsResponse, error)
 	mustEmbedUnimplementedBillingServiceServer()
 }
 
@@ -124,6 +139,9 @@ func (UnimplementedBillingServiceServer) AdjustTokens(context.Context, *AdjustTo
 }
 func (UnimplementedBillingServiceServer) PreFlightCheck(context.Context, *PreFlightCheckRequest) (*PreFlightCheckResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method PreFlightCheck not implemented")
+}
+func (UnimplementedBillingServiceServer) GetUsageStats(context.Context, *GetUsageStatsRequest) (*GetUsageStatsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUsageStats not implemented")
 }
 func (UnimplementedBillingServiceServer) mustEmbedUnimplementedBillingServiceServer() {}
 func (UnimplementedBillingServiceServer) testEmbeddedByValue()                        {}
@@ -218,6 +236,24 @@ func _BillingService_PreFlightCheck_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BillingService_GetUsageStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUsageStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BillingServiceServer).GetUsageStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BillingService_GetUsageStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BillingServiceServer).GetUsageStats(ctx, req.(*GetUsageStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BillingService_ServiceDesc is the grpc.ServiceDesc for BillingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -240,6 +276,10 @@ var BillingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PreFlightCheck",
 			Handler:    _BillingService_PreFlightCheck_Handler,
+		},
+		{
+			MethodName: "GetUsageStats",
+			Handler:    _BillingService_GetUsageStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

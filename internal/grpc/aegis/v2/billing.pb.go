@@ -22,6 +22,162 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type GetUsageStatsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CompanyId     string                 `protobuf:"bytes,1,opt,name=company_id,json=companyId,proto3" json:"company_id,omitempty"`
+	Days          int32                  `protobuf:"varint,2,opt,name=days,proto3" json:"days,omitempty"` // Default 30 if not set
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUsageStatsRequest) Reset() {
+	*x = GetUsageStatsRequest{}
+	mi := &file_aegis_v2_billing_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUsageStatsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUsageStatsRequest) ProtoMessage() {}
+
+func (x *GetUsageStatsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_billing_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUsageStatsRequest.ProtoReflect.Descriptor instead.
+func (*GetUsageStatsRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *GetUsageStatsRequest) GetCompanyId() string {
+	if x != nil {
+		return x.CompanyId
+	}
+	return ""
+}
+
+func (x *GetUsageStatsRequest) GetDays() int32 {
+	if x != nil {
+		return x.Days
+	}
+	return 0
+}
+
+type UsageDay struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"` // Format YYYY-MM-DD
+	TotalConsumed int64                  `protobuf:"varint,2,opt,name=total_consumed,json=totalConsumed,proto3" json:"total_consumed,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UsageDay) Reset() {
+	*x = UsageDay{}
+	mi := &file_aegis_v2_billing_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UsageDay) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UsageDay) ProtoMessage() {}
+
+func (x *UsageDay) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_billing_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UsageDay.ProtoReflect.Descriptor instead.
+func (*UsageDay) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *UsageDay) GetDate() string {
+	if x != nil {
+		return x.Date
+	}
+	return ""
+}
+
+func (x *UsageDay) GetTotalConsumed() int64 {
+	if x != nil {
+		return x.TotalConsumed
+	}
+	return 0
+}
+
+type GetUsageStatsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Days          []*UsageDay            `protobuf:"bytes,1,rep,name=days,proto3" json:"days,omitempty"`
+	TotalPeriod   int64                  `protobuf:"varint,2,opt,name=total_period,json=totalPeriod,proto3" json:"total_period,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUsageStatsResponse) Reset() {
+	*x = GetUsageStatsResponse{}
+	mi := &file_aegis_v2_billing_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUsageStatsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUsageStatsResponse) ProtoMessage() {}
+
+func (x *GetUsageStatsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_billing_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUsageStatsResponse.ProtoReflect.Descriptor instead.
+func (*GetUsageStatsResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetUsageStatsResponse) GetDays() []*UsageDay {
+	if x != nil {
+		return x.Days
+	}
+	return nil
+}
+
+func (x *GetUsageStatsResponse) GetTotalPeriod() int64 {
+	if x != nil {
+		return x.TotalPeriod
+	}
+	return 0
+}
+
 type GetBalanceRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	CompanyId     string                 `protobuf:"bytes,1,opt,name=company_id,json=companyId,proto3" json:"company_id,omitempty"`
@@ -31,7 +187,7 @@ type GetBalanceRequest struct {
 
 func (x *GetBalanceRequest) Reset() {
 	*x = GetBalanceRequest{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[0]
+	mi := &file_aegis_v2_billing_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +199,7 @@ func (x *GetBalanceRequest) String() string {
 func (*GetBalanceRequest) ProtoMessage() {}
 
 func (x *GetBalanceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[0]
+	mi := &file_aegis_v2_billing_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +212,7 @@ func (x *GetBalanceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBalanceRequest.ProtoReflect.Descriptor instead.
 func (*GetBalanceRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{0}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetBalanceRequest) GetCompanyId() string {
@@ -76,7 +232,7 @@ type GetBalanceResponse struct {
 
 func (x *GetBalanceResponse) Reset() {
 	*x = GetBalanceResponse{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[1]
+	mi := &file_aegis_v2_billing_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -88,7 +244,7 @@ func (x *GetBalanceResponse) String() string {
 func (*GetBalanceResponse) ProtoMessage() {}
 
 func (x *GetBalanceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[1]
+	mi := &file_aegis_v2_billing_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -101,7 +257,7 @@ func (x *GetBalanceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBalanceResponse.ProtoReflect.Descriptor instead.
 func (*GetBalanceResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{1}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GetBalanceResponse) GetCompanyId() string {
@@ -129,7 +285,7 @@ type GetLedgerRequest struct {
 
 func (x *GetLedgerRequest) Reset() {
 	*x = GetLedgerRequest{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[2]
+	mi := &file_aegis_v2_billing_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -141,7 +297,7 @@ func (x *GetLedgerRequest) String() string {
 func (*GetLedgerRequest) ProtoMessage() {}
 
 func (x *GetLedgerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[2]
+	mi := &file_aegis_v2_billing_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -154,7 +310,7 @@ func (x *GetLedgerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLedgerRequest.ProtoReflect.Descriptor instead.
 func (*GetLedgerRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{2}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetLedgerRequest) GetCompanyId() string {
@@ -188,7 +344,7 @@ type GetLedgerResponse struct {
 
 func (x *GetLedgerResponse) Reset() {
 	*x = GetLedgerResponse{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[3]
+	mi := &file_aegis_v2_billing_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -200,7 +356,7 @@ func (x *GetLedgerResponse) String() string {
 func (*GetLedgerResponse) ProtoMessage() {}
 
 func (x *GetLedgerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[3]
+	mi := &file_aegis_v2_billing_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -213,7 +369,7 @@ func (x *GetLedgerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetLedgerResponse.ProtoReflect.Descriptor instead.
 func (*GetLedgerResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{3}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetLedgerResponse) GetEntries() []*LedgerEntry {
@@ -244,7 +400,7 @@ type LedgerEntry struct {
 
 func (x *LedgerEntry) Reset() {
 	*x = LedgerEntry{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[4]
+	mi := &file_aegis_v2_billing_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -256,7 +412,7 @@ func (x *LedgerEntry) String() string {
 func (*LedgerEntry) ProtoMessage() {}
 
 func (x *LedgerEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[4]
+	mi := &file_aegis_v2_billing_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -269,7 +425,7 @@ func (x *LedgerEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LedgerEntry.ProtoReflect.Descriptor instead.
 func (*LedgerEntry) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{4}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *LedgerEntry) GetId() string {
@@ -325,7 +481,7 @@ type AdjustTokensRequest struct {
 
 func (x *AdjustTokensRequest) Reset() {
 	*x = AdjustTokensRequest{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[5]
+	mi := &file_aegis_v2_billing_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -337,7 +493,7 @@ func (x *AdjustTokensRequest) String() string {
 func (*AdjustTokensRequest) ProtoMessage() {}
 
 func (x *AdjustTokensRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[5]
+	mi := &file_aegis_v2_billing_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -350,7 +506,7 @@ func (x *AdjustTokensRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdjustTokensRequest.ProtoReflect.Descriptor instead.
 func (*AdjustTokensRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{5}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *AdjustTokensRequest) GetCompanyId() string {
@@ -384,7 +540,7 @@ type AdjustTokensResponse struct {
 
 func (x *AdjustTokensResponse) Reset() {
 	*x = AdjustTokensResponse{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[6]
+	mi := &file_aegis_v2_billing_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -396,7 +552,7 @@ func (x *AdjustTokensResponse) String() string {
 func (*AdjustTokensResponse) ProtoMessage() {}
 
 func (x *AdjustTokensResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[6]
+	mi := &file_aegis_v2_billing_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -409,7 +565,7 @@ func (x *AdjustTokensResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdjustTokensResponse.ProtoReflect.Descriptor instead.
 func (*AdjustTokensResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{6}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *AdjustTokensResponse) GetCompanyId() string {
@@ -436,7 +592,7 @@ type PreFlightCheckRequest struct {
 
 func (x *PreFlightCheckRequest) Reset() {
 	*x = PreFlightCheckRequest{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[7]
+	mi := &file_aegis_v2_billing_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -448,7 +604,7 @@ func (x *PreFlightCheckRequest) String() string {
 func (*PreFlightCheckRequest) ProtoMessage() {}
 
 func (x *PreFlightCheckRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[7]
+	mi := &file_aegis_v2_billing_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -461,7 +617,7 @@ func (x *PreFlightCheckRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreFlightCheckRequest.ProtoReflect.Descriptor instead.
 func (*PreFlightCheckRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{7}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *PreFlightCheckRequest) GetCompanyId() string {
@@ -489,7 +645,7 @@ type TargetConfig struct {
 
 func (x *TargetConfig) Reset() {
 	*x = TargetConfig{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[8]
+	mi := &file_aegis_v2_billing_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -501,7 +657,7 @@ func (x *TargetConfig) String() string {
 func (*TargetConfig) ProtoMessage() {}
 
 func (x *TargetConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[8]
+	mi := &file_aegis_v2_billing_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -514,7 +670,7 @@ func (x *TargetConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TargetConfig.ProtoReflect.Descriptor instead.
 func (*TargetConfig) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{8}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *TargetConfig) GetIpCount() int32 {
@@ -549,7 +705,7 @@ type PreFlightCheckResponse struct {
 
 func (x *PreFlightCheckResponse) Reset() {
 	*x = PreFlightCheckResponse{}
-	mi := &file_aegis_v2_billing_proto_msgTypes[9]
+	mi := &file_aegis_v2_billing_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -561,7 +717,7 @@ func (x *PreFlightCheckResponse) String() string {
 func (*PreFlightCheckResponse) ProtoMessage() {}
 
 func (x *PreFlightCheckResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_billing_proto_msgTypes[9]
+	mi := &file_aegis_v2_billing_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -574,7 +730,7 @@ func (x *PreFlightCheckResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PreFlightCheckResponse.ProtoReflect.Descriptor instead.
 func (*PreFlightCheckResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{9}
+	return file_aegis_v2_billing_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *PreFlightCheckResponse) GetSufficientBalance() bool {
@@ -602,7 +758,17 @@ var File_aegis_v2_billing_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_billing_proto_rawDesc = "" +
 	"\n" +
-	"\x16aegis/v2/billing.proto\x12\baegis.v2\x1a\x1fgoogle/protobuf/timestamp.proto\"2\n" +
+	"\x16aegis/v2/billing.proto\x12\baegis.v2\x1a\x1fgoogle/protobuf/timestamp.proto\"I\n" +
+	"\x14GetUsageStatsRequest\x12\x1d\n" +
+	"\n" +
+	"company_id\x18\x01 \x01(\tR\tcompanyId\x12\x12\n" +
+	"\x04days\x18\x02 \x01(\x05R\x04days\"E\n" +
+	"\bUsageDay\x12\x12\n" +
+	"\x04date\x18\x01 \x01(\tR\x04date\x12%\n" +
+	"\x0etotal_consumed\x18\x02 \x01(\x03R\rtotalConsumed\"b\n" +
+	"\x15GetUsageStatsResponse\x12&\n" +
+	"\x04days\x18\x01 \x03(\v2\x12.aegis.v2.UsageDayR\x04days\x12!\n" +
+	"\ftotal_period\x18\x02 \x01(\x03R\vtotalPeriod\"2\n" +
 	"\x11GetBalanceRequest\x12\x1d\n" +
 	"\n" +
 	"company_id\x18\x01 \x01(\tR\tcompanyId\"M\n" +
@@ -647,13 +813,14 @@ const file_aegis_v2_billing_proto_rawDesc = "" +
 	"\x16PreFlightCheckResponse\x12-\n" +
 	"\x12sufficient_balance\x18\x01 \x01(\bR\x11sufficientBalance\x12%\n" +
 	"\x0eestimated_cost\x18\x02 \x01(\x03R\restimatedCost\x12'\n" +
-	"\x0fcurrent_balance\x18\x03 \x01(\x03R\x0ecurrentBalance2\xc3\x02\n" +
+	"\x0fcurrent_balance\x18\x03 \x01(\x03R\x0ecurrentBalance2\x95\x03\n" +
 	"\x0eBillingService\x12G\n" +
 	"\n" +
 	"GetBalance\x12\x1b.aegis.v2.GetBalanceRequest\x1a\x1c.aegis.v2.GetBalanceResponse\x12D\n" +
 	"\tGetLedger\x12\x1a.aegis.v2.GetLedgerRequest\x1a\x1b.aegis.v2.GetLedgerResponse\x12M\n" +
 	"\fAdjustTokens\x12\x1d.aegis.v2.AdjustTokensRequest\x1a\x1e.aegis.v2.AdjustTokensResponse\x12S\n" +
-	"\x0ePreFlightCheck\x12\x1f.aegis.v2.PreFlightCheckRequest\x1a .aegis.v2.PreFlightCheckResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
+	"\x0ePreFlightCheck\x12\x1f.aegis.v2.PreFlightCheckRequest\x1a .aegis.v2.PreFlightCheckResponse\x12P\n" +
+	"\rGetUsageStats\x12\x1e.aegis.v2.GetUsageStatsRequest\x1a\x1f.aegis.v2.GetUsageStatsResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_billing_proto_rawDescOnce sync.Once
@@ -667,37 +834,43 @@ func file_aegis_v2_billing_proto_rawDescGZIP() []byte {
 	return file_aegis_v2_billing_proto_rawDescData
 }
 
-var file_aegis_v2_billing_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_aegis_v2_billing_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_aegis_v2_billing_proto_goTypes = []any{
-	(*GetBalanceRequest)(nil),      // 0: aegis.v2.GetBalanceRequest
-	(*GetBalanceResponse)(nil),     // 1: aegis.v2.GetBalanceResponse
-	(*GetLedgerRequest)(nil),       // 2: aegis.v2.GetLedgerRequest
-	(*GetLedgerResponse)(nil),      // 3: aegis.v2.GetLedgerResponse
-	(*LedgerEntry)(nil),            // 4: aegis.v2.LedgerEntry
-	(*AdjustTokensRequest)(nil),    // 5: aegis.v2.AdjustTokensRequest
-	(*AdjustTokensResponse)(nil),   // 6: aegis.v2.AdjustTokensResponse
-	(*PreFlightCheckRequest)(nil),  // 7: aegis.v2.PreFlightCheckRequest
-	(*TargetConfig)(nil),           // 8: aegis.v2.TargetConfig
-	(*PreFlightCheckResponse)(nil), // 9: aegis.v2.PreFlightCheckResponse
-	(*timestamppb.Timestamp)(nil),  // 10: google.protobuf.Timestamp
+	(*GetUsageStatsRequest)(nil),   // 0: aegis.v2.GetUsageStatsRequest
+	(*UsageDay)(nil),               // 1: aegis.v2.UsageDay
+	(*GetUsageStatsResponse)(nil),  // 2: aegis.v2.GetUsageStatsResponse
+	(*GetBalanceRequest)(nil),      // 3: aegis.v2.GetBalanceRequest
+	(*GetBalanceResponse)(nil),     // 4: aegis.v2.GetBalanceResponse
+	(*GetLedgerRequest)(nil),       // 5: aegis.v2.GetLedgerRequest
+	(*GetLedgerResponse)(nil),      // 6: aegis.v2.GetLedgerResponse
+	(*LedgerEntry)(nil),            // 7: aegis.v2.LedgerEntry
+	(*AdjustTokensRequest)(nil),    // 8: aegis.v2.AdjustTokensRequest
+	(*AdjustTokensResponse)(nil),   // 9: aegis.v2.AdjustTokensResponse
+	(*PreFlightCheckRequest)(nil),  // 10: aegis.v2.PreFlightCheckRequest
+	(*TargetConfig)(nil),           // 11: aegis.v2.TargetConfig
+	(*PreFlightCheckResponse)(nil), // 12: aegis.v2.PreFlightCheckResponse
+	(*timestamppb.Timestamp)(nil),  // 13: google.protobuf.Timestamp
 }
 var file_aegis_v2_billing_proto_depIdxs = []int32{
-	4,  // 0: aegis.v2.GetLedgerResponse.entries:type_name -> aegis.v2.LedgerEntry
-	10, // 1: aegis.v2.LedgerEntry.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 2: aegis.v2.PreFlightCheckRequest.target_config:type_name -> aegis.v2.TargetConfig
-	0,  // 3: aegis.v2.BillingService.GetBalance:input_type -> aegis.v2.GetBalanceRequest
-	2,  // 4: aegis.v2.BillingService.GetLedger:input_type -> aegis.v2.GetLedgerRequest
-	5,  // 5: aegis.v2.BillingService.AdjustTokens:input_type -> aegis.v2.AdjustTokensRequest
-	7,  // 6: aegis.v2.BillingService.PreFlightCheck:input_type -> aegis.v2.PreFlightCheckRequest
-	1,  // 7: aegis.v2.BillingService.GetBalance:output_type -> aegis.v2.GetBalanceResponse
-	3,  // 8: aegis.v2.BillingService.GetLedger:output_type -> aegis.v2.GetLedgerResponse
-	6,  // 9: aegis.v2.BillingService.AdjustTokens:output_type -> aegis.v2.AdjustTokensResponse
-	9,  // 10: aegis.v2.BillingService.PreFlightCheck:output_type -> aegis.v2.PreFlightCheckResponse
-	7,  // [7:11] is the sub-list for method output_type
-	3,  // [3:7] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	1,  // 0: aegis.v2.GetUsageStatsResponse.days:type_name -> aegis.v2.UsageDay
+	7,  // 1: aegis.v2.GetLedgerResponse.entries:type_name -> aegis.v2.LedgerEntry
+	13, // 2: aegis.v2.LedgerEntry.created_at:type_name -> google.protobuf.Timestamp
+	11, // 3: aegis.v2.PreFlightCheckRequest.target_config:type_name -> aegis.v2.TargetConfig
+	3,  // 4: aegis.v2.BillingService.GetBalance:input_type -> aegis.v2.GetBalanceRequest
+	5,  // 5: aegis.v2.BillingService.GetLedger:input_type -> aegis.v2.GetLedgerRequest
+	8,  // 6: aegis.v2.BillingService.AdjustTokens:input_type -> aegis.v2.AdjustTokensRequest
+	10, // 7: aegis.v2.BillingService.PreFlightCheck:input_type -> aegis.v2.PreFlightCheckRequest
+	0,  // 8: aegis.v2.BillingService.GetUsageStats:input_type -> aegis.v2.GetUsageStatsRequest
+	4,  // 9: aegis.v2.BillingService.GetBalance:output_type -> aegis.v2.GetBalanceResponse
+	6,  // 10: aegis.v2.BillingService.GetLedger:output_type -> aegis.v2.GetLedgerResponse
+	9,  // 11: aegis.v2.BillingService.AdjustTokens:output_type -> aegis.v2.AdjustTokensResponse
+	12, // 12: aegis.v2.BillingService.PreFlightCheck:output_type -> aegis.v2.PreFlightCheckResponse
+	2,  // 13: aegis.v2.BillingService.GetUsageStats:output_type -> aegis.v2.GetUsageStatsResponse
+	9,  // [9:14] is the sub-list for method output_type
+	4,  // [4:9] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_aegis_v2_billing_proto_init() }
@@ -711,7 +884,7 @@ func file_aegis_v2_billing_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v2_billing_proto_rawDesc), len(file_aegis_v2_billing_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
