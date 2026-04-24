@@ -8,12 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetBalanceHandler handles GET /billing/balance
+// GetBalanceHandler handles GET /billing/balance or /admin/companies/:id/billing/balance
 func (a *API) GetBalanceHandler(c *gin.Context) {
-	companyID, _ := c.Get(string(middleware.CompanyIDKey))
-	idStr := companyID.(string)
+	companyID := c.Param("id")
+	if companyID == "" {
+		val, _ := c.Get(string(middleware.CompanyIDKey))
+		companyID = val.(string)
+	}
 
-	resp, err := a.GRPCClient.GetBalance(c.Request.Context(), idStr)
+	resp, err := a.GRPCClient.GetBalance(c.Request.Context(), companyID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -22,10 +25,13 @@ func (a *API) GetBalanceHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// GetLedgerHandler handles GET /billing/ledger
+// GetLedgerHandler handles GET /billing/ledger or /admin/companies/:id/billing/ledger
 func (a *API) GetLedgerHandler(c *gin.Context) {
-	companyID, _ := c.Get(string(middleware.CompanyIDKey))
-	idStr := companyID.(string)
+	companyID := c.Param("id")
+	if companyID == "" {
+		val, _ := c.Get(string(middleware.CompanyIDKey))
+		companyID = val.(string)
+	}
 
 	limitStr := c.DefaultQuery("limit", "50")
 	offsetStr := c.DefaultQuery("offset", "0")
@@ -33,7 +39,7 @@ func (a *API) GetLedgerHandler(c *gin.Context) {
 	limit, _ := strconv.ParseInt(limitStr, 10, 32)
 	offset, _ := strconv.ParseInt(offsetStr, 10, 32)
 
-	resp, err := a.GRPCClient.GetLedger(c.Request.Context(), idStr, int32(limit), int32(offset))
+	resp, err := a.GRPCClient.GetLedger(c.Request.Context(), companyID, int32(limit), int32(offset))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -66,15 +72,18 @@ func (a *API) AdjustTokensHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// GetUsageStatsHandler handles GET /billing/stats
+// GetUsageStatsHandler handles GET /billing/stats or /admin/companies/:id/billing/stats
 func (a *API) GetUsageStatsHandler(c *gin.Context) {
-	companyID, _ := c.Get(string(middleware.CompanyIDKey))
-	idStr := companyID.(string)
+	companyID := c.Param("id")
+	if companyID == "" {
+		val, _ := c.Get(string(middleware.CompanyIDKey))
+		companyID = val.(string)
+	}
 
 	daysStr := c.DefaultQuery("days", "30")
 	days, _ := strconv.ParseInt(daysStr, 10, 32)
 
-	resp, err := a.GRPCClient.GetUsageStats(c.Request.Context(), idStr, int32(days))
+	resp, err := a.GRPCClient.GetUsageStats(c.Request.Context(), companyID, int32(days))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

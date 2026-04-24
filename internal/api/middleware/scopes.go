@@ -20,6 +20,7 @@ const (
 	ScopeBillingRead       = "billing:read"
 	ScopeBillingWrite      = "billing:write"
 	ScopeAdminWrite        = "admin:write"
+	ScopeAdminRead         = "admin:read"
 	ScopeAll               = "*"
 )
 
