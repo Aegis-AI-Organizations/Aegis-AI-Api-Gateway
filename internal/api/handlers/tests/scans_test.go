@@ -63,12 +63,50 @@ func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.Watc
 	return args.Get(0).(v1.ScanService_WatchScanStatusClient), args.Error(1)
 }
 
+type MockBillingServiceClient struct {
+	mock.Mock
+}
+
+func (m *MockBillingServiceClient) GetBalance(ctx context.Context, in *v1.GetBalanceRequest, opts ...grpc.CallOption) (*v1.GetBalanceResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetBalanceResponse), args.Error(1)
+}
+
+func (m *MockBillingServiceClient) GetLedger(ctx context.Context, in *v1.GetLedgerRequest, opts ...grpc.CallOption) (*v1.GetLedgerResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetLedgerResponse), args.Error(1)
+}
+
+func (m *MockBillingServiceClient) AdjustTokens(ctx context.Context, in *v1.AdjustTokensRequest, opts ...grpc.CallOption) (*v1.AdjustTokensResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.AdjustTokensResponse), args.Error(1)
+}
+
+func (m *MockBillingServiceClient) PreFlightCheck(ctx context.Context, in *v1.PreFlightCheckRequest, opts ...grpc.CallOption) (*v1.PreFlightCheckResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.PreFlightCheckResponse), args.Error(1)
+}
+
 func TestCreateScanHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	mockService := new(MockScanServiceClient)
+	mockScan := new(MockScanServiceClient)
+	mockBilling := new(MockBillingServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
-			ScanService: mockService,
+			ScanService:    mockScan,
+			BillingService: mockBilling,
 		},
 	}
 
@@ -76,23 +114,36 @@ func TestCreateScanHandler(t *testing.T) {
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
+	c.Set("company_id", "test-company") // Inject identity
 	c.Request, _ = http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
 
-	mockService.On("StartScan", mock.Anything, &v1.StartScanRequest{TargetImage: "nginx:latest"}).
+	// Mock Billing Pre-flight (Sufficient balance)
+	mockBilling.On("PreFlightCheck", mock.Anything, mock.Anything).
+		Return(&v1.PreFlightCheckResponse{SufficientBalance: true, EstimatedCost: 10}, nil)
+
+	// Mock Token Deduction
+	mockBilling.On("AdjustTokens", mock.Anything, mock.Anything).
+		Return(&v1.AdjustTokensResponse{Balance: 90}, nil)
+
+	// Mock Scan Launch
+	mockScan.On("StartScan", mock.Anything, &v1.StartScanRequest{TargetImage: "nginx:latest"}).
 		Return(&v1.StartScanResponse{ScanId: "s1", Status: "PENDING"}, nil)
 
 	api.CreateScanHandler(c)
 
 	assert.Equal(t, http.StatusCreated, w.Code)
-	mockService.AssertExpectations(t)
+	mockScan.AssertExpectations(t)
+	mockBilling.AssertExpectations(t)
 }
 
 func TestCreateScanHandler_GRPCFailure(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	mockService := new(MockScanServiceClient)
+	mockScan := new(MockScanServiceClient)
+	mockBilling := new(MockBillingServiceClient)
 	api := &handlers.API{
 		GRPCClient: &agrpc.Client{
-			ScanService: mockService,
+			ScanService:    mockScan,
+			BillingService: mockBilling,
 		},
 	}
 
@@ -100,9 +151,15 @@ func TestCreateScanHandler_GRPCFailure(t *testing.T) {
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
+	c.Set("company_id", "test-company")
 	c.Request, _ = http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
 
-	mockService.On("StartScan", mock.Anything, mock.Anything).
+	mockBilling.On("PreFlightCheck", mock.Anything, mock.Anything).
+		Return(&v1.PreFlightCheckResponse{SufficientBalance: true, EstimatedCost: 10}, nil)
+	mockBilling.On("AdjustTokens", mock.Anything, mock.Anything).
+		Return(&v1.AdjustTokensResponse{Balance: 90}, nil)
+
+	mockScan.On("StartScan", mock.Anything, mock.Anything).
 		Return(nil, fmt.Errorf("grpc error"))
 
 	api.CreateScanHandler(c)
