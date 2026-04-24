@@ -137,6 +137,50 @@ func (m *MockAuthServiceClient) RemoveAvatar(ctx context.Context, in *v1.RemoveA
 	return args.Get(0).(*v1.RemoveAvatarResponse), args.Error(1)
 }
 
+type MockBillingServiceClient struct {
+	mock.Mock
+}
+
+func (m *MockBillingServiceClient) GetBalance(ctx context.Context, in *v1.GetBalanceRequest, opts ...grpc.CallOption) (*v1.GetBalanceResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetBalanceResponse), args.Error(1)
+}
+
+func (m *MockBillingServiceClient) AdjustTokens(ctx context.Context, in *v1.AdjustTokensRequest, opts ...grpc.CallOption) (*v1.AdjustTokensResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.AdjustTokensResponse), args.Error(1)
+}
+
+func (m *MockBillingServiceClient) PreFlightCheck(ctx context.Context, in *v1.PreFlightCheckRequest, opts ...grpc.CallOption) (*v1.PreFlightCheckResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.PreFlightCheckResponse), args.Error(1)
+}
+
+func (m *MockBillingServiceClient) GetLedger(ctx context.Context, in *v1.GetLedgerRequest, opts ...grpc.CallOption) (*v1.GetLedgerResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetLedgerResponse), args.Error(1)
+}
+
+func (m *MockBillingServiceClient) GetUsageStats(ctx context.Context, in *v1.GetUsageStatsRequest, opts ...grpc.CallOption) (*v1.GetUsageStatsResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetUsageStatsResponse), args.Error(1)
+}
+
 type MockCompanyServiceClient struct {
 	mock.Mock
 }
@@ -550,10 +594,59 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
+	client.BillingService = nil
+	_, err = client.GetBalance(ctx, "c1")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.GetLedger(ctx, "c1", 10, 0)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.GetUsageStats(ctx, "c1", 30)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
 	client.AuthService = nil
 	_, err = client.RemoveAvatar(ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
+}
+
+func TestClient_BillingMethods(t *testing.T) {
+	mockBilling := new(MockBillingServiceClient)
+	client := &agrpc.Client{
+		BillingService: mockBilling,
+	}
+	ctx := context.Background()
+
+	// GetBalance
+	mockBilling.On("GetBalance", mock.Anything, &v1.GetBalanceRequest{CompanyId: "c1"}).
+		Return(&v1.GetBalanceResponse{Balance: 100}, nil)
+	balance, err := client.GetBalance(ctx, "c1")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(100), balance.Balance)
+
+	// GetLedger
+	mockBilling.On("GetLedger", mock.Anything, &v1.GetLedgerRequest{CompanyId: "c1", Limit: 10, Offset: 0}).
+		Return(&v1.GetLedgerResponse{Entries: []*v1.LedgerEntry{}}, nil)
+	ledger, err := client.GetLedger(ctx, "c1", 10, 0)
+	assert.NoError(t, err)
+	assert.Len(t, ledger.Entries, 0)
+
+	// GetUsageStats
+	mockBilling.On("GetUsageStats", mock.Anything, &v1.GetUsageStatsRequest{CompanyId: "c1", Days: 30}).
+		Return(&v1.GetUsageStatsResponse{Days: []*v1.UsageDay{}}, nil)
+	stats, err := client.GetUsageStats(ctx, "c1", 30)
+	assert.NoError(t, err)
+	assert.Len(t, stats.Days, 0)
+
+	// PreFlightCheck
+	mockBilling.On("PreFlightCheck", mock.Anything, mock.Anything).
+		Return(&v1.PreFlightCheckResponse{SufficientBalance: true}, nil)
+	allowed, err := client.PreFlightCheck(ctx, "c1", 1, 0, 0)
+	assert.NoError(t, err)
+	assert.True(t, allowed.SufficientBalance)
 }
 
 func TestWithMetadata(t *testing.T) {

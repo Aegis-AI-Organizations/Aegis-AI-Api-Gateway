@@ -68,3 +68,54 @@ func TestAdjustTokensHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	mockBilling.AssertExpectations(t)
 }
+
+func TestGetLedgerHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockBilling := new(MockBillingServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			BillingService: mockBilling,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("company_id", "test-company")
+	c.Request, _ = http.NewRequest("GET", "/billing/ledger", nil)
+
+	mockBilling.On("GetLedger", mock.Anything, &v1.GetLedgerRequest{
+		CompanyId: "test-company",
+		Limit:     50,
+		Offset:    0,
+	}).Return(&v1.GetLedgerResponse{Entries: []*v1.LedgerEntry{}}, nil)
+
+	api.GetLedgerHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockBilling.AssertExpectations(t)
+}
+
+func TestGetUsageStatsHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockBilling := new(MockBillingServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			BillingService: mockBilling,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("company_id", "test-company")
+	c.Request, _ = http.NewRequest("GET", "/billing/stats", nil)
+
+	mockBilling.On("GetUsageStats", mock.Anything, &v1.GetUsageStatsRequest{
+		CompanyId: "test-company",
+		Days:      30,
+	}).Return(&v1.GetUsageStatsResponse{Days: []*v1.UsageDay{}}, nil)
+
+	api.GetUsageStatsHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockBilling.AssertExpectations(t)
+}
