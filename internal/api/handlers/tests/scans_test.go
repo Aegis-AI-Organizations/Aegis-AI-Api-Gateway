@@ -99,6 +99,14 @@ func (m *MockBillingServiceClient) PreFlightCheck(ctx context.Context, in *v1.Pr
 	return args.Get(0).(*v1.PreFlightCheckResponse), args.Error(1)
 }
 
+func (m *MockBillingServiceClient) GetUsageStats(ctx context.Context, in *v1.GetUsageStatsRequest, opts ...grpc.CallOption) (*v1.GetUsageStatsResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetUsageStatsResponse), args.Error(1)
+}
+
 func TestCreateScanHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockScan := new(MockScanServiceClient)

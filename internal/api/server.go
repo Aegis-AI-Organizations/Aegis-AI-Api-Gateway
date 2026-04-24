@@ -69,6 +69,7 @@ func NewRouter(gc *agrpc.Client) *gin.Engine {
 		// Billing routes
 		auth.GET("/billing/balance", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetBalanceHandler)
 		auth.GET("/billing/ledger", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetLedgerHandler)
+		auth.GET("/billing/stats", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetUsageStatsHandler)
 
 		// Admin billing adjustment
 		admin.POST("/companies/:id/tokens/adjust", middleware.RequirePermission(middleware.ScopeAdminWrite), h.AdjustTokensHandler)

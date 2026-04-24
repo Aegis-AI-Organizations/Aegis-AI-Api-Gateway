@@ -417,3 +417,13 @@ func (c *Client) PreFlightCheck(ctx context.Context, companyID string, ipCount, 
 		},
 	})
 }
+
+func (c *Client) GetUsageStats(ctx context.Context, companyID string, days int32) (*v1.GetUsageStatsResponse, error) {
+	if c.BillingService == nil {
+		return nil, fmt.Errorf("billing service not initialized")
+	}
+	return c.BillingService.GetUsageStats(WithMetadata(ctx), &v1.GetUsageStatsRequest{
+		CompanyId: companyID,
+		Days:      days,
+	})
+}

@@ -65,3 +65,20 @@ func (a *API) AdjustTokensHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
+
+// GetUsageStatsHandler handles GET /billing/stats
+func (a *API) GetUsageStatsHandler(c *gin.Context) {
+	companyID, _ := c.Get(string(middleware.CompanyIDKey))
+	idStr := companyID.(string)
+
+	daysStr := c.DefaultQuery("days", "30")
+	days, _ := strconv.ParseInt(daysStr, 10, 32)
+
+	resp, err := a.GRPCClient.GetUsageStats(c.Request.Context(), idStr, int32(days))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
