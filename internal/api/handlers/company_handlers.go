@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/metadata"
 )
 
 // ListCompaniesHandler returns all registered companies (SuperAdmin only).
@@ -53,6 +54,7 @@ func (a *API) OnboardCompanyHandler(c *gin.Context) {
 		OwnerName     string `json:"owner_name" binding:"required"`
 		OwnerEmail    string `json:"owner_email" binding:"required,email"`
 		OwnerPassword string `json:"owner_password" binding:"required"`
+		PlanID        string `json:"plan_id"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -62,6 +64,10 @@ func (a *API) OnboardCompanyHandler(c *gin.Context) {
 
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
+
+	// Add plan to metadata if we can't update proto easily
+	md := metadata.Pairs("x-plan-id", req.PlanID)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	resp, err := a.GRPCClient.OnboardCompany(ctx, req.CompanyName, req.OwnerName, req.OwnerEmail, req.OwnerPassword)
 	if err != nil {
