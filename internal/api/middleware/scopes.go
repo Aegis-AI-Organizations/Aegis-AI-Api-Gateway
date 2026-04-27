@@ -60,15 +60,32 @@ var roleScopes = map[types.UserRole][]string{
 	types.RoleAdmin: {
 		ScopeAll,
 	},
-	types.RoleCommercial: {
-		ScopeAuthRead,
-		ScopeCompanyRead,
-		ScopeCompanyWrite,
-		ScopeUserRead,
-		ScopeUserWrite,
-	},
 	types.RoleSuperAdmin: {
 		ScopeAll,
+	},
+	types.RoleBillingAegis: {
+		ScopeAuthRead,
+		ScopeCompanyRead,
+		ScopeAdminRead,
+		ScopeBillingRead,
+		ScopeBillingWrite,
+	},
+	types.RoleTechnicien: {
+		ScopeScanRead,
+		ScopeVulnerabilityRead,
+		ScopeReportRead,
+		ScopeAuthRead,
+		ScopeCompanyRead,
+	},
+	types.RoleSupport: {
+		ScopeScanRead,
+		ScopeAuthRead,
+		ScopeCompanyRead,
+	},
+	types.RoleBillingClient: {
+		ScopeAuthRead,
+		ScopeCompanyRead,
+		ScopeBillingRead,
 	},
 }
 

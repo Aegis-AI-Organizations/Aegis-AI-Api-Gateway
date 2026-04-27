@@ -8,7 +8,6 @@ const (
 	RoleBillingAegis UserRole = "billing_aegis"
 	RoleTechnicien UserRole = "technicien"
 	RoleSupport    UserRole = "support"
-	RoleCommercial UserRole = "commercial"
 	RoleOwner      UserRole = "owner"
 	RoleBillingClient UserRole = "billing_client"
 	RoleOperateur  UserRole = "operateur"
