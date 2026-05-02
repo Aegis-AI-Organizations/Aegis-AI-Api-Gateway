@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"net/http"
+	"path"
+	"strings"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
 	"github.com/gin-gonic/gin"
@@ -26,17 +28,24 @@ func (h *MinioHandler) GetUploadURLHandler(c *gin.Context) {
 
 	// Optional: allow client to suggest a file extension or prefix
 	// SECURITY: We MUST validate the prefix to avoid cross-tenant access or path traversal.
-	if prefix := c.Query("prefix"); prefix != "" {
+	prefix := c.Query("prefix")
+	if prefix != "" {
+		// Sanitize prefix to prevent directory traversal attacks (e.g. ../other_company/)
+		prefix = path.Clean("/" + prefix)
+		prefix = strings.TrimPrefix(prefix, "/")
+	}
+
+	companyID, _ := c.Get("company_id")
+
+	if prefix != "" && prefix != "." {
 		// Scoping to company_id if available for tenant isolation
-		companyID, _ := c.Get("company_id")
 		if companyID != nil {
 			objectName = companyID.(string) + "/" + prefix + "/" + objectName
 		} else {
 			objectName = prefix + "/" + objectName
 		}
 	} else {
-		// Default scoping if no prefix provided
-		companyID, _ := c.Get("company_id")
+		// Default scoping if no prefix provided or if prefix was entirely malicious (e.g., "../")
 		if companyID != nil {
 			objectName = companyID.(string) + "/uploads/" + objectName
 		}
