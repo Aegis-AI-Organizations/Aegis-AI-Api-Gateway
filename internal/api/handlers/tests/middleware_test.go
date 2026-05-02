@@ -129,9 +129,9 @@ func TestAuthMiddleware_Unit(t *testing.T) {
         w := httptest.NewRecorder()
         c, _ := gin.CreateTestContext(w)
         c.Request, _ = http.NewRequest("GET", "/test", nil)
-        
+
         middleware.AuthMiddleware()(c)
-        
+
         assert.Equal(t, http.StatusUnauthorized, w.Code)
         assert.True(t, c.IsAborted())
     })
