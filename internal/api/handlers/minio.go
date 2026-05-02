@@ -16,13 +16,30 @@ type MinioHandler struct {
 func (h *MinioHandler) GetUploadURLHandler(c *gin.Context) {
 	// Identify by Agent token or User ID to avoid anonymous abuse
 	// (Already handled by middlewares)
+	if h.MinioClient == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "File storage is not enabled"})
+		return
+	}
 
 	// Generate a unique object name
 	objectName := uuid.New().String()
 
 	// Optional: allow client to suggest a file extension or prefix
+	// SECURITY: We MUST validate the prefix to avoid cross-tenant access or path traversal.
 	if prefix := c.Query("prefix"); prefix != "" {
-		objectName = prefix + "/" + objectName
+		// Scoping to company_id if available for tenant isolation
+		companyID, _ := c.Get("company_id")
+		if companyID != nil {
+			objectName = companyID.(string) + "/" + prefix + "/" + objectName
+		} else {
+			objectName = prefix + "/" + objectName
+		}
+	} else {
+		// Default scoping if no prefix provided
+		companyID, _ := c.Get("company_id")
+		if companyID != nil {
+			objectName = companyID.(string) + "/uploads/" + objectName
+		}
 	}
 
 	url, err := h.MinioClient.GeneratePresignedPutURL(c.Request.Context(), objectName)
