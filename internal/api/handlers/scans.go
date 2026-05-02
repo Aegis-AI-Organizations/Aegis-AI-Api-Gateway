@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
 	"github.com/gin-gonic/gin"
 )
@@ -82,3 +83,40 @@ func (a *API) GetScanByIDHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, found)
 }
+
+func (a *API) UpdateScanStatusHandler(c *gin.Context) {
+	scanID := c.Param("id")
+	var req struct {
+		Status string `json:"status" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp, err := a.GRPCClient.UpdateScanStatus(c.Request.Context(), scanID, req.Status)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update scan status via gRPC"})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
+func (a *API) CreateVulnerabilitiesHandler(c *gin.Context) {
+	scanID := c.Param("id")
+	var findings []*v1.VulnerabilityFinding
+	if err := c.ShouldBindJSON(&findings); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid vulnerability findings format"})
+		return
+	}
+
+	resp, err := a.GRPCClient.CreateVulnerabilities(c.Request.Context(), scanID, findings)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to report vulnerabilities via gRPC"})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
