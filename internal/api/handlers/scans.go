@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
 	"github.com/gin-gonic/gin"
 )

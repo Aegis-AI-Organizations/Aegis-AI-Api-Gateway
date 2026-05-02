@@ -37,3 +37,7 @@ func NewRedisClient() (*RedisClient, error) {
 		Client: rdb,
 	}, nil
 }
+
+func (r *RedisClient) GetClient() *redis.Client {
+	return r.Client
+}
