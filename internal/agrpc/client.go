@@ -8,7 +8,7 @@ import (
 	"os"
 
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -40,17 +40,17 @@ type TLSConfig struct {
 func WithMetadata(ctx context.Context) context.Context {
 	md := metadata.Pairs()
 
-	// Extract from context (matching strongly-typed keys in middleware/auth.go)
-	if userID, ok := ctx.Value(middleware.UserIDKey).(string); ok {
+	// Extract from context (matching strongly-typed keys in types package)
+	if userID, ok := ctx.Value(types.UserIDKey).(string); ok {
 		md.Set("user-id", userID)
 	}
-	if companyID, ok := ctx.Value(middleware.CompanyIDKey).(string); ok {
+	if companyID, ok := ctx.Value(types.CompanyIDKey).(string); ok {
 		md.Set("company-id", companyID)
 	}
-	if role, ok := ctx.Value(middleware.RoleKey).(string); ok {
+	if role, ok := ctx.Value(types.RoleKey).(string); ok {
 		md.Set("role", role)
 	}
-	if token, ok := ctx.Value(middleware.TokenKey).(string); ok {
+	if token, ok := ctx.Value(types.TokenKey).(string); ok {
 		md.Set("authorization", "Bearer "+token)
 	}
 
@@ -359,11 +359,11 @@ func (c *Client) OnboardCompany(ctx context.Context, companyName, ownerName, own
 	})
 }
 
-func (c *Client) WatchTeams(ctx context.Context) (v1.CompanyService_WatchTeamsClient, error) {
+func (c *Client) WatchCompanyUpdates(ctx context.Context) (v1.CompanyService_WatchCompanyUpdatesClient, error) {
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")
 	}
-	return c.CompanyService.WatchTeams(WithMetadata(ctx), &v1.WatchTeamsRequest{})
+	return c.CompanyService.WatchCompanyUpdates(WithMetadata(ctx), &v1.WatchCompanyUpdatesRequest{})
 }
 
 func (c *Client) ListAuditLogs(ctx context.Context, limit, offset int32, companyID string) (*v1.ListAuditLogsResponse, error) {
@@ -440,18 +440,8 @@ func (c *Client) UpdateScanStatus(ctx context.Context, scanID, status string) (*
 	if c.ScanService == nil {
 		return nil, fmt.Errorf("scan service not initialized")
 	}
-	return c.ScanService.UpdateScanStatus(ctx, &v1.UpdateScanStatusRequest{
+	return c.ScanService.UpdateScanStatus(WithMetadata(ctx), &v1.UpdateScanStatusRequest{
 		ScanId: scanID,
 		Status: status,
-	})
-}
-
-func (c *Client) CreateVulnerabilities(ctx context.Context, scanID string, findings []*v1.VulnerabilityFinding) (*v1.CreateVulnerabilitiesResponse, error) {
-	if c.ScanService == nil {
-		return nil, fmt.Errorf("scan service not initialized")
-	}
-	return c.ScanService.CreateVulnerabilities(ctx, &v1.CreateVulnerabilitiesRequest{
-		ScanId:          scanID,
-		Vulnerabilities: findings,
 	})
 }

@@ -12,7 +12,7 @@ import (
 func (a *API) TeamStreamHandler(c *gin.Context) {
 	log.Printf("📡 Starting teams SSE stream")
 
-	stream, err := a.GRPCClient.WatchTeams(c.Request.Context())
+	stream, err := a.GRPCClient.WatchCompanyUpdates(c.Request.Context())
 	if err != nil || stream == nil {
 		log.Printf("Failed to open gRPC stream for teams: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to initialize stream"})

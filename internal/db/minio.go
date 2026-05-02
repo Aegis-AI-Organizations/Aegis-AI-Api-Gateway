@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"os"
 	"time"
 

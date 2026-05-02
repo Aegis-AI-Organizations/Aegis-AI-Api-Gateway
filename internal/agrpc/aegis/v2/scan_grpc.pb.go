@@ -19,13 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ScanService_StartScan_FullMethodName             = "/aegis.v2.ScanService/StartScan"
-	ScanService_GetScanStatus_FullMethodName         = "/aegis.v2.ScanService/GetScanStatus"
-	ScanService_ListScans_FullMethodName             = "/aegis.v2.ScanService/ListScans"
-	ScanService_GetScanReport_FullMethodName         = "/aegis.v2.ScanService/GetScanReport"
-	ScanService_WatchScanStatus_FullMethodName       = "/aegis.v2.ScanService/WatchScanStatus"
-	ScanService_UpdateScanStatus_FullMethodName      = "/aegis.v2.ScanService/UpdateScanStatus"
-	ScanService_CreateVulnerabilities_FullMethodName = "/aegis.v2.ScanService/CreateVulnerabilities"
+	ScanService_StartScan_FullMethodName        = "/aegis.v2.ScanService/StartScan"
+	ScanService_GetScanStatus_FullMethodName    = "/aegis.v2.ScanService/GetScanStatus"
+	ScanService_ListScans_FullMethodName        = "/aegis.v2.ScanService/ListScans"
+	ScanService_GetScanReport_FullMethodName    = "/aegis.v2.ScanService/GetScanReport"
+	ScanService_WatchScanStatus_FullMethodName  = "/aegis.v2.ScanService/WatchScanStatus"
+	ScanService_UpdateScanStatus_FullMethodName = "/aegis.v2.ScanService/UpdateScanStatus"
 )
 
 // ScanServiceClient is the client API for ScanService service.
@@ -46,8 +45,6 @@ type ScanServiceClient interface {
 	WatchScanStatus(ctx context.Context, in *WatchScanStatusRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchScanStatusResponse], error)
 	// UpdateScanStatus updates the status of a scan (called by Agents).
 	UpdateScanStatus(ctx context.Context, in *UpdateScanStatusRequest, opts ...grpc.CallOption) (*UpdateScanStatusResponse, error)
-	// CreateVulnerabilities reports findings for a scan (called by Agents).
-	CreateVulnerabilities(ctx context.Context, in *CreateVulnerabilitiesRequest, opts ...grpc.CallOption) (*CreateVulnerabilitiesResponse, error)
 }
 
 type scanServiceClient struct {
@@ -127,16 +124,6 @@ func (c *scanServiceClient) UpdateScanStatus(ctx context.Context, in *UpdateScan
 	return out, nil
 }
 
-func (c *scanServiceClient) CreateVulnerabilities(ctx context.Context, in *CreateVulnerabilitiesRequest, opts ...grpc.CallOption) (*CreateVulnerabilitiesResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateVulnerabilitiesResponse)
-	err := c.cc.Invoke(ctx, ScanService_CreateVulnerabilities_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ScanServiceServer is the server API for ScanService service.
 // All implementations must embed UnimplementedScanServiceServer
 // for forward compatibility.
@@ -155,8 +142,6 @@ type ScanServiceServer interface {
 	WatchScanStatus(*WatchScanStatusRequest, grpc.ServerStreamingServer[WatchScanStatusResponse]) error
 	// UpdateScanStatus updates the status of a scan (called by Agents).
 	UpdateScanStatus(context.Context, *UpdateScanStatusRequest) (*UpdateScanStatusResponse, error)
-	// CreateVulnerabilities reports findings for a scan (called by Agents).
-	CreateVulnerabilities(context.Context, *CreateVulnerabilitiesRequest) (*CreateVulnerabilitiesResponse, error)
 	mustEmbedUnimplementedScanServiceServer()
 }
 
@@ -184,9 +169,6 @@ func (UnimplementedScanServiceServer) WatchScanStatus(*WatchScanStatusRequest, g
 }
 func (UnimplementedScanServiceServer) UpdateScanStatus(context.Context, *UpdateScanStatusRequest) (*UpdateScanStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateScanStatus not implemented")
-}
-func (UnimplementedScanServiceServer) CreateVulnerabilities(context.Context, *CreateVulnerabilitiesRequest) (*CreateVulnerabilitiesResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method CreateVulnerabilities not implemented")
 }
 func (UnimplementedScanServiceServer) mustEmbedUnimplementedScanServiceServer() {}
 func (UnimplementedScanServiceServer) testEmbeddedByValue()                     {}
@@ -310,24 +292,6 @@ func _ScanService_UpdateScanStatus_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ScanService_CreateVulnerabilities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateVulnerabilitiesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ScanServiceServer).CreateVulnerabilities(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ScanService_CreateVulnerabilities_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ScanServiceServer).CreateVulnerabilities(ctx, req.(*CreateVulnerabilitiesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // ScanService_ServiceDesc is the grpc.ServiceDesc for ScanService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -354,10 +318,6 @@ var ScanService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateScanStatus",
 			Handler:    _ScanService_UpdateScanStatus_Handler,
-		},
-		{
-			MethodName: "CreateVulnerabilities",
-			Handler:    _ScanService_CreateVulnerabilities_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
