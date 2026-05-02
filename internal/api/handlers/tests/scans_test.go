@@ -413,3 +413,26 @@ func TestGetScanReportHandler_GRPCError(t *testing.T) {
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
+func TestUpdateScanStatusHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockScan := new(MockScanServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			ScanService: mockScan,
+		},
+	}
+
+	payload := map[string]string{"status": "RUNNING"}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/agent/scans/s1/status", bytes.NewBuffer(body))
+	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
+
+	mockScan.On("UpdateScanStatus", mock.Anything, mock.Anything).
+		Return(&v1.UpdateScanStatusResponse{Success: true}, nil)
+
+	api.UpdateScanStatusHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}

@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -63,6 +64,25 @@ func (m *MockCompanyServiceClient) ListAuditLogs(ctx context.Context, in *v1.Lis
 	}
 	return args.Get(0).(*v1.ListAuditLogsResponse), args.Error(1)
 }
+
+type MockCompanyUpdateStream struct {
+	mock.Mock
+}
+
+func (m *MockCompanyUpdateStream) Recv() (*v1.WatchCompanyUpdatesResponse, error) {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.WatchCompanyUpdatesResponse), args.Error(1)
+}
+
+func (m *MockCompanyUpdateStream) Context() context.Context { return context.Background() }
+func (m *MockCompanyUpdateStream) Header() (metadata.MD, error) { return nil, nil }
+func (m *MockCompanyUpdateStream) Trailer() metadata.MD { return nil }
+func (m *MockCompanyUpdateStream) CloseSend() error { return nil }
+func (m *MockCompanyUpdateStream) SendMsg(m_ interface{}) error { return nil }
+func (m *MockCompanyUpdateStream) RecvMsg(m_ interface{}) error { return nil }
 
 func TestListCompaniesHandler_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)

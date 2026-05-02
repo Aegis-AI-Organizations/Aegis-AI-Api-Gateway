@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +13,7 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/testutils"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -43,6 +45,14 @@ func (m *MockAdminGRPCClient) AdminCreateUser(ctx context.Context, name, email, 
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*v1.CreateCompanyResponse), args.Error(1)
+}
+
+func (m *MockAdminGRPCClient) ListAuditLogs(ctx context.Context, limit, offset int32, companyID string) (*v1.ListAuditLogsResponse, error) {
+	args := m.Called(ctx, limit, offset, companyID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.ListAuditLogsResponse), args.Error(1)
 }
 
 // NOTE: Since handlers.API uses agrpc.Client which is a struct with interfaces,
@@ -227,4 +237,57 @@ func TestCreateUserHandler_ServerError(t *testing.T) {
 	api.CreateUserHandler(c)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestListAuditLogsHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/admin/audit-logs?limit=10&offset=5&company_id=c1", nil)
+
+	mockCompany.On("ListAuditLogs", mock.Anything, mock.Anything).
+		Return(&v1.ListAuditLogsResponse{
+			Logs: []*v1.AuditLogEntry{
+				{Id: "l1", Action: "test-action"},
+			},
+		}, nil)
+
+	api.ListAuditLogsHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestTeamStreamHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	mockStream := new(MockCompanyUpdateStream)
+	mockStream.On("Recv").Return(&v1.WatchCompanyUpdatesResponse{
+		EventType: "COMPANY_CREATED",
+		EntityId:  "c1",
+	}, nil).Once()
+	mockStream.On("Recv").Return(nil, io.EOF).Once()
+
+	mockCompany.On("WatchCompanyUpdates", mock.Anything, mock.Anything).
+		Return(mockStream, nil)
+
+	w := testutils.NewCloseNotifierRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/admin/teams/stream", nil)
+
+	api.TeamStreamHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
 }
