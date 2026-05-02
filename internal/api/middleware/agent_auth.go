@@ -32,18 +32,20 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 			return
 		}
 
-		// Check Redis cache for valid token
+		// Check Redis cache for valid token (if available)
 		cacheKey := fmt.Sprintf("agent_token:%s", token)
-		tenantID, err := redisClient.Client.Get(c.Request.Context(), cacheKey).Result()
-		if err == nil && tenantID != "" {
-			// Cache hit - valid token
-			c.Set(string(types.AgentTenantIDKey), tenantID)
-			c.Set(string(types.AgentTokenKey), token)
-			c.Next()
-			return
+		if redisClient != nil && redisClient.Client != nil {
+			tenantID, err := redisClient.Client.Get(c.Request.Context(), cacheKey).Result()
+			if err == nil && tenantID != "" {
+				// Cache hit - valid token
+				c.Set(string(types.AgentTenantIDKey), tenantID)
+				c.Set(string(types.AgentTokenKey), token)
+				c.Next()
+				return
+			}
 		}
 
-		// Cache miss or expired - query Brain
+		// Cache miss, expired or Redis unavailable - query Brain
 		resp, err := grpcClient.VerifyToken(c.Request.Context(), token)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify token with auth service"})
@@ -57,8 +59,10 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 			return
 		}
 
-		// Cache successful validation for 5 minutes as per requirements
-		redisClient.Client.Set(c.Request.Context(), cacheKey, resp.TenantId, 5*time.Minute)
+		// Cache successful validation if Redis is available
+		if redisClient != nil && redisClient.Client != nil {
+			redisClient.Client.Set(c.Request.Context(), cacheKey, resp.TenantId, 5*time.Minute)
+		}
 
 		// Add claims to context for subsequent handlers
 		c.Set(string(types.AgentTenantIDKey), resp.TenantId)

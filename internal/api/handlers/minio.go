@@ -1,17 +1,21 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"path"
 	"strings"
 
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
+type IMinioClient interface {
+	GeneratePresignedPutURL(ctx context.Context, objectName string) (string, error)
+}
+
 type MinioHandler struct {
-	MinioClient *db.MinioClient
+	MinioClient IMinioClient
 }
 
 // GetUploadURLHandler generates a presigned PUT URL for MinIO file uploads.
