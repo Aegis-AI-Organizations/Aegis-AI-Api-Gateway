@@ -100,9 +100,8 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 		// Agents use this to get an upload URL for findings/evidence
 		agent.GET("/storage/upload-url", mh.GetUploadURLHandler)
 
-		// Agents can report scan results or update status
+		// Agents can report their operational status (WAITING, EXPORTING, ERROR)
 		agent.POST("/scans/:id/status", h.UpdateScanStatusHandler)
-		agent.POST("/scans/:id/vulnerabilities", h.CreateVulnerabilitiesHandler)
 
 		// Agents report discovered infrastructure topology
 		agent.POST("/topology", h.ReportTopologyHandler)

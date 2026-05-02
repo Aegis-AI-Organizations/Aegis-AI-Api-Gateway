@@ -103,20 +103,3 @@ func (a *API) UpdateScanStatusHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (a *API) CreateVulnerabilitiesHandler(c *gin.Context) {
-	scanID := c.Param("id")
-	var findings []*v1.VulnerabilityFinding
-	if err := c.ShouldBindJSON(&findings); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid vulnerability findings format"})
-		return
-	}
-
-	resp, err := a.GRPCClient.CreateVulnerabilities(c.Request.Context(), scanID, findings)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to report vulnerabilities via gRPC"})
-		return
-	}
-
-	c.JSON(http.StatusOK, resp)
-}
-
