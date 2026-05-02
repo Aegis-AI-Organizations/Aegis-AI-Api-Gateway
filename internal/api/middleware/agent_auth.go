@@ -8,10 +8,9 @@ import (
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 )
-
-const AgentTenantIDKey ContextKey = "agent_tenant_id"
 
 // AgentAuthMiddleware validates Agent deployment tokens against the Brain and caches the result.
 func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) gin.HandlerFunc {
@@ -37,8 +36,8 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 		tenantID, err := redisClient.Client.Get(c.Request.Context(), cacheKey).Result()
 		if err == nil && tenantID != "" {
 			// Cache hit - valid token
-			c.Set(string(AgentTenantIDKey), tenantID)
-			c.Set("agent_token", token)
+			c.Set(string(types.AgentTenantIDKey), tenantID)
+			c.Set(string(types.AgentTokenKey), token)
 			c.Next()
 			return
 		}
@@ -60,8 +59,13 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 		// Cache successful validation for 5 minutes as per requirements
 		redisClient.Client.Set(c.Request.Context(), cacheKey, resp.TenantId, 5*time.Minute)
 
-		c.Set(string(AgentTenantIDKey), resp.TenantId)
-		c.Set("agent_token", token)
+		// Add claims to context for subsequent handlers
+		c.Set(string(types.AgentTenantIDKey), resp.TenantId)
+		c.Set(string(types.AgentTokenKey), token)
+
+		ctx := context.WithValue(c.Request.Context(), types.AgentTenantIDKey, resp.TenantId)
+		ctx = context.WithValue(ctx, types.AgentTokenKey, token)
+		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
 }

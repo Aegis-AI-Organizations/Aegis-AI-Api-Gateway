@@ -706,238 +706,6 @@ func (x *UpdateScanStatusResponse) GetSuccess() bool {
 	return false
 }
 
-type VulnerabilityFinding struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	VulnType       string                 `protobuf:"bytes,1,opt,name=vuln_type,json=vulnType,proto3" json:"vuln_type,omitempty"`
-	Severity       string                 `protobuf:"bytes,2,opt,name=severity,proto3" json:"severity,omitempty"`
-	TargetEndpoint string                 `protobuf:"bytes,3,opt,name=target_endpoint,json=targetEndpoint,proto3" json:"target_endpoint,omitempty"`
-	Description    string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	Evidences      []*EvidenceFinding     `protobuf:"bytes,5,rep,name=evidences,proto3" json:"evidences,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *VulnerabilityFinding) Reset() {
-	*x = VulnerabilityFinding{}
-	mi := &file_aegis_v2_scan_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *VulnerabilityFinding) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VulnerabilityFinding) ProtoMessage() {}
-
-func (x *VulnerabilityFinding) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_scan_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VulnerabilityFinding.ProtoReflect.Descriptor instead.
-func (*VulnerabilityFinding) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_scan_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *VulnerabilityFinding) GetVulnType() string {
-	if x != nil {
-		return x.VulnType
-	}
-	return ""
-}
-
-func (x *VulnerabilityFinding) GetSeverity() string {
-	if x != nil {
-		return x.Severity
-	}
-	return ""
-}
-
-func (x *VulnerabilityFinding) GetTargetEndpoint() string {
-	if x != nil {
-		return x.TargetEndpoint
-	}
-	return ""
-}
-
-func (x *VulnerabilityFinding) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *VulnerabilityFinding) GetEvidences() []*EvidenceFinding {
-	if x != nil {
-		return x.Evidences
-	}
-	return nil
-}
-
-type EvidenceFinding struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	PayloadUsed   string                 `protobuf:"bytes,1,opt,name=payload_used,json=payloadUsed,proto3" json:"payload_used,omitempty"`
-	LootData      string                 `protobuf:"bytes,2,opt,name=loot_data,json=lootData,proto3" json:"loot_data,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *EvidenceFinding) Reset() {
-	*x = EvidenceFinding{}
-	mi := &file_aegis_v2_scan_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *EvidenceFinding) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EvidenceFinding) ProtoMessage() {}
-
-func (x *EvidenceFinding) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_scan_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use EvidenceFinding.ProtoReflect.Descriptor instead.
-func (*EvidenceFinding) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_scan_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *EvidenceFinding) GetPayloadUsed() string {
-	if x != nil {
-		return x.PayloadUsed
-	}
-	return ""
-}
-
-func (x *EvidenceFinding) GetLootData() string {
-	if x != nil {
-		return x.LootData
-	}
-	return ""
-}
-
-type CreateVulnerabilitiesRequest struct {
-	state           protoimpl.MessageState  `protogen:"open.v1"`
-	ScanId          string                  `protobuf:"bytes,1,opt,name=scan_id,json=scanId,proto3" json:"scan_id,omitempty"`
-	Vulnerabilities []*VulnerabilityFinding `protobuf:"bytes,2,rep,name=vulnerabilities,proto3" json:"vulnerabilities,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
-}
-
-func (x *CreateVulnerabilitiesRequest) Reset() {
-	*x = CreateVulnerabilitiesRequest{}
-	mi := &file_aegis_v2_scan_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateVulnerabilitiesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateVulnerabilitiesRequest) ProtoMessage() {}
-
-func (x *CreateVulnerabilitiesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_scan_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateVulnerabilitiesRequest.ProtoReflect.Descriptor instead.
-func (*CreateVulnerabilitiesRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_scan_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *CreateVulnerabilitiesRequest) GetScanId() string {
-	if x != nil {
-		return x.ScanId
-	}
-	return ""
-}
-
-func (x *CreateVulnerabilitiesRequest) GetVulnerabilities() []*VulnerabilityFinding {
-	if x != nil {
-		return x.Vulnerabilities
-	}
-	return nil
-}
-
-type CreateVulnerabilitiesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateVulnerabilitiesResponse) Reset() {
-	*x = CreateVulnerabilitiesResponse{}
-	mi := &file_aegis_v2_scan_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateVulnerabilitiesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateVulnerabilitiesResponse) ProtoMessage() {}
-
-func (x *CreateVulnerabilitiesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_scan_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateVulnerabilitiesResponse.ProtoReflect.Descriptor instead.
-func (*CreateVulnerabilitiesResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_scan_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *CreateVulnerabilitiesResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *CreateVulnerabilitiesResponse) GetCount() int32 {
-	if x != nil {
-		return x.Count
-	}
-	return 0
-}
-
 var File_aegis_v2_scan_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_scan_proto_rawDesc = "" +
@@ -985,30 +753,14 @@ const file_aegis_v2_scan_proto_rawDesc = "" +
 	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"4\n" +
 	"\x18UpdateScanStatusResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xd3\x01\n" +
-	"\x14VulnerabilityFinding\x12\x1b\n" +
-	"\tvuln_type\x18\x01 \x01(\tR\bvulnType\x12\x1a\n" +
-	"\bseverity\x18\x02 \x01(\tR\bseverity\x12'\n" +
-	"\x0ftarget_endpoint\x18\x03 \x01(\tR\x0etargetEndpoint\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\x127\n" +
-	"\tevidences\x18\x05 \x03(\v2\x19.aegis.v2.EvidenceFindingR\tevidences\"Q\n" +
-	"\x0fEvidenceFinding\x12!\n" +
-	"\fpayload_used\x18\x01 \x01(\tR\vpayloadUsed\x12\x1b\n" +
-	"\tloot_data\x18\x02 \x01(\tR\blootData\"\x81\x01\n" +
-	"\x1cCreateVulnerabilitiesRequest\x12\x17\n" +
-	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x12H\n" +
-	"\x0fvulnerabilities\x18\x02 \x03(\v2\x1e.aegis.v2.VulnerabilityFindingR\x0fvulnerabilities\"O\n" +
-	"\x1dCreateVulnerabilitiesResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
-	"\x05count\x18\x02 \x01(\x05R\x05count2\xdc\x04\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xf2\x03\n" +
 	"\vScanService\x12D\n" +
 	"\tStartScan\x12\x1a.aegis.v2.StartScanRequest\x1a\x1b.aegis.v2.StartScanResponse\x12P\n" +
 	"\rGetScanStatus\x12\x1e.aegis.v2.GetScanStatusRequest\x1a\x1f.aegis.v2.GetScanStatusResponse\x12D\n" +
 	"\tListScans\x12\x1a.aegis.v2.ListScansRequest\x1a\x1b.aegis.v2.ListScansResponse\x12P\n" +
 	"\rGetScanReport\x12\x1e.aegis.v2.GetScanReportRequest\x1a\x1f.aegis.v2.GetScanReportResponse\x12X\n" +
 	"\x0fWatchScanStatus\x12 .aegis.v2.WatchScanStatusRequest\x1a!.aegis.v2.WatchScanStatusResponse0\x01\x12Y\n" +
-	"\x10UpdateScanStatus\x12!.aegis.v2.UpdateScanStatusRequest\x1a\".aegis.v2.UpdateScanStatusResponse\x12h\n" +
-	"\x15CreateVulnerabilities\x12&.aegis.v2.CreateVulnerabilitiesRequest\x1a'.aegis.v2.CreateVulnerabilitiesResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
+	"\x10UpdateScanStatus\x12!.aegis.v2.UpdateScanStatusRequest\x1a\".aegis.v2.UpdateScanStatusResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_scan_proto_rawDescOnce sync.Once
@@ -1022,55 +774,47 @@ func file_aegis_v2_scan_proto_rawDescGZIP() []byte {
 	return file_aegis_v2_scan_proto_rawDescData
 }
 
-var file_aegis_v2_scan_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_aegis_v2_scan_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_aegis_v2_scan_proto_goTypes = []any{
-	(*StartScanRequest)(nil),              // 0: aegis.v2.StartScanRequest
-	(*StartScanResponse)(nil),             // 1: aegis.v2.StartScanResponse
-	(*GetScanStatusRequest)(nil),          // 2: aegis.v2.GetScanStatusRequest
-	(*GetScanStatusResponse)(nil),         // 3: aegis.v2.GetScanStatusResponse
-	(*ListScansRequest)(nil),              // 4: aegis.v2.ListScansRequest
-	(*ScanDetails)(nil),                   // 5: aegis.v2.ScanDetails
-	(*ListScansResponse)(nil),             // 6: aegis.v2.ListScansResponse
-	(*GetScanReportRequest)(nil),          // 7: aegis.v2.GetScanReportRequest
-	(*GetScanReportResponse)(nil),         // 8: aegis.v2.GetScanReportResponse
-	(*WatchScanStatusRequest)(nil),        // 9: aegis.v2.WatchScanStatusRequest
-	(*WatchScanStatusResponse)(nil),       // 10: aegis.v2.WatchScanStatusResponse
-	(*UpdateScanStatusRequest)(nil),       // 11: aegis.v2.UpdateScanStatusRequest
-	(*UpdateScanStatusResponse)(nil),      // 12: aegis.v2.UpdateScanStatusResponse
-	(*VulnerabilityFinding)(nil),          // 13: aegis.v2.VulnerabilityFinding
-	(*EvidenceFinding)(nil),               // 14: aegis.v2.EvidenceFinding
-	(*CreateVulnerabilitiesRequest)(nil),  // 15: aegis.v2.CreateVulnerabilitiesRequest
-	(*CreateVulnerabilitiesResponse)(nil), // 16: aegis.v2.CreateVulnerabilitiesResponse
-	(*timestamppb.Timestamp)(nil),         // 17: google.protobuf.Timestamp
+	(*StartScanRequest)(nil),         // 0: aegis.v2.StartScanRequest
+	(*StartScanResponse)(nil),        // 1: aegis.v2.StartScanResponse
+	(*GetScanStatusRequest)(nil),     // 2: aegis.v2.GetScanStatusRequest
+	(*GetScanStatusResponse)(nil),    // 3: aegis.v2.GetScanStatusResponse
+	(*ListScansRequest)(nil),         // 4: aegis.v2.ListScansRequest
+	(*ScanDetails)(nil),              // 5: aegis.v2.ScanDetails
+	(*ListScansResponse)(nil),        // 6: aegis.v2.ListScansResponse
+	(*GetScanReportRequest)(nil),     // 7: aegis.v2.GetScanReportRequest
+	(*GetScanReportResponse)(nil),    // 8: aegis.v2.GetScanReportResponse
+	(*WatchScanStatusRequest)(nil),   // 9: aegis.v2.WatchScanStatusRequest
+	(*WatchScanStatusResponse)(nil),  // 10: aegis.v2.WatchScanStatusResponse
+	(*UpdateScanStatusRequest)(nil),  // 11: aegis.v2.UpdateScanStatusRequest
+	(*UpdateScanStatusResponse)(nil), // 12: aegis.v2.UpdateScanStatusResponse
+	(*timestamppb.Timestamp)(nil),    // 13: google.protobuf.Timestamp
 }
 var file_aegis_v2_scan_proto_depIdxs = []int32{
-	17, // 0: aegis.v2.StartScanResponse.started_at:type_name -> google.protobuf.Timestamp
-	17, // 1: aegis.v2.GetScanStatusResponse.started_at:type_name -> google.protobuf.Timestamp
-	17, // 2: aegis.v2.GetScanStatusResponse.completed_at:type_name -> google.protobuf.Timestamp
-	17, // 3: aegis.v2.ScanDetails.started_at:type_name -> google.protobuf.Timestamp
-	17, // 4: aegis.v2.ScanDetails.completed_at:type_name -> google.protobuf.Timestamp
+	13, // 0: aegis.v2.StartScanResponse.started_at:type_name -> google.protobuf.Timestamp
+	13, // 1: aegis.v2.GetScanStatusResponse.started_at:type_name -> google.protobuf.Timestamp
+	13, // 2: aegis.v2.GetScanStatusResponse.completed_at:type_name -> google.protobuf.Timestamp
+	13, // 3: aegis.v2.ScanDetails.started_at:type_name -> google.protobuf.Timestamp
+	13, // 4: aegis.v2.ScanDetails.completed_at:type_name -> google.protobuf.Timestamp
 	5,  // 5: aegis.v2.ListScansResponse.scans:type_name -> aegis.v2.ScanDetails
-	14, // 6: aegis.v2.VulnerabilityFinding.evidences:type_name -> aegis.v2.EvidenceFinding
-	13, // 7: aegis.v2.CreateVulnerabilitiesRequest.vulnerabilities:type_name -> aegis.v2.VulnerabilityFinding
-	0,  // 8: aegis.v2.ScanService.StartScan:input_type -> aegis.v2.StartScanRequest
-	2,  // 9: aegis.v2.ScanService.GetScanStatus:input_type -> aegis.v2.GetScanStatusRequest
-	4,  // 10: aegis.v2.ScanService.ListScans:input_type -> aegis.v2.ListScansRequest
-	7,  // 11: aegis.v2.ScanService.GetScanReport:input_type -> aegis.v2.GetScanReportRequest
-	9,  // 12: aegis.v2.ScanService.WatchScanStatus:input_type -> aegis.v2.WatchScanStatusRequest
-	11, // 13: aegis.v2.ScanService.UpdateScanStatus:input_type -> aegis.v2.UpdateScanStatusRequest
-	15, // 14: aegis.v2.ScanService.CreateVulnerabilities:input_type -> aegis.v2.CreateVulnerabilitiesRequest
-	1,  // 15: aegis.v2.ScanService.StartScan:output_type -> aegis.v2.StartScanResponse
-	3,  // 16: aegis.v2.ScanService.GetScanStatus:output_type -> aegis.v2.GetScanStatusResponse
-	6,  // 17: aegis.v2.ScanService.ListScans:output_type -> aegis.v2.ListScansResponse
-	8,  // 18: aegis.v2.ScanService.GetScanReport:output_type -> aegis.v2.GetScanReportResponse
-	10, // 19: aegis.v2.ScanService.WatchScanStatus:output_type -> aegis.v2.WatchScanStatusResponse
-	12, // 20: aegis.v2.ScanService.UpdateScanStatus:output_type -> aegis.v2.UpdateScanStatusResponse
-	16, // 21: aegis.v2.ScanService.CreateVulnerabilities:output_type -> aegis.v2.CreateVulnerabilitiesResponse
-	15, // [15:22] is the sub-list for method output_type
-	8,  // [8:15] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	0,  // 6: aegis.v2.ScanService.StartScan:input_type -> aegis.v2.StartScanRequest
+	2,  // 7: aegis.v2.ScanService.GetScanStatus:input_type -> aegis.v2.GetScanStatusRequest
+	4,  // 8: aegis.v2.ScanService.ListScans:input_type -> aegis.v2.ListScansRequest
+	7,  // 9: aegis.v2.ScanService.GetScanReport:input_type -> aegis.v2.GetScanReportRequest
+	9,  // 10: aegis.v2.ScanService.WatchScanStatus:input_type -> aegis.v2.WatchScanStatusRequest
+	11, // 11: aegis.v2.ScanService.UpdateScanStatus:input_type -> aegis.v2.UpdateScanStatusRequest
+	1,  // 12: aegis.v2.ScanService.StartScan:output_type -> aegis.v2.StartScanResponse
+	3,  // 13: aegis.v2.ScanService.GetScanStatus:output_type -> aegis.v2.GetScanStatusResponse
+	6,  // 14: aegis.v2.ScanService.ListScans:output_type -> aegis.v2.ListScansResponse
+	8,  // 15: aegis.v2.ScanService.GetScanReport:output_type -> aegis.v2.GetScanReportResponse
+	10, // 16: aegis.v2.ScanService.WatchScanStatus:output_type -> aegis.v2.WatchScanStatusResponse
+	12, // 17: aegis.v2.ScanService.UpdateScanStatus:output_type -> aegis.v2.UpdateScanStatusResponse
+	12, // [12:18] is the sub-list for method output_type
+	6,  // [6:12] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_aegis_v2_scan_proto_init() }
@@ -1084,7 +828,7 @@ func file_aegis_v2_scan_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v2_scan_proto_rawDesc), len(file_aegis_v2_scan_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -12,15 +12,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// ContextKey defines the type for storing values in the standard context.
-type ContextKey string
-
-const (
-	UserIDKey    ContextKey = "user_id"
-	CompanyIDKey ContextKey = "company_id"
-	RoleKey      ContextKey = "role"
-	TokenKey     ContextKey = "token"
-)
 
 // AuthMiddleware validates the JWT token and injects claims into context.
 func AuthMiddleware() gin.HandlerFunc {
@@ -78,16 +69,16 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user_id", userID)
-		c.Set("company_id", companyID)
-		c.Set("role", role)
-		c.Set("token", tokenString)
+		c.Set(string(types.UserIDKey), userID)
+		c.Set(string(types.CompanyIDKey), companyID)
+		c.Set(string(types.RoleKey), role)
+		c.Set(string(types.TokenKey), tokenString)
 
 		ctx := c.Request.Context()
-		ctx = context.WithValue(ctx, UserIDKey, userID)
-		ctx = context.WithValue(ctx, CompanyIDKey, companyID)
-		ctx = context.WithValue(ctx, RoleKey, role)
-		ctx = context.WithValue(ctx, TokenKey, tokenString)
+		ctx = context.WithValue(ctx, types.UserIDKey, userID)
+		ctx = context.WithValue(ctx, types.CompanyIDKey, companyID)
+		ctx = context.WithValue(ctx, types.RoleKey, role)
+		ctx = context.WithValue(ctx, types.TokenKey, tokenString)
 		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
