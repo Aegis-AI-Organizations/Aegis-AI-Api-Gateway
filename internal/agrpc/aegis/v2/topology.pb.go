@@ -21,6 +21,94 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ReportTopologyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Topology      *NetworkTopology       `protobuf:"bytes,1,opt,name=topology,proto3" json:"topology,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReportTopologyRequest) Reset() {
+	*x = ReportTopologyRequest{}
+	mi := &file_aegis_v2_topology_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReportTopologyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReportTopologyRequest) ProtoMessage() {}
+
+func (x *ReportTopologyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_topology_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReportTopologyRequest.ProtoReflect.Descriptor instead.
+func (*ReportTopologyRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ReportTopologyRequest) GetTopology() *NetworkTopology {
+	if x != nil {
+		return x.Topology
+	}
+	return nil
+}
+
+type ReportTopologyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReportTopologyResponse) Reset() {
+	*x = ReportTopologyResponse{}
+	mi := &file_aegis_v2_topology_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReportTopologyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReportTopologyResponse) ProtoMessage() {}
+
+func (x *ReportTopologyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_topology_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReportTopologyResponse.ProtoReflect.Descriptor instead.
+func (*ReportTopologyResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ReportTopologyResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 // NetworkTopology represents the scanned infrastructure state.
 type NetworkTopology struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -31,7 +119,7 @@ type NetworkTopology struct {
 
 func (x *NetworkTopology) Reset() {
 	*x = NetworkTopology{}
-	mi := &file_aegis_v2_topology_proto_msgTypes[0]
+	mi := &file_aegis_v2_topology_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +131,7 @@ func (x *NetworkTopology) String() string {
 func (*NetworkTopology) ProtoMessage() {}
 
 func (x *NetworkTopology) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_topology_proto_msgTypes[0]
+	mi := &file_aegis_v2_topology_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +144,7 @@ func (x *NetworkTopology) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkTopology.ProtoReflect.Descriptor instead.
 func (*NetworkTopology) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{0}
+	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *NetworkTopology) GetHosts() []*Host {
@@ -79,7 +167,7 @@ type Host struct {
 
 func (x *Host) Reset() {
 	*x = Host{}
-	mi := &file_aegis_v2_topology_proto_msgTypes[1]
+	mi := &file_aegis_v2_topology_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -91,7 +179,7 @@ func (x *Host) String() string {
 func (*Host) ProtoMessage() {}
 
 func (x *Host) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_topology_proto_msgTypes[1]
+	mi := &file_aegis_v2_topology_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -104,7 +192,7 @@ func (x *Host) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Host.ProtoReflect.Descriptor instead.
 func (*Host) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{1}
+	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Host) GetId() string {
@@ -155,7 +243,7 @@ type Container struct {
 
 func (x *Container) Reset() {
 	*x = Container{}
-	mi := &file_aegis_v2_topology_proto_msgTypes[2]
+	mi := &file_aegis_v2_topology_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -167,7 +255,7 @@ func (x *Container) String() string {
 func (*Container) ProtoMessage() {}
 
 func (x *Container) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_topology_proto_msgTypes[2]
+	mi := &file_aegis_v2_topology_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -180,7 +268,7 @@ func (x *Container) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Container.ProtoReflect.Descriptor instead.
 func (*Container) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{2}
+	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Container) GetId() string {
@@ -230,7 +318,7 @@ type Process struct {
 
 func (x *Process) Reset() {
 	*x = Process{}
-	mi := &file_aegis_v2_topology_proto_msgTypes[3]
+	mi := &file_aegis_v2_topology_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -242,7 +330,7 @@ func (x *Process) String() string {
 func (*Process) ProtoMessage() {}
 
 func (x *Process) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_topology_proto_msgTypes[3]
+	mi := &file_aegis_v2_topology_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -255,7 +343,7 @@ func (x *Process) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Process.ProtoReflect.Descriptor instead.
 func (*Process) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{3}
+	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Process) GetPid() int32 {
@@ -297,7 +385,7 @@ type Port struct {
 
 func (x *Port) Reset() {
 	*x = Port{}
-	mi := &file_aegis_v2_topology_proto_msgTypes[4]
+	mi := &file_aegis_v2_topology_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -309,7 +397,7 @@ func (x *Port) String() string {
 func (*Port) ProtoMessage() {}
 
 func (x *Port) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_topology_proto_msgTypes[4]
+	mi := &file_aegis_v2_topology_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -322,7 +410,7 @@ func (x *Port) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Port.ProtoReflect.Descriptor instead.
 func (*Port) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{4}
+	return file_aegis_v2_topology_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *Port) GetNumber() int32 {
@@ -350,7 +438,11 @@ var File_aegis_v2_topology_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_topology_proto_rawDesc = "" +
 	"\n" +
-	"\x17aegis/v2/topology.proto\x12\baegis.v2\"7\n" +
+	"\x17aegis/v2/topology.proto\x12\baegis.v2\"N\n" +
+	"\x15ReportTopologyRequest\x125\n" +
+	"\btopology\x18\x01 \x01(\v2\x19.aegis.v2.NetworkTopologyR\btopology\"2\n" +
+	"\x16ReportTopologyResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"7\n" +
 	"\x0fNetworkTopology\x12$\n" +
 	"\x05hosts\x18\x01 \x03(\v2\x0e.aegis.v2.HostR\x05hosts\"\xbb\x01\n" +
 	"\x04Host\x12\x0e\n" +
@@ -378,7 +470,9 @@ const file_aegis_v2_topology_proto_rawDesc = "" +
 	"\x06number\x18\x01 \x01(\x05R\x06number\x12\x1a\n" +
 	"\bprotocol\x18\x02 \x01(\tR\bprotocol\x12\x19\n" +
 	"\x05state\x18\x03 \x01(\tH\x00R\x05state\x88\x01\x01B\b\n" +
-	"\x06_stateBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
+	"\x06_state2f\n" +
+	"\x0fTopologyService\x12S\n" +
+	"\x0eReportTopology\x12\x1f.aegis.v2.ReportTopologyRequest\x1a .aegis.v2.ReportTopologyResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_topology_proto_rawDescOnce sync.Once
@@ -392,25 +486,30 @@ func file_aegis_v2_topology_proto_rawDescGZIP() []byte {
 	return file_aegis_v2_topology_proto_rawDescData
 }
 
-var file_aegis_v2_topology_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_aegis_v2_topology_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_aegis_v2_topology_proto_goTypes = []any{
-	(*NetworkTopology)(nil), // 0: aegis.v2.NetworkTopology
-	(*Host)(nil),            // 1: aegis.v2.Host
-	(*Container)(nil),       // 2: aegis.v2.Container
-	(*Process)(nil),         // 3: aegis.v2.Process
-	(*Port)(nil),            // 4: aegis.v2.Port
+	(*ReportTopologyRequest)(nil),  // 0: aegis.v2.ReportTopologyRequest
+	(*ReportTopologyResponse)(nil), // 1: aegis.v2.ReportTopologyResponse
+	(*NetworkTopology)(nil),        // 2: aegis.v2.NetworkTopology
+	(*Host)(nil),                   // 3: aegis.v2.Host
+	(*Container)(nil),              // 4: aegis.v2.Container
+	(*Process)(nil),                // 5: aegis.v2.Process
+	(*Port)(nil),                   // 6: aegis.v2.Port
 }
 var file_aegis_v2_topology_proto_depIdxs = []int32{
-	1, // 0: aegis.v2.NetworkTopology.hosts:type_name -> aegis.v2.Host
-	2, // 1: aegis.v2.Host.containers:type_name -> aegis.v2.Container
-	3, // 2: aegis.v2.Host.processes:type_name -> aegis.v2.Process
-	3, // 3: aegis.v2.Container.processes:type_name -> aegis.v2.Process
-	4, // 4: aegis.v2.Container.ports:type_name -> aegis.v2.Port
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	2, // 0: aegis.v2.ReportTopologyRequest.topology:type_name -> aegis.v2.NetworkTopology
+	3, // 1: aegis.v2.NetworkTopology.hosts:type_name -> aegis.v2.Host
+	4, // 2: aegis.v2.Host.containers:type_name -> aegis.v2.Container
+	5, // 3: aegis.v2.Host.processes:type_name -> aegis.v2.Process
+	5, // 4: aegis.v2.Container.processes:type_name -> aegis.v2.Process
+	6, // 5: aegis.v2.Container.ports:type_name -> aegis.v2.Port
+	0, // 6: aegis.v2.TopologyService.ReportTopology:input_type -> aegis.v2.ReportTopologyRequest
+	1, // 7: aegis.v2.TopologyService.ReportTopology:output_type -> aegis.v2.ReportTopologyResponse
+	7, // [7:8] is the sub-list for method output_type
+	6, // [6:7] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_aegis_v2_topology_proto_init() }
@@ -418,17 +517,17 @@ func file_aegis_v2_topology_proto_init() {
 	if File_aegis_v2_topology_proto != nil {
 		return
 	}
-	file_aegis_v2_topology_proto_msgTypes[3].OneofWrappers = []any{}
-	file_aegis_v2_topology_proto_msgTypes[4].OneofWrappers = []any{}
+	file_aegis_v2_topology_proto_msgTypes[5].OneofWrappers = []any{}
+	file_aegis_v2_topology_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v2_topology_proto_rawDesc), len(file_aegis_v2_topology_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_aegis_v2_topology_proto_goTypes,
 		DependencyIndexes: file_aegis_v2_topology_proto_depIdxs,
