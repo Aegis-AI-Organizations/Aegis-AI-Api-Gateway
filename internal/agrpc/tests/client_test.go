@@ -7,7 +7,7 @@ import (
 
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
@@ -53,6 +53,14 @@ func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.Watc
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(v1.ScanService_WatchScanStatusClient), args.Error(1)
+}
+
+func (m *MockScanServiceClient) UpdateScanStatus(ctx context.Context, in *v1.UpdateScanStatusRequest, opts ...grpc.CallOption) (*v1.UpdateScanStatusResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdateScanStatusResponse), args.Error(1)
 }
 
 type MockVulnerabilityServiceClient struct {
@@ -209,12 +217,12 @@ func (m *MockCompanyServiceClient) OnboardCompany(ctx context.Context, in *v1.On
 	return args.Get(0).(*v1.OnboardCompanyResponse), args.Error(1)
 }
 
-func (m *MockCompanyServiceClient) WatchTeams(ctx context.Context, in *v1.WatchTeamsRequest, opts ...grpc.CallOption) (v1.CompanyService_WatchTeamsClient, error) {
+func (m *MockCompanyServiceClient) WatchCompanyUpdates(ctx context.Context, in *v1.WatchCompanyUpdatesRequest, opts ...grpc.CallOption) (v1.CompanyService_WatchCompanyUpdatesClient, error) {
 	args := m.Called(ctx, in)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(v1.CompanyService_WatchTeamsClient), args.Error(1)
+	return args.Get(0).(v1.CompanyService_WatchCompanyUpdatesClient), args.Error(1)
 }
 
 func (m *MockCompanyServiceClient) ListAuditLogs(ctx context.Context, in *v1.ListAuditLogsRequest, opts ...grpc.CallOption) (*v1.ListAuditLogsResponse, error) {
@@ -656,10 +664,10 @@ func TestWithMetadata(t *testing.T) {
 	assert.Equal(t, ctx, newCtx)
 
 	// Test full context
-	ctx = context.WithValue(ctx, middleware.UserIDKey, "u1")
-	ctx = context.WithValue(ctx, middleware.CompanyIDKey, "c1")
-	ctx = context.WithValue(ctx, middleware.RoleKey, "admin")
-	ctx = context.WithValue(ctx, middleware.TokenKey, "secret_token")
+	ctx = context.WithValue(ctx, types.UserIDKey, "u1")
+	ctx = context.WithValue(ctx, types.CompanyIDKey, "c1")
+	ctx = context.WithValue(ctx, types.RoleKey, "admin")
+	ctx = context.WithValue(ctx, types.TokenKey, "secret_token")
 
 	newCtx = agrpc.WithMetadata(ctx)
 	assert.NotEqual(t, ctx, newCtx)

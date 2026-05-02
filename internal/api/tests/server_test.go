@@ -26,7 +26,7 @@ func TestStart(t *testing.T) {
 
 	// We run Start in a goroutine as it blocks
 	go func() {
-		api.Start(client)
+		api.Start(client, nil, nil)
 	}()
 
 	// Wait for the server to be ready with a timeout

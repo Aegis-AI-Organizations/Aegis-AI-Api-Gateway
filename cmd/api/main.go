@@ -6,8 +6,9 @@ import (
 
 	"os"
 
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
 )
 
 func main() {
@@ -47,6 +48,22 @@ func main() {
 		}
 	}()
 	fmt.Printf("✅ Connected to Brain gRPC at %s\n", brainAddr)
+	// Initialize Redis
+	rdb, err := db.NewRedisClient()
+	if err != nil {
+		log.Printf("⚠️  Redis initialization failed; continuing without Redis-backed rate limiting: %v", err)
+		rdb = nil
+	} else {
+		fmt.Println("✅ Connected to Redis")
+	}
 
-	api.Start(gc)
+	// Initialize MinIO
+	mclient, err := db.NewMinioClient()
+	if err != nil {
+		log.Printf("⚠️  MinIO client initialization failed (optional): %v", err)
+	} else {
+		fmt.Println("✅ Connected to MinIO")
+	}
+
+	api.Start(gc, rdb, mclient)
 }

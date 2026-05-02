@@ -20,3 +20,14 @@ const (
 	LicenseStatusActive  LicenseStatus = "active"
 	LicenseStatusExpired LicenseStatus = "expired"
 )
+
+type ContextKey string
+
+const (
+	UserIDKey       ContextKey = "user_id"
+	CompanyIDKey    ContextKey = "company_id"
+	RoleKey         ContextKey = "role"
+	TokenKey        ContextKey = "token"
+	AgentTenantIDKey ContextKey = "agent_tenant_id"
+	AgentTokenKey   ContextKey = "agent_token"
+)
