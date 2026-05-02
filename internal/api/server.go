@@ -102,9 +102,6 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 
 		// Agents can report their operational status (WAITING, EXPORTING, ERROR)
 		agent.POST("/scans/:id/status", h.UpdateScanStatusHandler)
-
-		// Agents report discovered infrastructure topology
-		agent.POST("/topology", h.ReportTopologyHandler)
 	}
 
 	return r

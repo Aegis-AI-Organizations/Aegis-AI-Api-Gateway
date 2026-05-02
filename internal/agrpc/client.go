@@ -25,7 +25,6 @@ type Client struct {
 	CompanyService       v1.CompanyServiceClient
 	BillingService       v1.BillingServiceClient
 	InternalAuthService v1.InternalAuthServiceClient
-	TopologyService     v1.TopologyServiceClient
 }
 
 // TLSConfig holds the paths to the certificates for mTLS.
@@ -100,7 +99,6 @@ func NewClient(addr string, conf TLSConfig) (*Client, error) {
 		CompanyService:       v1.NewCompanyServiceClient(conn),
 		BillingService:       v1.NewBillingServiceClient(conn),
 		InternalAuthService: v1.NewInternalAuthServiceClient(conn),
-		TopologyService:     v1.NewTopologyServiceClient(conn),
 	}, nil
 }
 
@@ -455,14 +453,5 @@ func (c *Client) CreateVulnerabilities(ctx context.Context, scanID string, findi
 	return c.ScanService.CreateVulnerabilities(ctx, &v1.CreateVulnerabilitiesRequest{
 		ScanId:          scanID,
 		Vulnerabilities: findings,
-	})
-}
-
-func (c *Client) ReportTopology(ctx context.Context, topology *v1.NetworkTopology) (*v1.ReportTopologyResponse, error) {
-	if c.TopologyService == nil {
-		return nil, fmt.Errorf("topology service not initialized")
-	}
-	return c.TopologyService.ReportTopology(ctx, &v1.ReportTopologyRequest{
-		Topology: topology,
 	})
 }
