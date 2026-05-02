@@ -52,9 +52,11 @@ func main() {
 	// Initialize Redis
 	rdb, err := db.NewRedisClient()
 	if err != nil {
-		log.Fatalf("Failed to initialize Redis: %v", err)
+		log.Printf("⚠️  Redis initialization failed; continuing without Redis-backed rate limiting: %v", err)
+		rdb = nil
+	} else {
+		fmt.Println("✅ Connected to Redis")
 	}
-	fmt.Println("✅ Connected to Redis")
 
 	// Initialize MinIO
 	mclient, err := db.NewMinioClient()

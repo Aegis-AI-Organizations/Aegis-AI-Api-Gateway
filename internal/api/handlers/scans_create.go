@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,7 +21,7 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 		return
 	}
 
-	companyID, _ := c.Get(string(middleware.CompanyIDKey))
+	companyID, _ := c.Get(string(types.CompanyIDKey))
 	idStr := companyID.(string)
 
 	// 1. Billing Pre-flight Check
@@ -52,6 +52,13 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	resp, err := a.GRPCClient.StartScan(c.Request.Context(), req.TargetImage)
 	if err != nil {
 		log.Printf("Failed to start scan via gRPC: %v", err)
+		
+		// Compensating action: Refund tokens
+		_, refundErr := a.GRPCClient.AdjustTokens(c.Request.Context(), idStr, check.EstimatedCost, "Refund: scan launch failed")
+		if refundErr != nil {
+			log.Printf("CRITICAL: Failed to refund tokens for company %s after scan launch failure: %v", idStr, refundErr)
+		}
+		
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start workflow orchestrator"})
 		return
 	}

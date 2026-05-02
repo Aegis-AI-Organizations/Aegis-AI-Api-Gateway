@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,7 +12,7 @@ import (
 func (a *API) GetBalanceHandler(c *gin.Context) {
 	companyID := c.Param("id")
 	if companyID == "" {
-		val, _ := c.Get(string(middleware.CompanyIDKey))
+		val, _ := c.Get(string(types.CompanyIDKey))
 		companyID = val.(string)
 	}
 
@@ -29,7 +29,7 @@ func (a *API) GetBalanceHandler(c *gin.Context) {
 func (a *API) GetLedgerHandler(c *gin.Context) {
 	companyID := c.Param("id")
 	if companyID == "" {
-		val, _ := c.Get(string(middleware.CompanyIDKey))
+		val, _ := c.Get(string(types.CompanyIDKey))
 		companyID = val.(string)
 	}
 
@@ -76,7 +76,7 @@ func (a *API) AdjustTokensHandler(c *gin.Context) {
 func (a *API) GetUsageStatsHandler(c *gin.Context) {
 	companyID := c.Param("id")
 	if companyID == "" {
-		val, _ := c.Get(string(middleware.CompanyIDKey))
+		val, _ := c.Get(string(types.CompanyIDKey))
 		companyID = val.(string)
 	}
 
