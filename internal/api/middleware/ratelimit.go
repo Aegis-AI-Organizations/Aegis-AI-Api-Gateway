@@ -3,6 +3,7 @@ package middleware
 import (
 	"log"
 	"net/http"
+	"reflect"
 	"sync"
 	"time"
 
@@ -69,6 +70,11 @@ func RedisRateLimiter(rdb interface{}) gin.HandlerFunc {
 		GetClient() *redis.Client
 	}
 
+	// Use reflection to check if the underlying value is nil (interface containing a nil pointer)
+	if rdb == nil || (reflect.ValueOf(rdb).Kind() == reflect.Ptr && reflect.ValueOf(rdb).IsNil()) {
+		return func(c *gin.Context) { c.Next() }
+	}
+
 	wrapper, ok := rdb.(redisWrapper)
 	if !ok {
 		// Fallback or ignore if Redis is not available
@@ -76,6 +82,9 @@ func RedisRateLimiter(rdb interface{}) gin.HandlerFunc {
 	}
 
 	client := wrapper.GetClient()
+	if client == nil {
+		return func(c *gin.Context) { c.Next() }
+	}
 
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()

@@ -48,7 +48,6 @@ func main() {
 		}
 	}()
 	fmt.Printf("✅ Connected to Brain gRPC at %s\n", brainAddr)
-	
 	// Initialize Redis
 	rdb, err := db.NewRedisClient()
 	if err != nil {

@@ -101,4 +101,3 @@ func (a *API) UpdateScanStatusHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
-

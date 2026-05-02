@@ -52,13 +52,13 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	resp, err := a.GRPCClient.StartScan(c.Request.Context(), req.TargetImage)
 	if err != nil {
 		log.Printf("Failed to start scan via gRPC: %v", err)
-		
+
 		// Compensating action: Refund tokens
 		_, refundErr := a.GRPCClient.AdjustTokens(c.Request.Context(), idStr, check.EstimatedCost, "Refund: scan launch failed")
 		if refundErr != nil {
 			log.Printf("CRITICAL: Failed to refund tokens for company %s after scan launch failure: %v", idStr, refundErr)
 		}
-		
+
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start workflow orchestrator"})
 		return
 	}
