@@ -7,20 +7,25 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(gc *agrpc.Client) *gin.Engine {
+func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *gin.Engine {
 	r := gin.Default()
 
 	// Apply CORS middleware
 	r.Use(middleware.CORSMiddleware())
 
-	// Apply Rate Limiting (10 req/s, burst of 20)
-	r.Use(middleware.RateLimiter(10, 20))
+	// Apply Rate Limiting (Distributed via Redis)
+	r.Use(middleware.RedisRateLimiter(rdb))
 
 	h := &handlers.API{
 		GRPCClient: gc,
+	}
+
+	mh := &handlers.MinioHandler{
+		MinioClient: mclient,
 	}
 
 	// Basic public routes
@@ -83,18 +88,33 @@ func NewRouter(gc *agrpc.Client) *gin.Engine {
 		// Streaming routes
 		auth.GET("/scans/stream", middleware.RequirePermission(middleware.ScopeScanRead), h.ScanStreamHandler)
 		auth.GET("/scans/:id/stream", middleware.RequirePermission(middleware.ScopeScanRead), h.ScanStreamHandler)
+
+		// File storage (MinIO)
+		auth.GET("/storage/upload-url", mh.GetUploadURLHandler)
+	}
+
+	// Agent-specific routes (Protected by Brain.VerifyToken and Redis Rate Limiting)
+	agent := r.Group("/agent")
+	agent.Use(middleware.AgentAuthMiddleware(gc, rdb))
+	{
+		// Agents use this to get an upload URL for findings/evidence
+		agent.GET("/storage/upload-url", mh.GetUploadURLHandler)
+
+		// Agents can report scan results or update status
+		agent.POST("/scans/:id/status", h.UpdateScanStatusHandler)
+		agent.POST("/scans/:id/vulnerabilities", h.CreateVulnerabilitiesHandler)
 	}
 
 	return r
 }
 
-func Start(gc *agrpc.Client) {
+func Start(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	r := NewRouter(gc)
+	r := NewRouter(gc, rdb, mclient)
 
 	log.Printf("🌍 Aegis AI Web API Gateway (Gin) listening on :%s", port)
 	if err := r.Run(":" + port); err != nil {

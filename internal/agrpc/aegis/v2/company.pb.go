@@ -9,6 +9,7 @@ package v2
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -280,7 +281,7 @@ type AuditLogEntry struct {
 	TargetId      string                 `protobuf:"bytes,6,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 	Details       string                 `protobuf:"bytes,7,opt,name=details,proto3" json:"details,omitempty"` // JSON string
 	IpAddress     string                 `protobuf:"bytes,8,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
-	Timestamp     string                 `protobuf:"bytes,9,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -371,33 +372,33 @@ func (x *AuditLogEntry) GetIpAddress() string {
 	return ""
 }
 
-func (x *AuditLogEntry) GetTimestamp() string {
+func (x *AuditLogEntry) GetTimestamp() *timestamppb.Timestamp {
 	if x != nil {
 		return x.Timestamp
 	}
-	return ""
+	return nil
 }
 
-type WatchTeamsRequest struct {
+type WatchCompanyUpdatesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *WatchTeamsRequest) Reset() {
-	*x = WatchTeamsRequest{}
+func (x *WatchCompanyUpdatesRequest) Reset() {
+	*x = WatchCompanyUpdatesRequest{}
 	mi := &file_aegis_v2_company_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *WatchTeamsRequest) String() string {
+func (x *WatchCompanyUpdatesRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*WatchTeamsRequest) ProtoMessage() {}
+func (*WatchCompanyUpdatesRequest) ProtoMessage() {}
 
-func (x *WatchTeamsRequest) ProtoReflect() protoreflect.Message {
+func (x *WatchCompanyUpdatesRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_aegis_v2_company_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -409,12 +410,12 @@ func (x *WatchTeamsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use WatchTeamsRequest.ProtoReflect.Descriptor instead.
-func (*WatchTeamsRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use WatchCompanyUpdatesRequest.ProtoReflect.Descriptor instead.
+func (*WatchCompanyUpdatesRequest) Descriptor() ([]byte, []int) {
 	return file_aegis_v2_company_proto_rawDescGZIP(), []int{3}
 }
 
-type WatchTeamsResponse struct {
+type WatchCompanyUpdatesResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	EventType     string                 `protobuf:"bytes,1,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"` // "COMPANY_CREATED", "USER_CREATED", etc.
 	EntityId      string                 `protobuf:"bytes,2,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
@@ -423,20 +424,20 @@ type WatchTeamsResponse struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *WatchTeamsResponse) Reset() {
-	*x = WatchTeamsResponse{}
+func (x *WatchCompanyUpdatesResponse) Reset() {
+	*x = WatchCompanyUpdatesResponse{}
 	mi := &file_aegis_v2_company_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *WatchTeamsResponse) String() string {
+func (x *WatchCompanyUpdatesResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*WatchTeamsResponse) ProtoMessage() {}
+func (*WatchCompanyUpdatesResponse) ProtoMessage() {}
 
-func (x *WatchTeamsResponse) ProtoReflect() protoreflect.Message {
+func (x *WatchCompanyUpdatesResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_aegis_v2_company_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -448,26 +449,26 @@ func (x *WatchTeamsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use WatchTeamsResponse.ProtoReflect.Descriptor instead.
-func (*WatchTeamsResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use WatchCompanyUpdatesResponse.ProtoReflect.Descriptor instead.
+func (*WatchCompanyUpdatesResponse) Descriptor() ([]byte, []int) {
 	return file_aegis_v2_company_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *WatchTeamsResponse) GetEventType() string {
+func (x *WatchCompanyUpdatesResponse) GetEventType() string {
 	if x != nil {
 		return x.EventType
 	}
 	return ""
 }
 
-func (x *WatchTeamsResponse) GetEntityId() string {
+func (x *WatchCompanyUpdatesResponse) GetEntityId() string {
 	if x != nil {
 		return x.EntityId
 	}
 	return ""
 }
 
-func (x *WatchTeamsResponse) GetEntityName() string {
+func (x *WatchCompanyUpdatesResponse) GetEntityName() string {
 	if x != nil {
 		return x.EntityName
 	}
@@ -938,7 +939,7 @@ var File_aegis_v2_company_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_company_proto_rawDesc = "" +
 	"\n" +
-	"\x16aegis/v2/company.proto\x12\baegis.v2\"c\n" +
+	"\x16aegis/v2/company.proto\x12\baegis.v2\x1a\x1fgoogle/protobuf/timestamp.proto\"c\n" +
 	"\x14ListAuditLogsRequest\x12\x14\n" +
 	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n" +
 	"\x06offset\x18\x02 \x01(\x05R\x06offset\x12\x1d\n" +
@@ -946,7 +947,7 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"company_id\x18\x03 \x01(\tR\tcompanyId\"Z\n" +
 	"\x15ListAuditLogsResponse\x12+\n" +
 	"\x04logs\x18\x01 \x03(\v2\x17.aegis.v2.AuditLogEntryR\x04logs\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\"\x84\x02\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xa0\x02\n" +
 	"\rAuditLogEntry\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1d\n" +
@@ -958,10 +959,10 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\ttarget_id\x18\x06 \x01(\tR\btargetId\x12\x18\n" +
 	"\adetails\x18\a \x01(\tR\adetails\x12\x1d\n" +
 	"\n" +
-	"ip_address\x18\b \x01(\tR\tipAddress\x12\x1c\n" +
-	"\ttimestamp\x18\t \x01(\tR\ttimestamp\"\x13\n" +
-	"\x11WatchTeamsRequest\"q\n" +
-	"\x12WatchTeamsResponse\x12\x1d\n" +
+	"ip_address\x18\b \x01(\tR\tipAddress\x128\n" +
+	"\ttimestamp\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"\x1c\n" +
+	"\x1aWatchCompanyUpdatesRequest\"z\n" +
+	"\x1bWatchCompanyUpdatesResponse\x12\x1d\n" +
 	"\n" +
 	"event_type\x18\x01 \x01(\tR\teventType\x12\x1b\n" +
 	"\tentity_id\x18\x02 \x01(\tR\bentityId\x12\x1f\n" +
@@ -1027,13 +1028,12 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\x18ORGANIZATION_TYPE_RETAIL\x10\x05\x12/\n" +
 	"+ORGANIZATION_TYPE_GOVERNMENT_ADMINISTRATION\x10\x06\x12#\n" +
 	"\x1fORGANIZATION_TYPE_MANUFACTURING\x10\a\x12\x1b\n" +
-	"\x17ORGANIZATION_TYPE_OTHER\x10\b2\xa6\x03\n" +
+	"\x17ORGANIZATION_TYPE_OTHER\x10\b2\xc1\x03\n" +
 	"\x0eCompanyService\x12P\n" +
 	"\rCreateCompany\x12\x1e.aegis.v2.CreateCompanyRequest\x1a\x1f.aegis.v2.CreateCompanyResponse\x12P\n" +
 	"\rListCompanies\x12\x1e.aegis.v2.ListCompaniesRequest\x1a\x1f.aegis.v2.ListCompaniesResponse\x12S\n" +
-	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponse\x12I\n" +
-	"\n" +
-	"WatchTeams\x12\x1b.aegis.v2.WatchTeamsRequest\x1a\x1c.aegis.v2.WatchTeamsResponse0\x01\x12P\n" +
+	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponse\x12d\n" +
+	"\x13WatchCompanyUpdates\x12$.aegis.v2.WatchCompanyUpdatesRequest\x1a%.aegis.v2.WatchCompanyUpdatesResponse0\x01\x12P\n" +
 	"\rListAuditLogs\x12\x1e.aegis.v2.ListAuditLogsRequest\x1a\x1f.aegis.v2.ListAuditLogsResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
@@ -1051,45 +1051,47 @@ func file_aegis_v2_company_proto_rawDescGZIP() []byte {
 var file_aegis_v2_company_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_aegis_v2_company_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_aegis_v2_company_proto_goTypes = []any{
-	(OrganizationSize)(0),          // 0: aegis.v2.OrganizationSize
-	(OrganizationType)(0),          // 1: aegis.v2.OrganizationType
-	(*ListAuditLogsRequest)(nil),   // 2: aegis.v2.ListAuditLogsRequest
-	(*ListAuditLogsResponse)(nil),  // 3: aegis.v2.ListAuditLogsResponse
-	(*AuditLogEntry)(nil),          // 4: aegis.v2.AuditLogEntry
-	(*WatchTeamsRequest)(nil),      // 5: aegis.v2.WatchTeamsRequest
-	(*WatchTeamsResponse)(nil),     // 6: aegis.v2.WatchTeamsResponse
-	(*CreateCompanyRequest)(nil),   // 7: aegis.v2.CreateCompanyRequest
-	(*CreateCompanyResponse)(nil),  // 8: aegis.v2.CreateCompanyResponse
-	(*OnboardCompanyRequest)(nil),  // 9: aegis.v2.OnboardCompanyRequest
-	(*OnboardCompanyResponse)(nil), // 10: aegis.v2.OnboardCompanyResponse
-	(*ListCompaniesRequest)(nil),   // 11: aegis.v2.ListCompaniesRequest
-	(*ListCompaniesResponse)(nil),  // 12: aegis.v2.ListCompaniesResponse
-	(*CompanySummary)(nil),         // 13: aegis.v2.CompanySummary
+	(OrganizationSize)(0),               // 0: aegis.v2.OrganizationSize
+	(OrganizationType)(0),               // 1: aegis.v2.OrganizationType
+	(*ListAuditLogsRequest)(nil),        // 2: aegis.v2.ListAuditLogsRequest
+	(*ListAuditLogsResponse)(nil),       // 3: aegis.v2.ListAuditLogsResponse
+	(*AuditLogEntry)(nil),               // 4: aegis.v2.AuditLogEntry
+	(*WatchCompanyUpdatesRequest)(nil),  // 5: aegis.v2.WatchCompanyUpdatesRequest
+	(*WatchCompanyUpdatesResponse)(nil), // 6: aegis.v2.WatchCompanyUpdatesResponse
+	(*CreateCompanyRequest)(nil),        // 7: aegis.v2.CreateCompanyRequest
+	(*CreateCompanyResponse)(nil),       // 8: aegis.v2.CreateCompanyResponse
+	(*OnboardCompanyRequest)(nil),       // 9: aegis.v2.OnboardCompanyRequest
+	(*OnboardCompanyResponse)(nil),      // 10: aegis.v2.OnboardCompanyResponse
+	(*ListCompaniesRequest)(nil),        // 11: aegis.v2.ListCompaniesRequest
+	(*ListCompaniesResponse)(nil),       // 12: aegis.v2.ListCompaniesResponse
+	(*CompanySummary)(nil),              // 13: aegis.v2.CompanySummary
+	(*timestamppb.Timestamp)(nil),       // 14: google.protobuf.Timestamp
 }
 var file_aegis_v2_company_proto_depIdxs = []int32{
 	4,  // 0: aegis.v2.ListAuditLogsResponse.logs:type_name -> aegis.v2.AuditLogEntry
-	0,  // 1: aegis.v2.CreateCompanyRequest.org_size:type_name -> aegis.v2.OrganizationSize
-	1,  // 2: aegis.v2.CreateCompanyRequest.org_type:type_name -> aegis.v2.OrganizationType
-	0,  // 3: aegis.v2.OnboardCompanyRequest.org_size:type_name -> aegis.v2.OrganizationSize
-	1,  // 4: aegis.v2.OnboardCompanyRequest.org_type:type_name -> aegis.v2.OrganizationType
-	13, // 5: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
-	0,  // 6: aegis.v2.CompanySummary.org_size:type_name -> aegis.v2.OrganizationSize
-	1,  // 7: aegis.v2.CompanySummary.org_type:type_name -> aegis.v2.OrganizationType
-	7,  // 8: aegis.v2.CompanyService.CreateCompany:input_type -> aegis.v2.CreateCompanyRequest
-	11, // 9: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
-	9,  // 10: aegis.v2.CompanyService.OnboardCompany:input_type -> aegis.v2.OnboardCompanyRequest
-	5,  // 11: aegis.v2.CompanyService.WatchTeams:input_type -> aegis.v2.WatchTeamsRequest
-	2,  // 12: aegis.v2.CompanyService.ListAuditLogs:input_type -> aegis.v2.ListAuditLogsRequest
-	8,  // 13: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
-	12, // 14: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
-	10, // 15: aegis.v2.CompanyService.OnboardCompany:output_type -> aegis.v2.OnboardCompanyResponse
-	6,  // 16: aegis.v2.CompanyService.WatchTeams:output_type -> aegis.v2.WatchTeamsResponse
-	3,  // 17: aegis.v2.CompanyService.ListAuditLogs:output_type -> aegis.v2.ListAuditLogsResponse
-	13, // [13:18] is the sub-list for method output_type
-	8,  // [8:13] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	14, // 1: aegis.v2.AuditLogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	0,  // 2: aegis.v2.CreateCompanyRequest.org_size:type_name -> aegis.v2.OrganizationSize
+	1,  // 3: aegis.v2.CreateCompanyRequest.org_type:type_name -> aegis.v2.OrganizationType
+	0,  // 4: aegis.v2.OnboardCompanyRequest.org_size:type_name -> aegis.v2.OrganizationSize
+	1,  // 5: aegis.v2.OnboardCompanyRequest.org_type:type_name -> aegis.v2.OrganizationType
+	13, // 6: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
+	0,  // 7: aegis.v2.CompanySummary.org_size:type_name -> aegis.v2.OrganizationSize
+	1,  // 8: aegis.v2.CompanySummary.org_type:type_name -> aegis.v2.OrganizationType
+	7,  // 9: aegis.v2.CompanyService.CreateCompany:input_type -> aegis.v2.CreateCompanyRequest
+	11, // 10: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
+	9,  // 11: aegis.v2.CompanyService.OnboardCompany:input_type -> aegis.v2.OnboardCompanyRequest
+	5,  // 12: aegis.v2.CompanyService.WatchCompanyUpdates:input_type -> aegis.v2.WatchCompanyUpdatesRequest
+	2,  // 13: aegis.v2.CompanyService.ListAuditLogs:input_type -> aegis.v2.ListAuditLogsRequest
+	8,  // 14: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
+	12, // 15: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
+	10, // 16: aegis.v2.CompanyService.OnboardCompany:output_type -> aegis.v2.OnboardCompanyResponse
+	6,  // 17: aegis.v2.CompanyService.WatchCompanyUpdates:output_type -> aegis.v2.WatchCompanyUpdatesResponse
+	3,  // 18: aegis.v2.CompanyService.ListAuditLogs:output_type -> aegis.v2.ListAuditLogsResponse
+	14, // [14:19] is the sub-list for method output_type
+	9,  // [9:14] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_aegis_v2_company_proto_init() }

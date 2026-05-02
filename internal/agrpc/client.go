@@ -24,6 +24,7 @@ type Client struct {
 	AuthService          v1.AuthServiceClient
 	CompanyService       v1.CompanyServiceClient
 	BillingService       v1.BillingServiceClient
+	InternalAuthService v1.InternalAuthServiceClient
 }
 
 // TLSConfig holds the paths to the certificates for mTLS.
@@ -97,6 +98,7 @@ func NewClient(addr string, conf TLSConfig) (*Client, error) {
 		AuthService:          v1.NewAuthServiceClient(conn),
 		CompanyService:       v1.NewCompanyServiceClient(conn),
 		BillingService:       v1.NewBillingServiceClient(conn),
+		InternalAuthService: v1.NewInternalAuthServiceClient(conn),
 	}, nil
 }
 
@@ -425,5 +427,31 @@ func (c *Client) GetUsageStats(ctx context.Context, companyID string, days int32
 	return c.BillingService.GetUsageStats(WithMetadata(ctx), &v1.GetUsageStatsRequest{
 		CompanyId: companyID,
 		Days:      days,
+	})
+}
+func (c *Client) VerifyToken(ctx context.Context, token string) (*v1.VerifyTokenResponse, error) {
+	if c.InternalAuthService == nil {
+		return nil, fmt.Errorf("internal auth service not initialized")
+	}
+	return c.InternalAuthService.VerifyToken(ctx, &v1.VerifyTokenRequest{Token: token})
+}
+
+func (c *Client) UpdateScanStatus(ctx context.Context, scanID, status string) (*v1.UpdateScanStatusResponse, error) {
+	if c.ScanService == nil {
+		return nil, fmt.Errorf("scan service not initialized")
+	}
+	return c.ScanService.UpdateScanStatus(ctx, &v1.UpdateScanStatusRequest{
+		ScanId: scanID,
+		Status: status,
+	})
+}
+
+func (c *Client) CreateVulnerabilities(ctx context.Context, scanID string, findings []*v1.VulnerabilityFinding) (*v1.CreateVulnerabilitiesResponse, error) {
+	if c.ScanService == nil {
+		return nil, fmt.Errorf("scan service not initialized")
+	}
+	return c.ScanService.CreateVulnerabilities(ctx, &v1.CreateVulnerabilitiesRequest{
+		ScanId:          scanID,
+		Vulnerabilities: findings,
 	})
 }
