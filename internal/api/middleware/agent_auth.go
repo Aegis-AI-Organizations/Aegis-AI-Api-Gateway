@@ -61,7 +61,7 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 
 		// Cache successful validation if Redis is available
 		if redisClient != nil && redisClient.Client != nil {
-			redisClient.Client.Set(c.Request.Context(), cacheKey, resp.TenantId, 5*time.Minute)
+			redisClient.Client.Set(c.Request.Context(), cacheKey, resp.TenantId, 30*time.Minute)
 		}
 
 		// Add claims to context for subsequent handlers
