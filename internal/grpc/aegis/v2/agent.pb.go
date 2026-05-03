@@ -9,7 +9,6 @@ package v2
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -330,7 +329,7 @@ var File_aegis_v2_agent_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_agent_proto_rawDesc = "" +
 	"\n" +
-	"\x14aegis/v2/agent.proto\x12\baegis.v2\x1a\x1fgoogle/protobuf/timestamp.proto\"@\n" +
+	"\x14aegis/v2/agent.proto\x12\baegis.v2\"@\n" +
 	"\x14RegisterAgentRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\"2\n" +
@@ -351,7 +350,7 @@ const file_aegis_v2_agent_proto_rawDesc = "" +
 	"\fAgentService\x12P\n" +
 	"\rRegisterAgent\x12\x1e.aegis.v2.RegisterAgentRequest\x1a\x1f.aegis.v2.RegisterAgentResponse\x12\\\n" +
 	"\x11UpdateAgentStatus\x12\".aegis.v2.UpdateAgentStatusRequest\x1a#.aegis.v2.UpdateAgentStatusResponse\x12P\n" +
-	"\rGetUploadLink\x12\x1e.aegis.v2.GetUploadLinkRequest\x1a\x1f.aegis.v2.GetUploadLinkResponseBEZCgithub.com/Aegis-AI-Organizations/Aegis-AI-Proto/gen/go/aegis/v2;v2b\x06proto3"
+	"\rGetUploadLink\x12\x1e.aegis.v2.GetUploadLinkRequest\x1a\x1f.aegis.v2.GetUploadLinkResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_agent_proto_rawDescOnce sync.Once
