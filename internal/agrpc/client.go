@@ -24,7 +24,8 @@ type Client struct {
 	AuthService          v1.AuthServiceClient
 	CompanyService       v1.CompanyServiceClient
 	BillingService       v1.BillingServiceClient
-	InternalAuthService v1.InternalAuthServiceClient
+	InternalAuthService  v1.InternalAuthServiceClient
+	AgentService         v1.AgentServiceClient
 }
 
 // TLSConfig holds the paths to the certificates for mTLS.
@@ -98,7 +99,8 @@ func NewClient(addr string, conf TLSConfig) (*Client, error) {
 		AuthService:          v1.NewAuthServiceClient(conn),
 		CompanyService:       v1.NewCompanyServiceClient(conn),
 		BillingService:       v1.NewBillingServiceClient(conn),
-		InternalAuthService: v1.NewInternalAuthServiceClient(conn),
+		InternalAuthService:  v1.NewInternalAuthServiceClient(conn),
+		AgentService:         v1.NewAgentServiceClient(conn),
 	}, nil
 }
 
@@ -436,12 +438,32 @@ func (c *Client) VerifyToken(ctx context.Context, token string) (*v1.VerifyToken
 	return c.InternalAuthService.VerifyToken(ctx, &v1.VerifyTokenRequest{Token: token})
 }
 
-func (c *Client) UpdateScanStatus(ctx context.Context, scanID, status string) (*v1.UpdateScanStatusResponse, error) {
-	if c.ScanService == nil {
-		return nil, fmt.Errorf("scan service not initialized")
+func (c *Client) RegisterAgent(ctx context.Context, token, name string) (*v1.RegisterAgentResponse, error) {
+	if c.AgentService == nil {
+		return nil, fmt.Errorf("agent service not initialized")
 	}
-	return c.ScanService.UpdateScanStatus(WithMetadata(ctx), &v1.UpdateScanStatusRequest{
-		ScanId: scanID,
-		Status: status,
+	return c.AgentService.RegisterAgent(ctx, &v1.RegisterAgentRequest{
+		Token: token,
+		Name:  name,
+	})
+}
+
+func (c *Client) UpdateAgentStatus(ctx context.Context, agentID, status string) (*v1.UpdateAgentStatusResponse, error) {
+	if c.AgentService == nil {
+		return nil, fmt.Errorf("agent service not initialized")
+	}
+	return c.AgentService.UpdateAgentStatus(ctx, &v1.UpdateAgentStatusRequest{
+		AgentId: agentID,
+		Status:  status,
+	})
+}
+
+func (c *Client) GetUploadLink(ctx context.Context, agentID, filename string) (*v1.GetUploadLinkResponse, error) {
+	if c.AgentService == nil {
+		return nil, fmt.Errorf("agent service not initialized")
+	}
+	return c.AgentService.GetUploadLink(ctx, &v1.GetUploadLinkRequest{
+		AgentId:  agentID,
+		Filename: filename,
 	})
 }

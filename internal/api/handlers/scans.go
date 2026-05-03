@@ -82,22 +82,3 @@ func (a *API) GetScanByIDHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, found)
 }
-
-func (a *API) UpdateScanStatusHandler(c *gin.Context) {
-	scanID := c.Param("id")
-	var req struct {
-		Status string `json:"status" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	resp, err := a.GRPCClient.UpdateScanStatus(c.Request.Context(), scanID, req.Status)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update scan status via gRPC"})
-		return
-	}
-
-	c.JSON(http.StatusOK, resp)
-}

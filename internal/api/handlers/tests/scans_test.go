@@ -63,13 +63,6 @@ func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.Watc
 	return args.Get(0).(v1.ScanService_WatchScanStatusClient), args.Error(1)
 }
 
-func (m *MockScanServiceClient) UpdateScanStatus(ctx context.Context, in *v1.UpdateScanStatusRequest, opts ...grpc.CallOption) (*v1.UpdateScanStatusResponse, error) {
-	args := m.Called(ctx, in)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*v1.UpdateScanStatusResponse), args.Error(1)
-}
 
 type MockBillingServiceClient struct {
 	mock.Mock
@@ -412,27 +405,4 @@ func TestGetScanReportHandler_GRPCError(t *testing.T) {
 	api.GetScanReportHandler(c)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
-}
-func TestUpdateScanStatusHandler(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	mockScan := new(MockScanServiceClient)
-	api := &handlers.API{
-		GRPCClient: &agrpc.Client{
-			ScanService: mockScan,
-		},
-	}
-
-	payload := map[string]string{"status": "RUNNING"}
-	body, _ := json.Marshal(payload)
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request, _ = http.NewRequest("POST", "/agent/scans/s1/status", bytes.NewBuffer(body))
-	c.Params = []gin.Param{{Key: "id", Value: "s1"}}
-
-	mockScan.On("UpdateScanStatus", mock.Anything, mock.Anything).
-		Return(&v1.UpdateScanStatusResponse{Success: true}, nil)
-
-	api.UpdateScanStatusHandler(c)
-
-	assert.Equal(t, http.StatusOK, w.Code)
 }
