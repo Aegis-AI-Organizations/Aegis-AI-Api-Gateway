@@ -93,15 +93,20 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 		auth.GET("/storage/upload-url", mh.GetUploadURLHandler)
 	}
 
-	// Agent-specific routes (Protected by Brain.VerifyToken and Redis Rate Limiting)
-	agent := r.Group("/agent")
+	// Agent-specific routes
+	// 1. Onboarding (Uses deployment token)
+	r.POST("/agents/register", h.RegisterAgentHandler)
+
+	// 2. Persistent Agents Management (Uses Agent ID)
+	agent := r.Group("/agents")
+	// AgentAuthMiddleware ensures the request is coming from a valid agent
 	agent.Use(middleware.AgentAuthMiddleware(gc, rdb))
 	{
-		// Agents use this to get an upload URL for findings/evidence
-		agent.GET("/storage/upload-url", mh.GetUploadURLHandler)
+		// Agents can report their operational status (IDLE, UPLOADING, ERROR, etc.)
+		agent.POST("/:id/status", h.UpdateAgentStatusHandler)
 
-		// Agents can report their operational status (WAITING, EXPORTING, ERROR)
-		agent.POST("/scans/:id/status", h.UpdateScanStatusHandler)
+		// Agents request presigned URLs to upload infrastructure configs/logs
+		agent.GET("/:id/upload-url", h.GetUploadLinkHandler)
 	}
 
 	return r
