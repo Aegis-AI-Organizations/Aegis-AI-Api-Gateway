@@ -55,12 +55,32 @@ func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.Watc
 	return args.Get(0).(v1.ScanService_WatchScanStatusClient), args.Error(1)
 }
 
-func (m *MockScanServiceClient) UpdateScanStatus(ctx context.Context, in *v1.UpdateScanStatusRequest, opts ...grpc.CallOption) (*v1.UpdateScanStatusResponse, error) {
+type MockAgentServiceClient struct {
+	mock.Mock
+}
+
+func (m *MockAgentServiceClient) RegisterAgent(ctx context.Context, in *v1.RegisterAgentRequest, opts ...grpc.CallOption) (*v1.RegisterAgentResponse, error) {
 	args := m.Called(ctx, in)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*v1.UpdateScanStatusResponse), args.Error(1)
+	return args.Get(0).(*v1.RegisterAgentResponse), args.Error(1)
+}
+
+func (m *MockAgentServiceClient) UpdateAgentStatus(ctx context.Context, in *v1.UpdateAgentStatusRequest, opts ...grpc.CallOption) (*v1.UpdateAgentStatusResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdateAgentStatusResponse), args.Error(1)
+}
+
+func (m *MockAgentServiceClient) GetUploadLink(ctx context.Context, in *v1.GetUploadLinkRequest, opts ...grpc.CallOption) (*v1.GetUploadLinkResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetUploadLinkResponse), args.Error(1)
 }
 
 type MockVulnerabilityServiceClient struct {
@@ -392,6 +412,15 @@ func TestClient_NilServices(t *testing.T) {
 	assert.Error(t, err)
 
 	_, err = client.WatchScanStatus(context.Background(), "s1")
+	assert.Error(t, err)
+
+	_, err = client.RegisterAgent(context.Background(), "t", "n")
+	assert.Error(t, err)
+
+	_, err = client.UpdateAgentStatus(context.Background(), "a", "s")
+	assert.Error(t, err)
+
+	_, err = client.GetUploadLink(context.Background(), "a", "f")
 	assert.Error(t, err)
 }
 
