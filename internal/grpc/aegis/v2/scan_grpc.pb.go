@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: aegis/v2/scan.proto
 
-package aegisv2
+package v2
 
 import (
 	context "context"

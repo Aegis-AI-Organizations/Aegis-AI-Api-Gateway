@@ -4,7 +4,7 @@
 // 	protoc        (unknown)
 // source: aegis/v2/agent.proto
 
-package aegisv2
+package v2
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -351,7 +351,7 @@ const file_aegis_v2_agent_proto_rawDesc = "" +
 	"\fAgentService\x12P\n" +
 	"\rRegisterAgent\x12\x1e.aegis.v2.RegisterAgentRequest\x1a\x1f.aegis.v2.RegisterAgentResponse\x12\\\n" +
 	"\x11UpdateAgentStatus\x12\".aegis.v2.UpdateAgentStatusRequest\x1a#.aegis.v2.UpdateAgentStatusResponse\x12P\n" +
-	"\rGetUploadLink\x12\x1e.aegis.v2.GetUploadLinkRequest\x1a\x1f.aegis.v2.GetUploadLinkResponseBJZHgithub.com/Aegis-AI-Organizations/Aegis-AI-Proto/gen/go/aegis/v2;aegisv2b\x06proto3"
+	"\rGetUploadLink\x12\x1e.aegis.v2.GetUploadLinkRequest\x1a\x1f.aegis.v2.GetUploadLinkResponseBEZCgithub.com/Aegis-AI-Organizations/Aegis-AI-Proto/gen/go/aegis/v2;v2b\x06proto3"
 
 var (
 	file_aegis_v2_agent_proto_rawDescOnce sync.Once
