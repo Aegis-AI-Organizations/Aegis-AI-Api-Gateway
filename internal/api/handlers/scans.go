@@ -82,4 +82,3 @@ func (a *API) GetScanByIDHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, found)
 }
-
