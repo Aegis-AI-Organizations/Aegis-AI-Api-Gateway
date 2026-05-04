@@ -49,48 +49,54 @@ func TestAgentAuthMiddleware_Unit(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "valid-token"}).
+		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_valid-token"}).
 			Return(&v1.VerifyTokenResponse{Valid: true, TenantId: "t1"}, nil).Once()
 
 		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request, _ = http.NewRequest("GET", "/test", nil)
-		c.Request.Header.Set("Authorization", "Bearer valid-token")
+		r := gin.New()
+		r.POST("/api/agents/register", middleware.AgentAuthMiddleware(client, nil), func(c *gin.Context) {
+			c.Status(http.StatusOK)
+		})
 
-		middleware.AgentAuthMiddleware(client, nil)(c)
+		req, _ := http.NewRequest("POST", "/api/agents/register", nil)
+		req.Header.Set("Authorization", "Bearer ag_valid-token")
+		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.False(t, c.IsAborted())
 	})
 
 	t.Run("BrainFailure", func(t *testing.T) {
-		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "invalid-token"}).
+		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_invalid-token"}).
 			Return(&v1.VerifyTokenResponse{Valid: false}, nil).Once()
 
 		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request, _ = http.NewRequest("GET", "/test", nil)
-		c.Request.Header.Set("Authorization", "Bearer invalid-token")
+		r := gin.New()
+		r.POST("/api/agents/register", middleware.AgentAuthMiddleware(client, nil), func(c *gin.Context) {
+			c.Status(http.StatusOK)
+		})
 
-		middleware.AgentAuthMiddleware(client, nil)(c)
+		req, _ := http.NewRequest("POST", "/api/agents/register", nil)
+		req.Header.Set("Authorization", "Bearer ag_invalid-token")
+		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
-		assert.True(t, c.IsAborted())
 	})
 
 	t.Run("GRPCError", func(t *testing.T) {
-		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "error-token"}).
+		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_error-token"}).
 			Return(nil, fmt.Errorf("grpc error")).Once()
 
 		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
-		c.Request, _ = http.NewRequest("GET", "/test", nil)
-		c.Request.Header.Set("Authorization", "Bearer error-token")
+		r := gin.New()
+		r.POST("/api/agents/register", middleware.AgentAuthMiddleware(client, nil), func(c *gin.Context) {
+			c.Status(http.StatusOK)
+		})
 
-		middleware.AgentAuthMiddleware(client, nil)(c)
+		req, _ := http.NewRequest("POST", "/api/agents/register", nil)
+		req.Header.Set("Authorization", "Bearer ag_error-token")
+		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
-		assert.True(t, c.IsAborted())
 	})
 }
 
@@ -126,13 +132,13 @@ func TestAuthMiddleware_Unit(t *testing.T) {
 	defer os.Unsetenv("JWT_SECRET")
 
 	t.Run("NoAuth", func(t *testing.T) {
-        w := httptest.NewRecorder()
-        c, _ := gin.CreateTestContext(w)
-        c.Request, _ = http.NewRequest("GET", "/test", nil)
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("GET", "/test", nil)
 
-        middleware.AuthMiddleware()(c)
+		middleware.AuthMiddleware()(c)
 
-        assert.Equal(t, http.StatusUnauthorized, w.Code)
-        assert.True(t, c.IsAborted())
-    })
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+		assert.True(t, c.IsAborted())
+	})
 }

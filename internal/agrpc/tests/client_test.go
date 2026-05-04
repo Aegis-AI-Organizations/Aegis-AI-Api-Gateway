@@ -828,7 +828,7 @@ func TestClient_RemainingMethods(t *testing.T) {
 	mockAuth := new(MockAuthServiceClient)
 	mockBilling := new(MockBillingServiceClient)
 	client := &agrpc.Client{
-		AuthService: mockAuth,
+		AuthService:    mockAuth,
 		BillingService: mockBilling,
 	}
 	ctx := context.Background()

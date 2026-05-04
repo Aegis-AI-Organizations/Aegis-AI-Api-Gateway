@@ -6,22 +6,22 @@ import (
 
 // List of all active scopes in the system
 const (
-	ScopeScanRead          = "scan:read"
-	ScopeScanWrite         = "scan:write"
-	ScopeScanExecute       = "scan:execute"
+	ScopeScanRead           = "scan:read"
+	ScopeScanWrite          = "scan:write"
+	ScopeScanExecute        = "scan:execute"
 	ScopeVulnerabilityRead  = "vulnerability:read"
 	ScopeVulnerabilityWrite = "vulnerability:write"
-	ScopeReportRead        = "report:read"
-	ScopeAuthRead          = "auth:read"
-	ScopeUserRead          = "user:read"
-	ScopeUserWrite         = "user:write"
-	ScopeCompanyRead       = "company:read"
-	ScopeCompanyWrite      = "company:write"
-	ScopeBillingRead       = "billing:read"
-	ScopeBillingWrite      = "billing:write"
-	ScopeAdminWrite        = "admin:write"
-	ScopeAdminRead         = "admin:read"
-	ScopeAll               = "*"
+	ScopeReportRead         = "report:read"
+	ScopeAuthRead           = "auth:read"
+	ScopeUserRead           = "user:read"
+	ScopeUserWrite          = "user:write"
+	ScopeCompanyRead        = "company:read"
+	ScopeCompanyWrite       = "company:write"
+	ScopeBillingRead        = "billing:read"
+	ScopeBillingWrite       = "billing:write"
+	ScopeAdminWrite         = "admin:write"
+	ScopeAdminRead          = "admin:read"
+	ScopeAll                = "*"
 )
 
 // roleScopes maps each standard user role to a set of granular permissions (scopes).

@@ -9,9 +9,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -77,10 +77,10 @@ func (m *MockCompanyUpdateStream) Recv() (*v1.WatchCompanyUpdatesResponse, error
 	return args.Get(0).(*v1.WatchCompanyUpdatesResponse), args.Error(1)
 }
 
-func (m *MockCompanyUpdateStream) Context() context.Context { return context.Background() }
+func (m *MockCompanyUpdateStream) Context() context.Context     { return context.Background() }
 func (m *MockCompanyUpdateStream) Header() (metadata.MD, error) { return nil, nil }
-func (m *MockCompanyUpdateStream) Trailer() metadata.MD { return nil }
-func (m *MockCompanyUpdateStream) CloseSend() error { return nil }
+func (m *MockCompanyUpdateStream) Trailer() metadata.MD         { return nil }
+func (m *MockCompanyUpdateStream) CloseSend() error             { return nil }
 func (m *MockCompanyUpdateStream) SendMsg(m_ interface{}) error { return nil }
 func (m *MockCompanyUpdateStream) RecvMsg(m_ interface{}) error { return nil }
 
