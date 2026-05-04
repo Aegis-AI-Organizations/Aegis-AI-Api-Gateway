@@ -12,6 +12,7 @@ import (
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
+	db_internal "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redismock/v9"
 	"github.com/redis/go-redis/v9"
@@ -291,4 +292,114 @@ func TestRateLimiter_Local(t *testing.T) {
 	req2.RemoteAddr = "1.1.1.1:1234"
 	r.ServeHTTP(w2, req2)
 	assert.Equal(t, http.StatusTooManyRequests, w2.Code)
+}
+
+func TestAgentAuthMiddleware_Redis_Hit(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, rMock := redismock.NewClientMock()
+	redisClient := &db_internal.RedisClient{Client: db}
+
+	// Mock Redis hit
+	rMock.ExpectGet("agent_token:ag_valid").SetVal("tenant1")
+
+	r := gin.New()
+	r.Use(middleware.AgentAuthMiddleware(nil, redisClient))
+	r.POST("/api/agents/register", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/agents/register", nil)
+	req.Header.Set("Authorization", "Bearer ag_valid")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.NoError(t, rMock.ExpectationsWereMet())
+}
+
+func TestAgentAuthMiddleware_Redis_Miss_Valid_Secret(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, rMock := redismock.NewClientMock()
+	redisClient := &db_internal.RedisClient{Client: db}
+	mockAgent := new(MockAgentClient)
+	client := &agrpc.Client{AgentService: mockAgent}
+
+	// Mock Redis miss
+	rMock.ExpectGet("agent_secret:a1:s1").RedisNil()
+	// Mock gRPC success
+	mockAgent.On("VerifyAgentSecret", mock.Anything, &v1.VerifyAgentSecretRequest{AgentId: "a1", Secret: "s1"}).
+		Return(&v1.VerifyAgentSecretResponse{Valid: true, TenantId: "t1"}, nil)
+	// Mock Redis set
+	rMock.ExpectSet("agent_secret:a1:s1", "t1", 30*time.Minute).SetVal("OK")
+
+	r := gin.New()
+	r.Use(middleware.AgentAuthMiddleware(client, redisClient))
+	r.GET("/api/agents/:id/status", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/agents/a1/status", nil)
+	req.Header.Set("Authorization", "Bearer s1")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.NoError(t, rMock.ExpectationsWereMet())
+}
+
+func TestAgentAuthMiddleware_DeploymentToken_On_Operation_Forbidden(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(middleware.AgentAuthMiddleware(nil, nil))
+	r.GET("/api/agents/:id/status", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/agents/a1/status", nil)
+	req.Header.Set("Authorization", "Bearer ag_deploy")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
+func TestAgentAuthMiddleware_Secret_On_Register_Forbidden(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(middleware.AgentAuthMiddleware(nil, nil))
+	r.POST("/api/agents/register", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/agents/register", nil)
+	req.Header.Set("Authorization", "Bearer secret123") // No ag_ prefix
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
+func TestAgentAuthMiddleware_GRPC_Error(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockInternalAuthClient)
+	client := &agrpc.Client{InternalAuthService: mockAuth}
+
+	mockAuth.On("VerifyToken", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("grpc error"))
+
+	r := gin.New()
+	r.Use(middleware.AgentAuthMiddleware(client, nil))
+	r.POST("/api/agents/register", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/agents/register", nil)
+	req.Header.Set("Authorization", "Bearer ag_token")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+}
+
+func TestAgentAuthMiddleware_No_ID_Param(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(middleware.AgentAuthMiddleware(nil, nil))
+	r.GET("/api/status", func(c *gin.Context) { c.Status(200) }) // Route without :id
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/status", nil)
+	req.Header.Set("Authorization", "Bearer secret123")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }

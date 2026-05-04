@@ -83,6 +83,14 @@ func (m *MockAgentServiceClient) GetUploadLink(ctx context.Context, in *v1.GetUp
 	return args.Get(0).(*v1.GetUploadLinkResponse), args.Error(1)
 }
 
+func (m *MockAgentServiceClient) VerifyAgentSecret(ctx context.Context, in *v1.VerifyAgentSecretRequest, opts ...grpc.CallOption) (*v1.VerifyAgentSecretResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.VerifyAgentSecretResponse), args.Error(1)
+}
+
 type MockVulnerabilityServiceClient struct {
 	mock.Mock
 }
@@ -707,4 +715,136 @@ func TestWithMetadata(t *testing.T) {
 	assert.Equal(t, []string{"c1"}, md.Get("company-id"))
 	assert.Equal(t, []string{"admin"}, md.Get("role"))
 	assert.Equal(t, []string{"Bearer secret_token"}, md.Get("authorization"))
+}
+
+func TestClient_VerifyAgentSecret(t *testing.T) {
+	mockAgent := new(MockAgentServiceClient)
+	client := &agrpc.Client{
+		AgentService: mockAgent,
+	}
+
+	ctx := context.Background()
+	mockAgent.On("VerifyAgentSecret", ctx, &v1.VerifyAgentSecretRequest{AgentId: "a1", Secret: "s1"}).
+		Return(&v1.VerifyAgentSecretResponse{Valid: true, TenantId: "t1"}, nil)
+
+	resp, err := client.VerifyAgentSecret(ctx, "a1", "s1")
+	assert.NoError(t, err)
+	assert.True(t, resp.Valid)
+	assert.Equal(t, "t1", resp.TenantId)
+}
+
+func TestClient_VerifyToken(t *testing.T) {
+	mockAuth := new(MockInternalAuthServiceClient) // I need to check if this exists
+	client := &agrpc.Client{
+		InternalAuthService: mockAuth,
+	}
+
+	ctx := context.Background()
+	mockAuth.On("VerifyToken", ctx, &v1.VerifyTokenRequest{Token: "t1"}).
+		Return(&v1.VerifyTokenResponse{Valid: true, TenantId: "tenant1"}, nil)
+
+	resp, err := client.VerifyToken(ctx, "t1")
+	assert.NoError(t, err)
+	assert.True(t, resp.Valid)
+	assert.Equal(t, "tenant1", resp.TenantId)
+}
+
+func TestClient_AgentMethods(t *testing.T) {
+	mockAgent := new(MockAgentServiceClient)
+	client := &agrpc.Client{
+		AgentService: mockAgent,
+	}
+
+	ctx := context.Background()
+
+	// RegisterAgent
+	mockAgent.On("RegisterAgent", ctx, &v1.RegisterAgentRequest{Token: "t1", Name: "n1"}).
+		Return(&v1.RegisterAgentResponse{AgentId: "a1"}, nil)
+	respR, err := client.RegisterAgent(ctx, "t1", "n1")
+	assert.NoError(t, err)
+	assert.Equal(t, "a1", respR.AgentId)
+
+	// UpdateAgentStatus
+	mockAgent.On("UpdateAgentStatus", ctx, &v1.UpdateAgentStatusRequest{AgentId: "a1", Status: "IDLE"}).
+		Return(&v1.UpdateAgentStatusResponse{Success: true}, nil)
+	respU, err := client.UpdateAgentStatus(ctx, "a1", "IDLE")
+	assert.NoError(t, err)
+	assert.True(t, respU.Success)
+
+	// GetUploadLink
+	mockAgent.On("GetUploadLink", ctx, &v1.GetUploadLinkRequest{AgentId: "a1", Filename: "f1"}).
+		Return(&v1.GetUploadLinkResponse{Url: "http://minio/f1"}, nil)
+	respG, err := client.GetUploadLink(ctx, "a1", "f1")
+	assert.NoError(t, err)
+	assert.Equal(t, "http://minio/f1", respG.Url)
+}
+
+type MockInternalAuthServiceClient struct {
+	mock.Mock
+}
+
+func (m *MockInternalAuthServiceClient) VerifyToken(ctx context.Context, in *v1.VerifyTokenRequest, opts ...grpc.CallOption) (*v1.VerifyTokenResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.VerifyTokenResponse), args.Error(1)
+}
+
+func TestClient_SearchMethods(t *testing.T) {
+	mockCompany := new(MockCompanyServiceClient)
+	client := &agrpc.Client{CompanyService: mockCompany}
+	ctx := context.Background()
+
+	mockCompany.On("ListCompanies", mock.Anything, mock.Anything).Return(&v1.ListCompaniesResponse{}, nil)
+	_, err := client.SearchCompanies(ctx, "q")
+	assert.NoError(t, err)
+
+	_, err = client.SearchUsers(ctx, "q", "c1")
+	assert.NoError(t, err)
+}
+
+func TestClient_BillingPreFlight(t *testing.T) {
+	mockBilling := new(MockBillingServiceClient)
+	client := &agrpc.Client{BillingService: mockBilling}
+	ctx := context.Background()
+
+	mockBilling.On("PreFlightCheck", mock.Anything, mock.Anything).Return(&v1.PreFlightCheckResponse{}, nil)
+	_, err := client.PreFlightCheck(ctx, "c1", 1, 1, 1)
+	assert.NoError(t, err)
+}
+
+func TestClient_AdjustTokens(t *testing.T) {
+	mockBilling := new(MockBillingServiceClient)
+	client := &agrpc.Client{BillingService: mockBilling}
+	ctx := context.Background()
+
+	mockBilling.On("AdjustTokens", mock.Anything, mock.Anything).Return(&v1.AdjustTokensResponse{}, nil)
+	_, err := client.AdjustTokens(ctx, "c1", 100, "reason")
+	assert.NoError(t, err)
+}
+
+func TestClient_RemainingMethods(t *testing.T) {
+	mockAuth := new(MockAuthServiceClient)
+	mockBilling := new(MockBillingServiceClient)
+	client := &agrpc.Client{
+		AuthService: mockAuth,
+		BillingService: mockBilling,
+	}
+	ctx := context.Background()
+
+	mockAuth.On("GetMe", mock.Anything, mock.Anything).Return(&v1.GetMeResponse{}, nil)
+	_, _ = client.GetMe(ctx)
+
+	mockAuth.On("UpdateProfile", mock.Anything, mock.Anything).Return(&v1.UpdateProfileResponse{}, nil)
+	_, _ = client.UpdateProfile(ctx, "n", "a")
+
+	mockAuth.On("UpdateEmail", mock.Anything, mock.Anything).Return(&v1.UpdateEmailResponse{}, nil)
+	_, _ = client.UpdateEmail(ctx, "e")
+
+	mockAuth.On("UpdatePassword", mock.Anything, mock.Anything).Return(&v1.UpdatePasswordResponse{}, nil)
+	_, _ = client.UpdatePassword(ctx, "o", "n")
+
+	mockBilling.On("GetUsageStats", mock.Anything, mock.Anything).Return(&v1.GetUsageStatsResponse{}, nil)
+	_, _ = client.GetUsageStats(ctx, "c", 30)
 }
