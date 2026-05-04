@@ -98,13 +98,11 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 			auth.GET("/storage/upload-url", mh.GetUploadURLHandler)
 		}
 
-		// Agent-specific routes
-		api.POST("/agents/register", h.RegisterAgentHandler)
-
 		agent := api.Group("/agents")
 		agent.Use(middleware.AgentAuthMiddleware(gc, rdb))
 		agent.Use(middleware.AgentRateLimiter(rdb))
 		{
+			agent.POST("/register", h.RegisterAgentHandler)
 			agent.POST("/:id/status", h.UpdateAgentStatusHandler)
 			agent.GET("/:id/upload-url", h.GetUploadLinkHandler)
 		}
