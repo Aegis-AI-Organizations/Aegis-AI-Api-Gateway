@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
 	"github.com/gin-gonic/gin"
 )
 
