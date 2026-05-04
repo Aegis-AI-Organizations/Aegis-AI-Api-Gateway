@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/time/rate"
@@ -108,6 +109,66 @@ func RedisRateLimiter(rdb interface{}) gin.HandlerFunc {
 		if count > 100 {
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
 				"error": "Too many requests. Please try again later.",
+			})
+			return
+		}
+
+		c.Next()
+	}
+}
+
+// AgentRateLimiter implements a distributed rate limiter for Agents using Redis.
+// It limits to 50 requests per second per Agent (tenant_id).
+func AgentRateLimiter(rdb interface{}) gin.HandlerFunc {
+	type redisWrapper interface {
+		GetClient() *redis.Client
+	}
+
+	if rdb == nil || (reflect.ValueOf(rdb).Kind() == reflect.Ptr && reflect.ValueOf(rdb).IsNil()) {
+		return func(c *gin.Context) { c.Next() }
+	}
+
+	wrapper, ok := rdb.(redisWrapper)
+	if !ok {
+		return func(c *gin.Context) { c.Next() }
+	}
+
+	client := wrapper.GetClient()
+	if client == nil {
+		return func(c *gin.Context) { c.Next() }
+	}
+
+	return func(c *gin.Context) {
+		ctx := c.Request.Context()
+
+		// Get tenant_id from context (set by AgentAuthMiddleware)
+		tenantID, exists := c.Get(string(types.AgentTenantIDKey))
+		if !exists {
+			// If not an agent request, skip rate limiting or fall back to IP?
+			// For now, skip to avoid blocking other routes if applied incorrectly.
+			c.Next()
+			return
+		}
+
+		key := "ratelimit:agent:" + tenantID.(string)
+
+		// Atomic increment
+		count, err := client.Incr(ctx, key).Result()
+		if err != nil {
+			log.Printf("Redis agent ratelimit error: %v", err)
+			c.Next()
+			return
+		}
+
+		// Set expiration to 1 second for "per second" limiting
+		if count == 1 {
+			client.Expire(ctx, key, time.Second)
+		}
+
+		// Limit: 50 requests per second
+		if count > 50 {
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
+				"error": "Agent request limit exceeded (50 req/sec).",
 			})
 			return
 		}

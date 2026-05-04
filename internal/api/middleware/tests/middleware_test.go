@@ -2,14 +2,19 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redismock/v9"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
@@ -74,4 +79,161 @@ func TestRedisRateLimiter_NoRedis(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+type mockRedisWrapper struct {
+	client *redis.Client
+}
+
+func (m *mockRedisWrapper) GetClient() *redis.Client {
+	return m.client
+}
+
+func TestRedisRateLimiter_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, mock := redismock.NewClientMock()
+
+	mock.ExpectIncr("ratelimit:127.0.0.1").SetVal(1)
+	mock.ExpectExpire("ratelimit:127.0.0.1", 1*time.Minute).SetVal(true)
+
+	r := gin.New()
+	r.Use(middleware.RedisRateLimiter(&mockRedisWrapper{client: db}))
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	req.RemoteAddr = "127.0.0.1:1234"
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestRedisRateLimiter_TooManyRequests(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, mock := redismock.NewClientMock()
+
+	mock.ExpectIncr("ratelimit:127.0.0.1").SetVal(101)
+
+	r := gin.New()
+	r.Use(middleware.RedisRateLimiter(&mockRedisWrapper{client: db}))
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	req.RemoteAddr = "127.0.0.1:1234"
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusTooManyRequests, w.Code)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAgentRateLimiter_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, mock := redismock.NewClientMock()
+
+	mock.ExpectIncr("ratelimit:agent:tenant1").SetVal(1)
+	mock.ExpectExpire("ratelimit:agent:tenant1", 1*time.Second).SetVal(true)
+
+	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		c.Set(string(types.AgentTenantIDKey), "tenant1")
+		c.Next()
+	})
+	r.Use(middleware.AgentRateLimiter(&mockRedisWrapper{client: db}))
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAgentRateLimiter_TooManyRequests(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, mock := redismock.NewClientMock()
+
+	mock.ExpectIncr("ratelimit:agent:tenant1").SetVal(51)
+
+	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		c.Set(string(types.AgentTenantIDKey), "tenant1")
+		c.Next()
+	})
+	r.Use(middleware.AgentRateLimiter(&mockRedisWrapper{client: db}))
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusTooManyRequests, w.Code)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestRedisRateLimiter_RedisError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, mock := redismock.NewClientMock()
+
+	mock.ExpectIncr("ratelimit:127.0.0.1").SetErr(fmt.Errorf("redis error"))
+
+	r := gin.New()
+	r.Use(middleware.RedisRateLimiter(&mockRedisWrapper{client: db}))
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	req.RemoteAddr = "127.0.0.1:1234"
+	r.ServeHTTP(w, req)
+
+	// Should fallback to Next() on Redis error
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAgentRateLimiter_RedisError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, mock := redismock.NewClientMock()
+
+	mock.ExpectIncr("ratelimit:agent:tenant1").SetErr(fmt.Errorf("redis error"))
+
+	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		c.Set(string(types.AgentTenantIDKey), "tenant1")
+		c.Next()
+	})
+	r.Use(middleware.AgentRateLimiter(&mockRedisWrapper{client: db}))
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	// Should fallback to Next() on Redis error
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestRateLimiter_Local(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	// Test the local memory rate limiter
+	r := gin.New()
+	r.Use(middleware.RateLimiter(1, 1)) // 1 req/sec
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	// First request succeeds
+	w1 := httptest.NewRecorder()
+	req1, _ := http.NewRequest("GET", "/test", nil)
+	req1.RemoteAddr = "1.1.1.1:1234"
+	r.ServeHTTP(w1, req1)
+	assert.Equal(t, http.StatusOK, w1.Code)
+
+	// Second request fails (burst 1 exceeded)
+	w2 := httptest.NewRecorder()
+	req2, _ := http.NewRequest("GET", "/test", nil)
+	req2.RemoteAddr = "1.1.1.1:1234"
+	r.ServeHTTP(w2, req2)
+	assert.Equal(t, http.StatusTooManyRequests, w2.Code)
 }
