@@ -10,6 +10,7 @@ import (
 // API holds the core dependencies dynamically injected by our server initialization.
 type API struct {
 	GRPCClient *agrpc.Client
+	Redis      *db.RedisClient
 }
 
 // HealthHandler returns a simple 200 OK status for Kubernetes liveness probes.
