@@ -103,6 +103,7 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 
 		agent := api.Group("/agents")
 		agent.Use(middleware.AgentAuthMiddleware(gc, rdb))
+		agent.Use(middleware.AgentRateLimiter(rdb))
 		{
 			agent.POST("/:id/status", h.UpdateAgentStatusHandler)
 			agent.GET("/:id/upload-url", h.GetUploadLinkHandler)
