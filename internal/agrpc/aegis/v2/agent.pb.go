@@ -76,6 +76,7 @@ func (x *RegisterAgentRequest) GetName() string {
 type RegisterAgentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentSecret   string                 `protobuf:"bytes,2,opt,name=agent_secret,json=agentSecret,proto3" json:"agent_secret,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -113,6 +114,13 @@ func (*RegisterAgentResponse) Descriptor() ([]byte, []int) {
 func (x *RegisterAgentResponse) GetAgentId() string {
 	if x != nil {
 		return x.AgentId
+	}
+	return ""
+}
+
+func (x *RegisterAgentResponse) GetAgentSecret() string {
+	if x != nil {
+		return x.AgentSecret
 	}
 	return ""
 }
@@ -325,6 +333,110 @@ func (x *GetUploadLinkResponse) GetMethod() string {
 	return ""
 }
 
+type VerifyAgentSecretRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	Secret        string                 `protobuf:"bytes,2,opt,name=secret,proto3" json:"secret,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyAgentSecretRequest) Reset() {
+	*x = VerifyAgentSecretRequest{}
+	mi := &file_aegis_v2_agent_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyAgentSecretRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyAgentSecretRequest) ProtoMessage() {}
+
+func (x *VerifyAgentSecretRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_agent_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyAgentSecretRequest.ProtoReflect.Descriptor instead.
+func (*VerifyAgentSecretRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_agent_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *VerifyAgentSecretRequest) GetAgentId() string {
+	if x != nil {
+		return x.AgentId
+	}
+	return ""
+}
+
+func (x *VerifyAgentSecretRequest) GetSecret() string {
+	if x != nil {
+		return x.Secret
+	}
+	return ""
+}
+
+type VerifyAgentSecretResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
+	TenantId      string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifyAgentSecretResponse) Reset() {
+	*x = VerifyAgentSecretResponse{}
+	mi := &file_aegis_v2_agent_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifyAgentSecretResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifyAgentSecretResponse) ProtoMessage() {}
+
+func (x *VerifyAgentSecretResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_agent_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifyAgentSecretResponse.ProtoReflect.Descriptor instead.
+func (*VerifyAgentSecretResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_agent_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *VerifyAgentSecretResponse) GetValid() bool {
+	if x != nil {
+		return x.Valid
+	}
+	return false
+}
+
+func (x *VerifyAgentSecretResponse) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
 var File_aegis_v2_agent_proto protoreflect.FileDescriptor
 
 const file_aegis_v2_agent_proto_rawDesc = "" +
@@ -332,9 +444,10 @@ const file_aegis_v2_agent_proto_rawDesc = "" +
 	"\x14aegis/v2/agent.proto\x12\baegis.v2\"@\n" +
 	"\x14RegisterAgentRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"2\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"U\n" +
 	"\x15RegisterAgentResponse\x12\x19\n" +
-	"\bagent_id\x18\x01 \x01(\tR\aagentId\"M\n" +
+	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12!\n" +
+	"\fagent_secret\x18\x02 \x01(\tR\vagentSecret\"M\n" +
 	"\x18UpdateAgentStatusRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"5\n" +
@@ -346,11 +459,18 @@ const file_aegis_v2_agent_proto_rawDesc = "" +
 	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\"A\n" +
 	"\x15GetUploadLinkResponse\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12\x16\n" +
-	"\x06method\x18\x02 \x01(\tR\x06method2\x90\x02\n" +
+	"\x06method\x18\x02 \x01(\tR\x06method\"M\n" +
+	"\x18VerifyAgentSecretRequest\x12\x19\n" +
+	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x16\n" +
+	"\x06secret\x18\x02 \x01(\tR\x06secret\"N\n" +
+	"\x19VerifyAgentSecretResponse\x12\x14\n" +
+	"\x05valid\x18\x01 \x01(\bR\x05valid\x12\x1b\n" +
+	"\ttenant_id\x18\x02 \x01(\tR\btenantId2\xee\x02\n" +
 	"\fAgentService\x12P\n" +
 	"\rRegisterAgent\x12\x1e.aegis.v2.RegisterAgentRequest\x1a\x1f.aegis.v2.RegisterAgentResponse\x12\\\n" +
 	"\x11UpdateAgentStatus\x12\".aegis.v2.UpdateAgentStatusRequest\x1a#.aegis.v2.UpdateAgentStatusResponse\x12P\n" +
-	"\rGetUploadLink\x12\x1e.aegis.v2.GetUploadLinkRequest\x1a\x1f.aegis.v2.GetUploadLinkResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
+	"\rGetUploadLink\x12\x1e.aegis.v2.GetUploadLinkRequest\x1a\x1f.aegis.v2.GetUploadLinkResponse\x12\\\n" +
+	"\x11VerifyAgentSecret\x12\".aegis.v2.VerifyAgentSecretRequest\x1a#.aegis.v2.VerifyAgentSecretResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
 var (
 	file_aegis_v2_agent_proto_rawDescOnce sync.Once
@@ -364,7 +484,7 @@ func file_aegis_v2_agent_proto_rawDescGZIP() []byte {
 	return file_aegis_v2_agent_proto_rawDescData
 }
 
-var file_aegis_v2_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_aegis_v2_agent_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_aegis_v2_agent_proto_goTypes = []any{
 	(*RegisterAgentRequest)(nil),      // 0: aegis.v2.RegisterAgentRequest
 	(*RegisterAgentResponse)(nil),     // 1: aegis.v2.RegisterAgentResponse
@@ -372,16 +492,20 @@ var file_aegis_v2_agent_proto_goTypes = []any{
 	(*UpdateAgentStatusResponse)(nil), // 3: aegis.v2.UpdateAgentStatusResponse
 	(*GetUploadLinkRequest)(nil),      // 4: aegis.v2.GetUploadLinkRequest
 	(*GetUploadLinkResponse)(nil),     // 5: aegis.v2.GetUploadLinkResponse
+	(*VerifyAgentSecretRequest)(nil),  // 6: aegis.v2.VerifyAgentSecretRequest
+	(*VerifyAgentSecretResponse)(nil), // 7: aegis.v2.VerifyAgentSecretResponse
 }
 var file_aegis_v2_agent_proto_depIdxs = []int32{
 	0, // 0: aegis.v2.AgentService.RegisterAgent:input_type -> aegis.v2.RegisterAgentRequest
 	2, // 1: aegis.v2.AgentService.UpdateAgentStatus:input_type -> aegis.v2.UpdateAgentStatusRequest
 	4, // 2: aegis.v2.AgentService.GetUploadLink:input_type -> aegis.v2.GetUploadLinkRequest
-	1, // 3: aegis.v2.AgentService.RegisterAgent:output_type -> aegis.v2.RegisterAgentResponse
-	3, // 4: aegis.v2.AgentService.UpdateAgentStatus:output_type -> aegis.v2.UpdateAgentStatusResponse
-	5, // 5: aegis.v2.AgentService.GetUploadLink:output_type -> aegis.v2.GetUploadLinkResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	6, // 3: aegis.v2.AgentService.VerifyAgentSecret:input_type -> aegis.v2.VerifyAgentSecretRequest
+	1, // 4: aegis.v2.AgentService.RegisterAgent:output_type -> aegis.v2.RegisterAgentResponse
+	3, // 5: aegis.v2.AgentService.UpdateAgentStatus:output_type -> aegis.v2.UpdateAgentStatusResponse
+	5, // 6: aegis.v2.AgentService.GetUploadLink:output_type -> aegis.v2.GetUploadLinkResponse
+	7, // 7: aegis.v2.AgentService.VerifyAgentSecret:output_type -> aegis.v2.VerifyAgentSecretResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -398,7 +522,7 @@ func file_aegis_v2_agent_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v2_agent_proto_rawDesc), len(file_aegis_v2_agent_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -22,6 +22,7 @@ const (
 	AgentService_RegisterAgent_FullMethodName     = "/aegis.v2.AgentService/RegisterAgent"
 	AgentService_UpdateAgentStatus_FullMethodName = "/aegis.v2.AgentService/UpdateAgentStatus"
 	AgentService_GetUploadLink_FullMethodName     = "/aegis.v2.AgentService/GetUploadLink"
+	AgentService_VerifyAgentSecret_FullMethodName = "/aegis.v2.AgentService/VerifyAgentSecret"
 )
 
 // AgentServiceClient is the client API for AgentService service.
@@ -34,6 +35,8 @@ type AgentServiceClient interface {
 	UpdateAgentStatus(ctx context.Context, in *UpdateAgentStatusRequest, opts ...grpc.CallOption) (*UpdateAgentStatusResponse, error)
 	// GetUploadLink returns a presigned URL for MinIO file uploads.
 	GetUploadLink(ctx context.Context, in *GetUploadLinkRequest, opts ...grpc.CallOption) (*GetUploadLinkResponse, error)
+	// VerifyAgentSecret validates an operational secret against an agent ID.
+	VerifyAgentSecret(ctx context.Context, in *VerifyAgentSecretRequest, opts ...grpc.CallOption) (*VerifyAgentSecretResponse, error)
 }
 
 type agentServiceClient struct {
@@ -74,6 +77,16 @@ func (c *agentServiceClient) GetUploadLink(ctx context.Context, in *GetUploadLin
 	return out, nil
 }
 
+func (c *agentServiceClient) VerifyAgentSecret(ctx context.Context, in *VerifyAgentSecretRequest, opts ...grpc.CallOption) (*VerifyAgentSecretResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifyAgentSecretResponse)
+	err := c.cc.Invoke(ctx, AgentService_VerifyAgentSecret_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AgentServiceServer is the server API for AgentService service.
 // All implementations must embed UnimplementedAgentServiceServer
 // for forward compatibility.
@@ -84,6 +97,8 @@ type AgentServiceServer interface {
 	UpdateAgentStatus(context.Context, *UpdateAgentStatusRequest) (*UpdateAgentStatusResponse, error)
 	// GetUploadLink returns a presigned URL for MinIO file uploads.
 	GetUploadLink(context.Context, *GetUploadLinkRequest) (*GetUploadLinkResponse, error)
+	// VerifyAgentSecret validates an operational secret against an agent ID.
+	VerifyAgentSecret(context.Context, *VerifyAgentSecretRequest) (*VerifyAgentSecretResponse, error)
 	mustEmbedUnimplementedAgentServiceServer()
 }
 
@@ -102,6 +117,9 @@ func (UnimplementedAgentServiceServer) UpdateAgentStatus(context.Context, *Updat
 }
 func (UnimplementedAgentServiceServer) GetUploadLink(context.Context, *GetUploadLinkRequest) (*GetUploadLinkResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUploadLink not implemented")
+}
+func (UnimplementedAgentServiceServer) VerifyAgentSecret(context.Context, *VerifyAgentSecretRequest) (*VerifyAgentSecretResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method VerifyAgentSecret not implemented")
 }
 func (UnimplementedAgentServiceServer) mustEmbedUnimplementedAgentServiceServer() {}
 func (UnimplementedAgentServiceServer) testEmbeddedByValue()                      {}
@@ -178,6 +196,24 @@ func _AgentService_GetUploadLink_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AgentService_VerifyAgentSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyAgentSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AgentServiceServer).VerifyAgentSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AgentService_VerifyAgentSecret_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AgentServiceServer).VerifyAgentSecret(ctx, req.(*VerifyAgentSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -196,6 +232,10 @@ var AgentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUploadLink",
 			Handler:    _AgentService_GetUploadLink_Handler,
+		},
+		{
+			MethodName: "VerifyAgentSecret",
+			Handler:    _AgentService_VerifyAgentSecret_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

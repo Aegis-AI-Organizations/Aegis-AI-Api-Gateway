@@ -467,3 +467,13 @@ func (c *Client) GetUploadLink(ctx context.Context, agentID, filename string) (*
 		Filename: filename,
 	})
 }
+
+func (c *Client) VerifyAgentSecret(ctx context.Context, agentID, secret string) (*v1.VerifyAgentSecretResponse, error) {
+	if c.AgentService == nil {
+		return nil, fmt.Errorf("agent service not initialized")
+	}
+	return c.AgentService.VerifyAgentSecret(ctx, &v1.VerifyAgentSecretRequest{
+		AgentId: agentID,
+		Secret:  secret,
+	})
+}

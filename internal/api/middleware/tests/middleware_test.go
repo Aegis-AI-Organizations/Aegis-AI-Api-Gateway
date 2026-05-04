@@ -33,6 +33,25 @@ func (m *MockInternalAuthClient) VerifyToken(ctx context.Context, in *v1.VerifyT
 	return args.Get(0).(*v1.VerifyTokenResponse), args.Error(1)
 }
 
+// MockAgentClient
+type MockAgentClient struct {
+	mock.Mock
+	v1.AgentServiceClient
+}
+
+func (m *MockAgentClient) VerifyAgentSecret(ctx context.Context, in *v1.VerifyAgentSecretRequest, opts ...grpc.CallOption) (*v1.VerifyAgentSecretResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.VerifyAgentSecretResponse), args.Error(1)
+}
+
+func (m *MockAgentClient) RegisterAgent(ctx context.Context, in *v1.RegisterAgentRequest, opts ...grpc.CallOption) (*v1.RegisterAgentResponse, error) {
+	args := m.Called(ctx, in)
+	return args.Get(0).(*v1.RegisterAgentResponse), args.Error(1)
+}
+
 func TestAgentAuthMiddleware_NoToken(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
@@ -46,26 +65,62 @@ func TestAgentAuthMiddleware_NoToken(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }
 
-func TestAgentAuthMiddleware_Success(t *testing.T) {
+func TestAgentAuthMiddleware_Register_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockAuth := new(MockInternalAuthClient)
 	client := &agrpc.Client{
 		InternalAuthService: mockAuth,
 	}
 
-	mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "valid-token"}).
+	mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_valid"}).
 		Return(&v1.VerifyTokenResponse{Valid: true, TenantId: "t1"}, nil)
 
 	r := gin.New()
 	r.Use(middleware.AgentAuthMiddleware(client, nil))
-	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+	r.POST("/api/agents/register", func(c *gin.Context) { c.Status(200) })
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/test", nil)
-	req.Header.Set("Authorization", "Bearer valid-token")
+	req, _ := http.NewRequest("POST", "/api/agents/register", nil)
+	req.Header.Set("Authorization", "Bearer ag_valid")
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestAgentAuthMiddleware_Operation_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAgent := new(MockAgentClient)
+	client := &agrpc.Client{
+		AgentService: mockAgent,
+	}
+
+	mockAgent.On("VerifyAgentSecret", mock.Anything, &v1.VerifyAgentSecretRequest{AgentId: "a1", Secret: "s1"}).
+		Return(&v1.VerifyAgentSecretResponse{Valid: true, TenantId: "t1"}, nil)
+
+	r := gin.New()
+	r.Use(middleware.AgentAuthMiddleware(client, nil))
+	r.GET("/api/agents/:id/status", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/agents/a1/status", nil)
+	req.Header.Set("Authorization", "Bearer s1")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestAgentAuthMiddleware_DeploymentToken_On_Operation_Rejection(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(middleware.AgentAuthMiddleware(nil, nil))
+	r.GET("/api/agents/:id/status", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/agents/a1/status", nil)
+	req.Header.Set("Authorization", "Bearer ag_token") // Starts with ag_
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
 func TestRedisRateLimiter_NoRedis(t *testing.T) {
