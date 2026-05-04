@@ -76,6 +76,7 @@ func (x *RegisterAgentRequest) GetName() string {
 type RegisterAgentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
+	AgentSecret   string                 `protobuf:"bytes,2,opt,name=agent_secret,json=agentSecret,proto3" json:"agent_secret,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -113,6 +114,13 @@ func (*RegisterAgentResponse) Descriptor() ([]byte, []int) {
 func (x *RegisterAgentResponse) GetAgentId() string {
 	if x != nil {
 		return x.AgentId
+	}
+	return ""
+}
+
+func (x *RegisterAgentResponse) GetAgentSecret() string {
+	if x != nil {
+		return x.AgentSecret
 	}
 	return ""
 }
@@ -332,9 +340,10 @@ const file_aegis_v2_agent_proto_rawDesc = "" +
 	"\x14aegis/v2/agent.proto\x12\baegis.v2\"@\n" +
 	"\x14RegisterAgentRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\"2\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\"U\n" +
 	"\x15RegisterAgentResponse\x12\x19\n" +
-	"\bagent_id\x18\x01 \x01(\tR\aagentId\"M\n" +
+	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12!\n" +
+	"\fagent_secret\x18\x02 \x01(\tR\vagentSecret\"M\n" +
 	"\x18UpdateAgentStatusRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"5\n" +
