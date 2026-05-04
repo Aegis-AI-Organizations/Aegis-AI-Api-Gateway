@@ -80,7 +80,12 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 		if isRegisterRoute {
 			// Deployment token validation
 			resp, err := grpcClient.VerifyToken(c.Request.Context(), token)
-			if err != nil || !resp.Valid {
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal auth service error"})
+				c.Abort()
+				return
+			}
+			if !resp.Valid {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid deployment token"})
 				c.Abort()
 				return
@@ -89,7 +94,12 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 		} else {
 			// Agent secret validation (cross-validated with agentID)
 			resp, err := grpcClient.VerifyAgentSecret(c.Request.Context(), agentID, token)
-			if err != nil || !resp.Valid {
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal auth service error"})
+				c.Abort()
+				return
+			}
+			if !resp.Valid {
 				c.JSON(http.StatusForbidden, gin.H{"error": "Invalid agent secret or unauthorized access to agent"})
 				c.Abort()
 				return
