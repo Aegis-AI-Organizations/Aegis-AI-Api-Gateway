@@ -30,10 +30,10 @@ type Scan struct {
 }
 
 type Vulnerability struct {
-	ID             string    `json:"id"`
-	VulnType       string    `json:"vuln_type"`
-	Severity       string    `json:"severity"`
-	TargetEndpoint string    `json:"target_endpoint"`
+	ID             string     `json:"id"`
+	VulnType       string     `json:"vuln_type"`
+	Severity       string     `json:"severity"`
+	TargetEndpoint string     `json:"target_endpoint"`
 	Description    string     `json:"description"`
 	DiscoveredAt   *time.Time `json:"discovered_at,omitempty"`
 }

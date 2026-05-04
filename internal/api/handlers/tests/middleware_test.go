@@ -132,13 +132,13 @@ func TestAuthMiddleware_Unit(t *testing.T) {
 	defer os.Unsetenv("JWT_SECRET")
 
 	t.Run("NoAuth", func(t *testing.T) {
-        w := httptest.NewRecorder()
-        c, _ := gin.CreateTestContext(w)
-        c.Request, _ = http.NewRequest("GET", "/test", nil)
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request, _ = http.NewRequest("GET", "/test", nil)
 
-        middleware.AuthMiddleware()(c)
+		middleware.AuthMiddleware()(c)
 
-        assert.Equal(t, http.StatusUnauthorized, w.Code)
-        assert.True(t, c.IsAborted())
-    })
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+		assert.True(t, c.IsAborted())
+	})
 }

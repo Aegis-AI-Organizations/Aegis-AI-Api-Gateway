@@ -12,7 +12,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-
 // AuthMiddleware validates the JWT token and injects claims into context.
 func AuthMiddleware() gin.HandlerFunc {
 	secret := os.Getenv("JWT_SECRET")

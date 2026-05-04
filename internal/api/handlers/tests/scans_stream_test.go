@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/testutils"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -29,13 +29,12 @@ func (m *MockScanStream) Recv() (*v1.WatchScanStatusResponse, error) {
 	return args.Get(0).(*v1.WatchScanStatusResponse), args.Error(1)
 }
 
-func (m *MockScanStream) Context() context.Context { return context.Background() }
+func (m *MockScanStream) Context() context.Context     { return context.Background() }
 func (m *MockScanStream) Header() (metadata.MD, error) { return nil, nil }
-func (m *MockScanStream) Trailer() metadata.MD { return nil }
-func (m *MockScanStream) CloseSend() error { return nil }
+func (m *MockScanStream) Trailer() metadata.MD         { return nil }
+func (m *MockScanStream) CloseSend() error             { return nil }
 func (m *MockScanStream) SendMsg(m_ interface{}) error { return nil }
 func (m *MockScanStream) RecvMsg(m_ interface{}) error { return nil }
-
 
 func TestScanStreamHandler_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)

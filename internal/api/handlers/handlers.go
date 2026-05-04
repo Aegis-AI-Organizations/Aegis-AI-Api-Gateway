@@ -4,12 +4,14 @@ import (
 	"net/http"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
 	"github.com/gin-gonic/gin"
 )
 
 // API holds the core dependencies dynamically injected by our server initialization.
 type API struct {
 	GRPCClient *agrpc.Client
+	Redis      *db.RedisClient
 }
 
 // HealthHandler returns a simple 200 OK status for Kubernetes liveness probes.

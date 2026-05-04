@@ -30,10 +30,10 @@ type Client struct {
 
 // TLSConfig holds the paths to the certificates for mTLS.
 type TLSConfig struct {
-	Enable   bool
-	CAPath   string
-	CertPath string
-	KeyPath  string
+	Enable     bool
+	CAPath     string
+	CertPath   string
+	KeyPath    string
 	ServerName string
 }
 
