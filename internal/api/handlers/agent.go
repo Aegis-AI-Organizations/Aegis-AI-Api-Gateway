@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,17 @@ func (a *API) UpdateAgentStatusHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update agent status"})
 		return
+	}
+
+	// Update Redis Shadow Key for "Pro" health monitoring
+	if a.Redis != nil {
+		key := "agent:health:" + agentID
+		// TTL of 90s (3x heartbeat interval of 30s)
+		err := a.Redis.Client.Set(c.Request.Context(), key, "running", 90*1000000000).Err()
+		if err != nil {
+			// Log but don't fail the request
+			log.Printf("⚠️ Failed to set agent health key in Redis: %v", err)
+		}
 	}
 
 	c.JSON(http.StatusOK, resp)
