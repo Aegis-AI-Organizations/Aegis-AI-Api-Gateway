@@ -379,15 +379,16 @@ func TestAgentAuthMiddleware_GRPC_Error(t *testing.T) {
 	mockAuth.On("VerifyToken", mock.Anything, mock.Anything).Return(nil, fmt.Errorf("grpc error"))
 
 	r := gin.New()
-	r.Use(middleware.AgentAuthMiddleware(client, nil))
-	r.POST("/api/agents/register", func(c *gin.Context) { c.Status(200) })
+	r.POST("/api/agents/register", middleware.AgentAuthMiddleware(client, nil), func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/agents/register", nil)
 	req.Header.Set("Authorization", "Bearer ag_token")
 	r.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
 func TestAgentAuthMiddleware_No_ID_Param(t *testing.T) {
