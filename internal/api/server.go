@@ -40,6 +40,7 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 		// Public Auth routes
 		api.POST("/auth/login", h.LoginHandler)
 		api.POST("/auth/refresh", h.RefreshHandler)
+		api.POST("/auth/setup-password", h.SetupPasswordHandler)
 
 		// Protected routes group
 		auth := api.Group("/")

@@ -133,6 +133,14 @@ func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest
 	return args.Get(0).(*v1.LogoutResponse), args.Error(1)
 }
 
+func (m *MockAuthServiceClient) SetupPassword(ctx context.Context, in *v1.SetupPasswordRequest, opts ...grpc.CallOption) (*v1.SetupPasswordResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.SetupPasswordResponse), args.Error(1)
+}
+
 func (m *MockAuthServiceClient) GetMe(ctx context.Context, in *v1.GetMeRequest, opts ...grpc.CallOption) (*v1.GetMeResponse, error) {
 	args := m.Called(ctx, in)
 	if args.Get(0) == nil {
@@ -393,6 +401,13 @@ func TestClient_AuthMethods(t *testing.T) {
 	respL, err := client.Logout(ctx, "r")
 	assert.NoError(t, err)
 	assert.True(t, respL.Success)
+
+	// SetupPassword
+	mockAuth.On("SetupPassword", ctx, &v1.SetupPasswordRequest{InvitationToken: "i", NewPassword: "n"}).
+		Return(&v1.SetupPasswordResponse{AccessToken: "a3", RefreshToken: "r3"}, nil)
+	respS, err := client.SetupPassword(ctx, "i", "n")
+	assert.NoError(t, err)
+	assert.Equal(t, "a3", respS.AccessToken)
 }
 
 func TestClient_NilServices(t *testing.T) {
@@ -426,6 +441,9 @@ func TestClient_NilServices(t *testing.T) {
 	assert.Error(t, err)
 
 	_, err = client.UpdateAgentStatus(context.Background(), "a", "s")
+	assert.Error(t, err)
+
+	_, err = client.SetupPassword(context.Background(), "i", "n")
 	assert.Error(t, err)
 
 	_, err = client.GetUploadLink(context.Background(), "a", "f")
