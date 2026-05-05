@@ -22,6 +22,7 @@ const (
 	AuthService_Login_FullMethodName          = "/aegis.v2.AuthService/Login"
 	AuthService_Refresh_FullMethodName        = "/aegis.v2.AuthService/Refresh"
 	AuthService_Logout_FullMethodName         = "/aegis.v2.AuthService/Logout"
+	AuthService_SetupPassword_FullMethodName  = "/aegis.v2.AuthService/SetupPassword"
 	AuthService_GetMe_FullMethodName          = "/aegis.v2.AuthService/GetMe"
 	AuthService_UpdateProfile_FullMethodName  = "/aegis.v2.AuthService/UpdateProfile"
 	AuthService_UpdateEmail_FullMethodName    = "/aegis.v2.AuthService/UpdateEmail"
@@ -41,6 +42,8 @@ type AuthServiceClient interface {
 	Refresh(ctx context.Context, in *RefreshRequest, opts ...grpc.CallOption) (*RefreshResponse, error)
 	// Logout invalidates a refresh token.
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
+	// SetupPassword activates an invited owner account and creates a session.
+	SetupPassword(ctx context.Context, in *SetupPasswordRequest, opts ...grpc.CallOption) (*SetupPasswordResponse, error)
 	// GetMe retrieves the authenticated user's profile and company information.
 	GetMe(ctx context.Context, in *GetMeRequest, opts ...grpc.CallOption) (*GetMeResponse, error)
 	// UpdateProfile updates the authenticated user's profile information.
@@ -85,6 +88,16 @@ func (c *authServiceClient) Logout(ctx context.Context, in *LogoutRequest, opts 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LogoutResponse)
 	err := c.cc.Invoke(ctx, AuthService_Logout_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) SetupPassword(ctx context.Context, in *SetupPasswordRequest, opts ...grpc.CallOption) (*SetupPasswordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetupPasswordResponse)
+	err := c.cc.Invoke(ctx, AuthService_SetupPassword_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -153,6 +166,8 @@ type AuthServiceServer interface {
 	Refresh(context.Context, *RefreshRequest) (*RefreshResponse, error)
 	// Logout invalidates a refresh token.
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
+	// SetupPassword activates an invited owner account and creates a session.
+	SetupPassword(context.Context, *SetupPasswordRequest) (*SetupPasswordResponse, error)
 	// GetMe retrieves the authenticated user's profile and company information.
 	GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error)
 	// UpdateProfile updates the authenticated user's profile information.
@@ -181,6 +196,9 @@ func (UnimplementedAuthServiceServer) Refresh(context.Context, *RefreshRequest) 
 }
 func (UnimplementedAuthServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedAuthServiceServer) SetupPassword(context.Context, *SetupPasswordRequest) (*SetupPasswordResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetupPassword not implemented")
 }
 func (UnimplementedAuthServiceServer) GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetMe not implemented")
@@ -268,6 +286,24 @@ func _AuthService_Logout_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).Logout(ctx, req.(*LogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_SetupPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetupPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SetupPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_SetupPassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SetupPassword(ctx, req.(*SetupPasswordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -380,6 +416,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Logout",
 			Handler:    _AuthService_Logout_Handler,
+		},
+		{
+			MethodName: "SetupPassword",
+			Handler:    _AuthService_SetupPassword_Handler,
 		},
 		{
 			MethodName: "GetMe",

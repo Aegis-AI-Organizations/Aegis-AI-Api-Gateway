@@ -80,6 +80,53 @@ func (a *API) RefreshHandler(c *gin.Context) {
 	})
 }
 
+// SetupPasswordHandler activates an invited account and sets the refresh token cookie.
+func (a *API) SetupPasswordHandler(c *gin.Context) {
+	var req struct {
+		Token    string `json:"token" binding:"required"`
+		Password string `json:"password" binding:"required,min=8"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	if err := ValidatePasswordComplexity(req.Password); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := a.GRPCClient.SetupPassword(ctx, req.Token, req.Password)
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.Unauthenticated {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired invitation token"})
+		} else if ok && st.Code() == codes.NotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Invited user not found"})
+		} else {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Activation service unavailable"})
+		}
+		return
+	}
+
+	secure := gin.Mode() == gin.ReleaseMode
+	if secure {
+		c.SetSameSite(http.SameSiteNoneMode)
+	} else {
+		c.SetSameSite(http.SameSiteLaxMode)
+	}
+	c.SetCookie("refresh_token", resp.RefreshToken, 604800, "/", "", secure, true)
+
+	c.JSON(http.StatusOK, gin.H{
+		"access_token": resp.AccessToken,
+		"expires_in":   900,
+	})
+}
+
 // LogoutHandler handles user logout and clears the cookie.
 func (a *API) LogoutHandler(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
