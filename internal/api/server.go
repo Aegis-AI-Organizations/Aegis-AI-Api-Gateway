@@ -22,6 +22,7 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 
 	h := &handlers.API{
 		GRPCClient: gc,
+		Redis:      rdb,
 	}
 
 	mh := &handlers.MinioHandler{
