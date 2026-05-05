@@ -293,6 +293,16 @@ func (c *Client) Logout(ctx context.Context, refreshToken string) (*v1.LogoutRes
 	return c.AuthService.Logout(WithMetadata(ctx), &v1.LogoutRequest{RefreshToken: refreshToken})
 }
 
+func (c *Client) SetupPassword(ctx context.Context, invitationToken, newPassword string) (*v1.SetupPasswordResponse, error) {
+	if c.AuthService == nil {
+		return nil, fmt.Errorf("auth service not initialized")
+	}
+	return c.AuthService.SetupPassword(WithMetadata(ctx), &v1.SetupPasswordRequest{
+		InvitationToken: invitationToken,
+		NewPassword:     newPassword,
+	})
+}
+
 func (c *Client) GetMe(ctx context.Context) (*v1.GetMeResponse, error) {
 	if c.AuthService == nil {
 		return nil, fmt.Errorf("auth service not initialized")

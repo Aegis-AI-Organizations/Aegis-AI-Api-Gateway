@@ -14,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -45,6 +46,14 @@ func (m *MockAuthServiceClient) Logout(ctx context.Context, in *v1.LogoutRequest
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*v1.LogoutResponse), args.Error(1)
+}
+
+func (m *MockAuthServiceClient) SetupPassword(ctx context.Context, in *v1.SetupPasswordRequest, opts ...grpc.CallOption) (*v1.SetupPasswordResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.SetupPasswordResponse), args.Error(1)
 }
 
 func (m *MockAuthServiceClient) GetMe(ctx context.Context, in *v1.GetMeRequest, opts ...grpc.CallOption) (*v1.GetMeResponse, error) {
@@ -184,6 +193,90 @@ func TestLoginHandler_GRPCError_Internal(t *testing.T) {
 	api.LoginHandler(c)
 
 	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
+}
+
+func TestSetupPasswordHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	payload := map[string]string{
+		"token":    "aegis_inv_token",
+		"password": "NewStrongPassword123!",
+	}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/auth/setup-password", bytes.NewBuffer(body))
+
+	mockAuth.On("SetupPassword", mock.Anything, &v1.SetupPasswordRequest{
+		InvitationToken: "aegis_inv_token",
+		NewPassword:     "NewStrongPassword123!",
+	}).Return(&v1.SetupPasswordResponse{AccessToken: "access", RefreshToken: "refresh"}, nil)
+
+	api.SetupPasswordHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	assert.Equal(t, "access", resp["access_token"])
+	assert.Equal(t, float64(900), resp["expires_in"])
+
+	cookies := w.Result().Cookies()
+	var found bool
+	for _, cookie := range cookies {
+		if cookie.Name == "refresh_token" {
+			assert.Equal(t, "refresh", cookie.Value)
+			assert.True(t, cookie.HttpOnly)
+			found = true
+		}
+	}
+	assert.True(t, found)
+}
+
+func TestSetupPasswordHandler_InvalidPassword(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+
+	payload := map[string]string{"token": "aegis_inv_token", "password": "weak"}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/auth/setup-password", bytes.NewBuffer(body))
+
+	api.SetupPasswordHandler(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestSetupPasswordHandler_InvalidToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAuth := new(MockAuthServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AuthService: mockAuth,
+		},
+	}
+
+	payload := map[string]string{
+		"token":    "bad",
+		"password": "NewStrongPassword123!",
+	}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/auth/setup-password", bytes.NewBuffer(body))
+
+	mockAuth.On("SetupPassword", mock.Anything, mock.Anything).
+		Return(nil, status.Error(codes.Unauthenticated, "invalid token"))
+
+	api.SetupPasswordHandler(c)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }
 
 func TestRefreshHandler_Success(t *testing.T) {
