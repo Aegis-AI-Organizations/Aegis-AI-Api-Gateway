@@ -39,6 +39,10 @@ L'API utilise des JWT pour sécuriser l'accès et des cookies HTTP-only pour la 
 - **Description :** Authentifie un utilisateur et retourne un jeton d'accès. Définit un cookie `refresh_token`.
 ### `POST /auth/refresh`
 - **Description :** Régénère un jeton d'accès en utilisant le cookie de session.
+### `POST /auth/setup-password`
+- **Description :** Active un compte owner invité en validant un token d'invitation première connexion et en définissant le mot de passe initial. Retourne un jeton d'accès et définit un cookie `refresh_token`.
+- **Payload :** `{"token": "aegis_inv_...", "password": "NewStrongPassword123!"}`
+- **Routé vers :** `aegis.v2.AuthService.SetupPassword`
 ### `POST /auth/logout`
 - **Description :** Révoque la session et efface les cookies.
 ### `GET /auth/me`
@@ -60,7 +64,7 @@ L'API utilise des JWT pour sécuriser l'accès et des cookies HTTP-only pour la 
 ### `GET /companies`
 - **Description :** Liste toutes les entreprises de la plateforme.
 ### `POST /companies/onboard`
-- **Description :** **Workflow d'onboarding complet.** Crée l'entreprise, génère un token de déploiement et crée le compte propriétaire en une seule étape.
+- **Description :** **Workflow d'onboarding post-paiement.** Crée l'entreprise, génère un token de déploiement, crée le compte owner en état inactif et retourne un token d'invitation première connexion à usage unique. Le owner devient actif uniquement après l'appel à `POST /auth/setup-password`.
 
 ## Flux Temps-Réel (Streaming)
 
