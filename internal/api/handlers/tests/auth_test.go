@@ -216,7 +216,11 @@ func TestSetupPasswordHandler_Success(t *testing.T) {
 	mockAuth.On("SetupPassword", mock.Anything, &v1.SetupPasswordRequest{
 		InvitationToken: "aegis_inv_token",
 		NewPassword:     "NewStrongPassword123!",
-	}).Return(&v1.SetupPasswordResponse{AccessToken: "access", RefreshToken: "refresh"}, nil)
+	}).Return(&v1.SetupPasswordResponse{
+		AccessToken:  "access",
+		RefreshToken: "refresh",
+		AgentToken:   "ag_once",
+	}, nil)
 
 	api.SetupPasswordHandler(c)
 
@@ -224,6 +228,7 @@ func TestSetupPasswordHandler_Success(t *testing.T) {
 	var resp map[string]interface{}
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, "access", resp["access_token"])
+	assert.Equal(t, "ag_once", resp["agent_token"])
 	assert.Equal(t, float64(900), resp["expires_in"])
 
 	cookies := w.Result().Cookies()

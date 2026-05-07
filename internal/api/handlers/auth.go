@@ -123,6 +123,7 @@ func (a *API) SetupPasswordHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"access_token": resp.AccessToken,
+		"agent_token":  resp.AgentToken,
 		"expires_in":   900,
 	})
 }
