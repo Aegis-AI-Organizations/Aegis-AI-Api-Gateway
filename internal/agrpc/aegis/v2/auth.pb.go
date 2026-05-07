@@ -357,6 +357,7 @@ type SetupPasswordResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
 	RefreshToken  string                 `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	AgentToken    string                 `protobuf:"bytes,3,opt,name=agent_token,json=agentToken,proto3" json:"agent_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -401,6 +402,13 @@ func (x *SetupPasswordResponse) GetAccessToken() string {
 func (x *SetupPasswordResponse) GetRefreshToken() string {
 	if x != nil {
 		return x.RefreshToken
+	}
+	return ""
+}
+
+func (x *SetupPasswordResponse) GetAgentToken() string {
+	if x != nil {
+		return x.AgentToken
 	}
 	return ""
 }
@@ -914,10 +922,12 @@ const file_aegis_v2_auth_proto_rawDesc = "" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"d\n" +
 	"\x14SetupPasswordRequest\x12)\n" +
 	"\x10invitation_token\x18\x01 \x01(\tR\x0finvitationToken\x12!\n" +
-	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"_\n" +
+	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"\x80\x01\n" +
 	"\x15SetupPasswordResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\"\x0e\n" +
+	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12\x1f\n" +
+	"\vagent_token\x18\x03 \x01(\tR\n" +
+	"agentToken\"\x0e\n" +
 	"\fGetMeRequest\"\xbe\x01\n" +
 	"\rGetMeResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
