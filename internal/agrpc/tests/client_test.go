@@ -404,10 +404,11 @@ func TestClient_AuthMethods(t *testing.T) {
 
 	// SetupPassword
 	mockAuth.On("SetupPassword", ctx, &v1.SetupPasswordRequest{InvitationToken: "i", NewPassword: "n"}).
-		Return(&v1.SetupPasswordResponse{AccessToken: "a3", RefreshToken: "r3"}, nil)
+		Return(&v1.SetupPasswordResponse{AccessToken: "a3", RefreshToken: "r3", AgentToken: "ag_once"}, nil)
 	respS, err := client.SetupPassword(ctx, "i", "n")
 	assert.NoError(t, err)
 	assert.Equal(t, "a3", respS.AccessToken)
+	assert.Equal(t, "ag_once", respS.AgentToken)
 }
 
 func TestClient_NilServices(t *testing.T) {
