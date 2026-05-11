@@ -371,6 +371,20 @@ func (c *Client) OnboardCompany(ctx context.Context, companyName, ownerName, own
 	})
 }
 
+func (c *Client) RotateAgentToken(ctx context.Context, companyID string) (*v1.RotateAgentTokenResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	return c.CompanyService.RotateAgentToken(WithMetadata(ctx), &v1.RotateAgentTokenRequest{CompanyId: companyID})
+}
+
+func (c *Client) RevokeAgentToken(ctx context.Context, companyID string) (*v1.RevokeAgentTokenResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	return c.CompanyService.RevokeAgentToken(WithMetadata(ctx), &v1.RevokeAgentTokenRequest{CompanyId: companyID})
+}
+
 func (c *Client) WatchCompanyUpdates(ctx context.Context) (v1.CompanyService_WatchCompanyUpdatesClient, error) {
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")

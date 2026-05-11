@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 // ListCompaniesHandler returns all registered companies (SuperAdmin only).
@@ -76,4 +78,49 @@ func (a *API) OnboardCompanyHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, resp)
+}
+
+// RotateAgentTokenHandler generates a fresh agent deployment token for the authenticated company.
+func (a *API) RotateAgentTokenHandler(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	resp, err := a.GRPCClient.RotateAgentToken(ctx, "")
+	if err != nil {
+		writeAgentTokenGRPCError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"agent_token": resp.AgentToken})
+}
+
+// RevokeAgentTokenHandler invalidates the current agent deployment token.
+func (a *API) RevokeAgentTokenHandler(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	if _, err := a.GRPCClient.RevokeAgentToken(ctx, ""); err != nil {
+		writeAgentTokenGRPCError(c, err)
+		return
+	}
+
+	c.AbortWithStatus(http.StatusNoContent)
+}
+
+func writeAgentTokenGRPCError(c *gin.Context, err error) {
+	if st, ok := status.FromError(err); ok {
+		switch st.Code() {
+		case codes.InvalidArgument:
+			c.JSON(http.StatusBadRequest, gin.H{"error": st.Message()})
+			return
+		case codes.PermissionDenied:
+			c.JSON(http.StatusForbidden, gin.H{"error": st.Message()})
+			return
+		case codes.NotFound:
+			c.JSON(http.StatusNotFound, gin.H{"error": st.Message()})
+			return
+		}
+	}
+
+	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update agent token"})
 }
