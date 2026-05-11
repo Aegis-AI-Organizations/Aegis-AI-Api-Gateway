@@ -253,7 +253,7 @@ func TestOnboardCompanyHandler_Success(t *testing.T) {
 	}).Return(&v1.OnboardCompanyResponse{
 		CompanyId:       "c3",
 		OwnerId:         "u1",
-		DeploymentToken: "ag_test_token",
+		DeploymentToken: "ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg",
 	}, nil)
 
 	api.OnboardCompanyHandler(c)

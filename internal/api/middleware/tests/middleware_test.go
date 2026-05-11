@@ -73,7 +73,7 @@ func TestAgentAuthMiddleware_Register_Success(t *testing.T) {
 		InternalAuthService: mockAuth,
 	}
 
-	mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_valid"}).
+	mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg"}).
 		Return(&v1.VerifyTokenResponse{Valid: true, TenantId: "t1"}, nil)
 
 	r := gin.New()
@@ -82,7 +82,7 @@ func TestAgentAuthMiddleware_Register_Success(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/agents/register", nil)
-	req.Header.Set("Authorization", "Bearer ag_valid")
+	req.Header.Set("Authorization", "Bearer ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -118,7 +118,7 @@ func TestAgentAuthMiddleware_DeploymentToken_On_Operation_Rejection(t *testing.T
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/agents/a1/status", nil)
-	req.Header.Set("Authorization", "Bearer ag_token") // Starts with ag_
+	req.Header.Set("Authorization", "Bearer ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg") // Starts with ag_
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusForbidden, w.Code)
@@ -300,7 +300,7 @@ func TestAgentAuthMiddleware_Redis_Hit(t *testing.T) {
 	redisClient := &db_internal.RedisClient{Client: db}
 
 	// Mock Redis hit
-	rMock.ExpectGet("agent_token:ag_valid").SetVal("tenant1")
+	rMock.ExpectGet("agent_token:ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg").SetVal("tenant1")
 
 	r := gin.New()
 	r.Use(middleware.AgentAuthMiddleware(nil, redisClient))
@@ -308,7 +308,7 @@ func TestAgentAuthMiddleware_Redis_Hit(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/agents/register", nil)
-	req.Header.Set("Authorization", "Bearer ag_valid")
+	req.Header.Set("Authorization", "Bearer ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -351,7 +351,7 @@ func TestAgentAuthMiddleware_DeploymentToken_On_Operation_Forbidden(t *testing.T
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/agents/a1/status", nil)
-	req.Header.Set("Authorization", "Bearer ag_deploy")
+	req.Header.Set("Authorization", "Bearer ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusForbidden, w.Code)
@@ -371,6 +371,20 @@ func TestAgentAuthMiddleware_Secret_On_Register_Forbidden(t *testing.T) {
 	assert.Equal(t, http.StatusForbidden, w.Code)
 }
 
+func TestAgentAuthMiddleware_MalformedDeploymentToken_On_Register_Forbidden(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(middleware.AgentAuthMiddleware(nil, nil))
+	r.POST("/api/agents/register", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/agents/register", nil)
+	req.Header.Set("Authorization", "Bearer ag_too-short")
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
 func TestAgentAuthMiddleware_GRPC_Error(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockAuth := new(MockInternalAuthClient)
@@ -385,7 +399,7 @@ func TestAgentAuthMiddleware_GRPC_Error(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/agents/register", nil)
-	req.Header.Set("Authorization", "Bearer ag_token")
+	req.Header.Set("Authorization", "Bearer ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
