@@ -22,6 +22,8 @@ const (
 	CompanyService_CreateCompany_FullMethodName       = "/aegis.v2.CompanyService/CreateCompany"
 	CompanyService_ListCompanies_FullMethodName       = "/aegis.v2.CompanyService/ListCompanies"
 	CompanyService_OnboardCompany_FullMethodName      = "/aegis.v2.CompanyService/OnboardCompany"
+	CompanyService_RotateAgentToken_FullMethodName    = "/aegis.v2.CompanyService/RotateAgentToken"
+	CompanyService_RevokeAgentToken_FullMethodName    = "/aegis.v2.CompanyService/RevokeAgentToken"
 	CompanyService_WatchCompanyUpdates_FullMethodName = "/aegis.v2.CompanyService/WatchCompanyUpdates"
 	CompanyService_ListAuditLogs_FullMethodName       = "/aegis.v2.CompanyService/ListAuditLogs"
 )
@@ -38,6 +40,10 @@ type CompanyServiceClient interface {
 	ListCompanies(ctx context.Context, in *ListCompaniesRequest, opts ...grpc.CallOption) (*ListCompaniesResponse, error)
 	// OnboardCompany handles the creation of a new company and its owner in one step.
 	OnboardCompany(ctx context.Context, in *OnboardCompanyRequest, opts ...grpc.CallOption) (*OnboardCompanyResponse, error)
+	// RotateAgentToken generates a new deployment token for a company.
+	RotateAgentToken(ctx context.Context, in *RotateAgentTokenRequest, opts ...grpc.CallOption) (*RotateAgentTokenResponse, error)
+	// RevokeAgentToken invalidates the current deployment token for a company.
+	RevokeAgentToken(ctx context.Context, in *RevokeAgentTokenRequest, opts ...grpc.CallOption) (*RevokeAgentTokenResponse, error)
 	// WatchCompanyUpdates streams updates about companies and users.
 	WatchCompanyUpdates(ctx context.Context, in *WatchCompanyUpdatesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[WatchCompanyUpdatesResponse], error)
 	// ListAuditLogs retrieves system audit trails (Admin only).
@@ -76,6 +82,26 @@ func (c *companyServiceClient) OnboardCompany(ctx context.Context, in *OnboardCo
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(OnboardCompanyResponse)
 	err := c.cc.Invoke(ctx, CompanyService_OnboardCompany_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *companyServiceClient) RotateAgentToken(ctx context.Context, in *RotateAgentTokenRequest, opts ...grpc.CallOption) (*RotateAgentTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RotateAgentTokenResponse)
+	err := c.cc.Invoke(ctx, CompanyService_RotateAgentToken_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *companyServiceClient) RevokeAgentToken(ctx context.Context, in *RevokeAgentTokenRequest, opts ...grpc.CallOption) (*RevokeAgentTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RevokeAgentTokenResponse)
+	err := c.cc.Invoke(ctx, CompanyService_RevokeAgentToken_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -123,6 +149,10 @@ type CompanyServiceServer interface {
 	ListCompanies(context.Context, *ListCompaniesRequest) (*ListCompaniesResponse, error)
 	// OnboardCompany handles the creation of a new company and its owner in one step.
 	OnboardCompany(context.Context, *OnboardCompanyRequest) (*OnboardCompanyResponse, error)
+	// RotateAgentToken generates a new deployment token for a company.
+	RotateAgentToken(context.Context, *RotateAgentTokenRequest) (*RotateAgentTokenResponse, error)
+	// RevokeAgentToken invalidates the current deployment token for a company.
+	RevokeAgentToken(context.Context, *RevokeAgentTokenRequest) (*RevokeAgentTokenResponse, error)
 	// WatchCompanyUpdates streams updates about companies and users.
 	WatchCompanyUpdates(*WatchCompanyUpdatesRequest, grpc.ServerStreamingServer[WatchCompanyUpdatesResponse]) error
 	// ListAuditLogs retrieves system audit trails (Admin only).
@@ -145,6 +175,12 @@ func (UnimplementedCompanyServiceServer) ListCompanies(context.Context, *ListCom
 }
 func (UnimplementedCompanyServiceServer) OnboardCompany(context.Context, *OnboardCompanyRequest) (*OnboardCompanyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method OnboardCompany not implemented")
+}
+func (UnimplementedCompanyServiceServer) RotateAgentToken(context.Context, *RotateAgentTokenRequest) (*RotateAgentTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RotateAgentToken not implemented")
+}
+func (UnimplementedCompanyServiceServer) RevokeAgentToken(context.Context, *RevokeAgentTokenRequest) (*RevokeAgentTokenResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokeAgentToken not implemented")
 }
 func (UnimplementedCompanyServiceServer) WatchCompanyUpdates(*WatchCompanyUpdatesRequest, grpc.ServerStreamingServer[WatchCompanyUpdatesResponse]) error {
 	return status.Error(codes.Unimplemented, "method WatchCompanyUpdates not implemented")
@@ -227,6 +263,42 @@ func _CompanyService_OnboardCompany_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CompanyService_RotateAgentToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RotateAgentTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompanyServiceServer).RotateAgentToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CompanyService_RotateAgentToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompanyServiceServer).RotateAgentToken(ctx, req.(*RotateAgentTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CompanyService_RevokeAgentToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokeAgentTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompanyServiceServer).RevokeAgentToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CompanyService_RevokeAgentToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompanyServiceServer).RevokeAgentToken(ctx, req.(*RevokeAgentTokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CompanyService_WatchCompanyUpdates_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(WatchCompanyUpdatesRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -274,6 +346,14 @@ var CompanyService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "OnboardCompany",
 			Handler:    _CompanyService_OnboardCompany_Handler,
+		},
+		{
+			MethodName: "RotateAgentToken",
+			Handler:    _CompanyService_RotateAgentToken_Handler,
+		},
+		{
+			MethodName: "RevokeAgentToken",
+			Handler:    _CompanyService_RevokeAgentToken_Handler,
 		},
 		{
 			MethodName: "ListAuditLogs",

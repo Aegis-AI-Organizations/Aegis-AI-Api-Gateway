@@ -739,6 +739,182 @@ func (x *OnboardCompanyResponse) GetDeploymentToken() string {
 	return ""
 }
 
+type RotateAgentTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CompanyId     string                 `protobuf:"bytes,1,opt,name=company_id,json=companyId,proto3" json:"company_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RotateAgentTokenRequest) Reset() {
+	*x = RotateAgentTokenRequest{}
+	mi := &file_aegis_v2_company_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RotateAgentTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RotateAgentTokenRequest) ProtoMessage() {}
+
+func (x *RotateAgentTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_company_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RotateAgentTokenRequest.ProtoReflect.Descriptor instead.
+func (*RotateAgentTokenRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *RotateAgentTokenRequest) GetCompanyId() string {
+	if x != nil {
+		return x.CompanyId
+	}
+	return ""
+}
+
+type RotateAgentTokenResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AgentToken    string                 `protobuf:"bytes,1,opt,name=agent_token,json=agentToken,proto3" json:"agent_token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RotateAgentTokenResponse) Reset() {
+	*x = RotateAgentTokenResponse{}
+	mi := &file_aegis_v2_company_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RotateAgentTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RotateAgentTokenResponse) ProtoMessage() {}
+
+func (x *RotateAgentTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_company_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RotateAgentTokenResponse.ProtoReflect.Descriptor instead.
+func (*RotateAgentTokenResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *RotateAgentTokenResponse) GetAgentToken() string {
+	if x != nil {
+		return x.AgentToken
+	}
+	return ""
+}
+
+type RevokeAgentTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CompanyId     string                 `protobuf:"bytes,1,opt,name=company_id,json=companyId,proto3" json:"company_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokeAgentTokenRequest) Reset() {
+	*x = RevokeAgentTokenRequest{}
+	mi := &file_aegis_v2_company_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeAgentTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeAgentTokenRequest) ProtoMessage() {}
+
+func (x *RevokeAgentTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_company_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeAgentTokenRequest.ProtoReflect.Descriptor instead.
+func (*RevokeAgentTokenRequest) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *RevokeAgentTokenRequest) GetCompanyId() string {
+	if x != nil {
+		return x.CompanyId
+	}
+	return ""
+}
+
+type RevokeAgentTokenResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokeAgentTokenResponse) Reset() {
+	*x = RevokeAgentTokenResponse{}
+	mi := &file_aegis_v2_company_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeAgentTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeAgentTokenResponse) ProtoMessage() {}
+
+func (x *RevokeAgentTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_aegis_v2_company_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeAgentTokenResponse.ProtoReflect.Descriptor instead.
+func (*RevokeAgentTokenResponse) Descriptor() ([]byte, []int) {
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *RevokeAgentTokenResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 type ListCompaniesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -747,7 +923,7 @@ type ListCompaniesRequest struct {
 
 func (x *ListCompaniesRequest) Reset() {
 	*x = ListCompaniesRequest{}
-	mi := &file_aegis_v2_company_proto_msgTypes[9]
+	mi := &file_aegis_v2_company_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -759,7 +935,7 @@ func (x *ListCompaniesRequest) String() string {
 func (*ListCompaniesRequest) ProtoMessage() {}
 
 func (x *ListCompaniesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[9]
+	mi := &file_aegis_v2_company_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -772,7 +948,7 @@ func (x *ListCompaniesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCompaniesRequest.ProtoReflect.Descriptor instead.
 func (*ListCompaniesRequest) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{9}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{13}
 }
 
 type ListCompaniesResponse struct {
@@ -784,7 +960,7 @@ type ListCompaniesResponse struct {
 
 func (x *ListCompaniesResponse) Reset() {
 	*x = ListCompaniesResponse{}
-	mi := &file_aegis_v2_company_proto_msgTypes[10]
+	mi := &file_aegis_v2_company_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -796,7 +972,7 @@ func (x *ListCompaniesResponse) String() string {
 func (*ListCompaniesResponse) ProtoMessage() {}
 
 func (x *ListCompaniesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[10]
+	mi := &file_aegis_v2_company_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -809,7 +985,7 @@ func (x *ListCompaniesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCompaniesResponse.ProtoReflect.Descriptor instead.
 func (*ListCompaniesResponse) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{10}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ListCompaniesResponse) GetCompanies() []*CompanySummary {
@@ -837,7 +1013,7 @@ type CompanySummary struct {
 
 func (x *CompanySummary) Reset() {
 	*x = CompanySummary{}
-	mi := &file_aegis_v2_company_proto_msgTypes[11]
+	mi := &file_aegis_v2_company_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -849,7 +1025,7 @@ func (x *CompanySummary) String() string {
 func (*CompanySummary) ProtoMessage() {}
 
 func (x *CompanySummary) ProtoReflect() protoreflect.Message {
-	mi := &file_aegis_v2_company_proto_msgTypes[11]
+	mi := &file_aegis_v2_company_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -862,7 +1038,7 @@ func (x *CompanySummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompanySummary.ProtoReflect.Descriptor instead.
 func (*CompanySummary) Descriptor() ([]byte, []int) {
-	return file_aegis_v2_company_proto_rawDescGZIP(), []int{11}
+	return file_aegis_v2_company_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CompanySummary) GetId() string {
@@ -990,7 +1166,18 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\n" +
 	"company_id\x18\x01 \x01(\tR\tcompanyId\x12\x19\n" +
 	"\bowner_id\x18\x02 \x01(\tR\aownerId\x12)\n" +
-	"\x10deployment_token\x18\x03 \x01(\tR\x0fdeploymentToken\"\x16\n" +
+	"\x10deployment_token\x18\x03 \x01(\tR\x0fdeploymentToken\"8\n" +
+	"\x17RotateAgentTokenRequest\x12\x1d\n" +
+	"\n" +
+	"company_id\x18\x01 \x01(\tR\tcompanyId\";\n" +
+	"\x18RotateAgentTokenResponse\x12\x1f\n" +
+	"\vagent_token\x18\x01 \x01(\tR\n" +
+	"agentToken\"8\n" +
+	"\x17RevokeAgentTokenRequest\x12\x1d\n" +
+	"\n" +
+	"company_id\x18\x01 \x01(\tR\tcompanyId\"4\n" +
+	"\x18RevokeAgentTokenResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x16\n" +
 	"\x14ListCompaniesRequest\"O\n" +
 	"\x15ListCompaniesResponse\x126\n" +
 	"\tcompanies\x18\x01 \x03(\v2\x18.aegis.v2.CompanySummaryR\tcompanies\"\xf0\x02\n" +
@@ -1028,11 +1215,13 @@ const file_aegis_v2_company_proto_rawDesc = "" +
 	"\x18ORGANIZATION_TYPE_RETAIL\x10\x05\x12/\n" +
 	"+ORGANIZATION_TYPE_GOVERNMENT_ADMINISTRATION\x10\x06\x12#\n" +
 	"\x1fORGANIZATION_TYPE_MANUFACTURING\x10\a\x12\x1b\n" +
-	"\x17ORGANIZATION_TYPE_OTHER\x10\b2\xc1\x03\n" +
+	"\x17ORGANIZATION_TYPE_OTHER\x10\b2\xf7\x04\n" +
 	"\x0eCompanyService\x12P\n" +
 	"\rCreateCompany\x12\x1e.aegis.v2.CreateCompanyRequest\x1a\x1f.aegis.v2.CreateCompanyResponse\x12P\n" +
 	"\rListCompanies\x12\x1e.aegis.v2.ListCompaniesRequest\x1a\x1f.aegis.v2.ListCompaniesResponse\x12S\n" +
-	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponse\x12d\n" +
+	"\x0eOnboardCompany\x12\x1f.aegis.v2.OnboardCompanyRequest\x1a .aegis.v2.OnboardCompanyResponse\x12Y\n" +
+	"\x10RotateAgentToken\x12!.aegis.v2.RotateAgentTokenRequest\x1a\".aegis.v2.RotateAgentTokenResponse\x12Y\n" +
+	"\x10RevokeAgentToken\x12!.aegis.v2.RevokeAgentTokenRequest\x1a\".aegis.v2.RevokeAgentTokenResponse\x12d\n" +
 	"\x13WatchCompanyUpdates\x12$.aegis.v2.WatchCompanyUpdatesRequest\x1a%.aegis.v2.WatchCompanyUpdatesResponse0\x01\x12P\n" +
 	"\rListAuditLogs\x12\x1e.aegis.v2.ListAuditLogsRequest\x1a\x1f.aegis.v2.ListAuditLogsResponseBPZNgithub.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2b\x06proto3"
 
@@ -1049,7 +1238,7 @@ func file_aegis_v2_company_proto_rawDescGZIP() []byte {
 }
 
 var file_aegis_v2_company_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_aegis_v2_company_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_aegis_v2_company_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_aegis_v2_company_proto_goTypes = []any{
 	(OrganizationSize)(0),               // 0: aegis.v2.OrganizationSize
 	(OrganizationType)(0),               // 1: aegis.v2.OrganizationType
@@ -1062,33 +1251,41 @@ var file_aegis_v2_company_proto_goTypes = []any{
 	(*CreateCompanyResponse)(nil),       // 8: aegis.v2.CreateCompanyResponse
 	(*OnboardCompanyRequest)(nil),       // 9: aegis.v2.OnboardCompanyRequest
 	(*OnboardCompanyResponse)(nil),      // 10: aegis.v2.OnboardCompanyResponse
-	(*ListCompaniesRequest)(nil),        // 11: aegis.v2.ListCompaniesRequest
-	(*ListCompaniesResponse)(nil),       // 12: aegis.v2.ListCompaniesResponse
-	(*CompanySummary)(nil),              // 13: aegis.v2.CompanySummary
-	(*timestamppb.Timestamp)(nil),       // 14: google.protobuf.Timestamp
+	(*RotateAgentTokenRequest)(nil),     // 11: aegis.v2.RotateAgentTokenRequest
+	(*RotateAgentTokenResponse)(nil),    // 12: aegis.v2.RotateAgentTokenResponse
+	(*RevokeAgentTokenRequest)(nil),     // 13: aegis.v2.RevokeAgentTokenRequest
+	(*RevokeAgentTokenResponse)(nil),    // 14: aegis.v2.RevokeAgentTokenResponse
+	(*ListCompaniesRequest)(nil),        // 15: aegis.v2.ListCompaniesRequest
+	(*ListCompaniesResponse)(nil),       // 16: aegis.v2.ListCompaniesResponse
+	(*CompanySummary)(nil),              // 17: aegis.v2.CompanySummary
+	(*timestamppb.Timestamp)(nil),       // 18: google.protobuf.Timestamp
 }
 var file_aegis_v2_company_proto_depIdxs = []int32{
 	4,  // 0: aegis.v2.ListAuditLogsResponse.logs:type_name -> aegis.v2.AuditLogEntry
-	14, // 1: aegis.v2.AuditLogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	18, // 1: aegis.v2.AuditLogEntry.timestamp:type_name -> google.protobuf.Timestamp
 	0,  // 2: aegis.v2.CreateCompanyRequest.org_size:type_name -> aegis.v2.OrganizationSize
 	1,  // 3: aegis.v2.CreateCompanyRequest.org_type:type_name -> aegis.v2.OrganizationType
 	0,  // 4: aegis.v2.OnboardCompanyRequest.org_size:type_name -> aegis.v2.OrganizationSize
 	1,  // 5: aegis.v2.OnboardCompanyRequest.org_type:type_name -> aegis.v2.OrganizationType
-	13, // 6: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
+	17, // 6: aegis.v2.ListCompaniesResponse.companies:type_name -> aegis.v2.CompanySummary
 	0,  // 7: aegis.v2.CompanySummary.org_size:type_name -> aegis.v2.OrganizationSize
 	1,  // 8: aegis.v2.CompanySummary.org_type:type_name -> aegis.v2.OrganizationType
 	7,  // 9: aegis.v2.CompanyService.CreateCompany:input_type -> aegis.v2.CreateCompanyRequest
-	11, // 10: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
+	15, // 10: aegis.v2.CompanyService.ListCompanies:input_type -> aegis.v2.ListCompaniesRequest
 	9,  // 11: aegis.v2.CompanyService.OnboardCompany:input_type -> aegis.v2.OnboardCompanyRequest
-	5,  // 12: aegis.v2.CompanyService.WatchCompanyUpdates:input_type -> aegis.v2.WatchCompanyUpdatesRequest
-	2,  // 13: aegis.v2.CompanyService.ListAuditLogs:input_type -> aegis.v2.ListAuditLogsRequest
-	8,  // 14: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
-	12, // 15: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
-	10, // 16: aegis.v2.CompanyService.OnboardCompany:output_type -> aegis.v2.OnboardCompanyResponse
-	6,  // 17: aegis.v2.CompanyService.WatchCompanyUpdates:output_type -> aegis.v2.WatchCompanyUpdatesResponse
-	3,  // 18: aegis.v2.CompanyService.ListAuditLogs:output_type -> aegis.v2.ListAuditLogsResponse
-	14, // [14:19] is the sub-list for method output_type
-	9,  // [9:14] is the sub-list for method input_type
+	11, // 12: aegis.v2.CompanyService.RotateAgentToken:input_type -> aegis.v2.RotateAgentTokenRequest
+	13, // 13: aegis.v2.CompanyService.RevokeAgentToken:input_type -> aegis.v2.RevokeAgentTokenRequest
+	5,  // 14: aegis.v2.CompanyService.WatchCompanyUpdates:input_type -> aegis.v2.WatchCompanyUpdatesRequest
+	2,  // 15: aegis.v2.CompanyService.ListAuditLogs:input_type -> aegis.v2.ListAuditLogsRequest
+	8,  // 16: aegis.v2.CompanyService.CreateCompany:output_type -> aegis.v2.CreateCompanyResponse
+	16, // 17: aegis.v2.CompanyService.ListCompanies:output_type -> aegis.v2.ListCompaniesResponse
+	10, // 18: aegis.v2.CompanyService.OnboardCompany:output_type -> aegis.v2.OnboardCompanyResponse
+	12, // 19: aegis.v2.CompanyService.RotateAgentToken:output_type -> aegis.v2.RotateAgentTokenResponse
+	14, // 20: aegis.v2.CompanyService.RevokeAgentToken:output_type -> aegis.v2.RevokeAgentTokenResponse
+	6,  // 21: aegis.v2.CompanyService.WatchCompanyUpdates:output_type -> aegis.v2.WatchCompanyUpdatesResponse
+	3,  // 22: aegis.v2.CompanyService.ListAuditLogs:output_type -> aegis.v2.ListAuditLogsResponse
+	16, // [16:23] is the sub-list for method output_type
+	9,  // [9:16] is the sub-list for method input_type
 	9,  // [9:9] is the sub-list for extension type_name
 	9,  // [9:9] is the sub-list for extension extendee
 	0,  // [0:9] is the sub-list for field type_name
@@ -1105,7 +1302,7 @@ func file_aegis_v2_company_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_aegis_v2_company_proto_rawDesc), len(file_aegis_v2_company_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   12,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
