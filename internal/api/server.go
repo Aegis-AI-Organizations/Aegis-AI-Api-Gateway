@@ -86,6 +86,7 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 			auth.GET("/billing/stats", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetUsageStatsHandler)
 
 			// Admin billing adjustment and management
+			admin.POST("/companies/:id/agent-token/rotate", middleware.RequirePermission(middleware.ScopeAdminWrite), h.AdminRotateAgentTokenHandler)
 			admin.POST("/companies/:id/tokens/adjust", middleware.RequirePermission(middleware.ScopeAdminWrite), h.AdjustTokensHandler)
 			admin.GET("/companies/:id/billing/balance", middleware.RequirePermission(middleware.ScopeAdminRead), h.GetBalanceHandler)
 			admin.GET("/companies/:id/billing/ledger", middleware.RequirePermission(middleware.ScopeAdminRead), h.GetLedgerHandler)
