@@ -49,7 +49,7 @@ func TestAgentAuthMiddleware_Unit(t *testing.T) {
 	})
 
 	t.Run("Success", func(t *testing.T) {
-		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_valid-token"}).
+		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg"}).
 			Return(&v1.VerifyTokenResponse{Valid: true, TenantId: "t1"}, nil).Once()
 
 		w := httptest.NewRecorder()
@@ -59,14 +59,14 @@ func TestAgentAuthMiddleware_Unit(t *testing.T) {
 		})
 
 		req, _ := http.NewRequest("POST", "/api/agents/register", nil)
-		req.Header.Set("Authorization", "Bearer ag_valid-token")
+		req.Header.Set("Authorization", "Bearer ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 	})
 
 	t.Run("BrainFailure", func(t *testing.T) {
-		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_invalid-token"}).
+		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_1123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg"}).
 			Return(&v1.VerifyTokenResponse{Valid: false}, nil).Once()
 
 		w := httptest.NewRecorder()
@@ -76,14 +76,14 @@ func TestAgentAuthMiddleware_Unit(t *testing.T) {
 		})
 
 		req, _ := http.NewRequest("POST", "/api/agents/register", nil)
-		req.Header.Set("Authorization", "Bearer ag_invalid-token")
+		req.Header.Set("Authorization", "Bearer ag_1123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 	})
 
 	t.Run("GRPCError", func(t *testing.T) {
-		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_error-token"}).
+		mockAuth.On("VerifyToken", mock.Anything, &v1.VerifyTokenRequest{Token: "ag_2123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg"}).
 			Return(nil, fmt.Errorf("grpc error")).Once()
 
 		w := httptest.NewRecorder()
@@ -93,7 +93,7 @@ func TestAgentAuthMiddleware_Unit(t *testing.T) {
 		})
 
 		req, _ := http.NewRequest("POST", "/api/agents/register", nil)
-		req.Header.Set("Authorization", "Bearer ag_error-token")
+		req.Header.Set("Authorization", "Bearer ag_2123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")
 		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)

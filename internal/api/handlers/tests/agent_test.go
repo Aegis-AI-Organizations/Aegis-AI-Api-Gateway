@@ -63,13 +63,13 @@ func TestRegisterAgentHandler(t *testing.T) {
 		},
 	}
 
-	payload := map[string]string{"token": "ag_token", "name": "Agent1"}
+	payload := map[string]string{"token": "ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg", "name": "Agent1"}
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest("POST", "/agents/register", bytes.NewBuffer(body))
 
-	mockAgent.On("RegisterAgent", mock.Anything, &v1.RegisterAgentRequest{Token: "ag_token", Name: "Agent1"}).
+	mockAgent.On("RegisterAgent", mock.Anything, &v1.RegisterAgentRequest{Token: "ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg", Name: "Agent1"}).
 		Return(&v1.RegisterAgentResponse{AgentId: "a1", AgentSecret: "s1"}, nil)
 
 	api.RegisterAgentHandler(c)
@@ -86,7 +86,7 @@ func TestRegisterAgentHandler_Error(t *testing.T) {
 		},
 	}
 
-	payload := map[string]string{"token": "ag_token"}
+	payload := map[string]string{"token": "ag_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg"}
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
