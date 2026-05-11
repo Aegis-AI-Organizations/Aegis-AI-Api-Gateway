@@ -12,6 +12,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const agentDeploymentTokenPrefix = "ag_"
+const agentDeploymentTokenBodyMinLength = 43
+
 // AgentAuthMiddleware validates Agent credentials (deployment token or secret) and caches the result.
 func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -31,7 +34,7 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 			return
 		}
 
-		isDeploymentToken := strings.HasPrefix(token, "ag_")
+		isDeploymentToken := isAgentDeploymentToken(token)
 		isRegisterRoute := strings.HasSuffix(c.Request.URL.Path, "/register")
 
 		// 1. Enforce route separation
@@ -117,4 +120,29 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 		c.Set(string(types.AgentTokenKey), token)
 		c.Next()
 	}
+}
+
+func isAgentDeploymentToken(token string) bool {
+	body, ok := strings.CutPrefix(token, agentDeploymentTokenPrefix)
+	if !ok || len(body) < agentDeploymentTokenBodyMinLength {
+		return false
+	}
+
+	for _, char := range body {
+		if char >= 'A' && char <= 'Z' {
+			continue
+		}
+		if char >= 'a' && char <= 'z' {
+			continue
+		}
+		if char >= '0' && char <= '9' {
+			continue
+		}
+		if char == '_' || char == '-' {
+			continue
+		}
+		return false
+	}
+
+	return true
 }
