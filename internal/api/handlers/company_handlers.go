@@ -82,10 +82,25 @@ func (a *API) OnboardCompanyHandler(c *gin.Context) {
 
 // RotateAgentTokenHandler generates a fresh agent deployment token for the authenticated company.
 func (a *API) RotateAgentTokenHandler(c *gin.Context) {
+	a.rotateAgentToken(c, "")
+}
+
+// AdminRotateAgentTokenHandler generates a fresh agent deployment token for a target company.
+func (a *API) AdminRotateAgentTokenHandler(c *gin.Context) {
+	companyID := c.Param("id")
+	if companyID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "company id is required"})
+		return
+	}
+
+	a.rotateAgentToken(c, companyID)
+}
+
+func (a *API) rotateAgentToken(c *gin.Context, companyID string) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	resp, err := a.GRPCClient.RotateAgentToken(ctx, "")
+	resp, err := a.GRPCClient.RotateAgentToken(ctx, companyID)
 	if err != nil {
 		writeAgentTokenGRPCError(c, err)
 		return
