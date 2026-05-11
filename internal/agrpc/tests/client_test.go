@@ -253,6 +253,22 @@ func (m *MockCompanyServiceClient) OnboardCompany(ctx context.Context, in *v1.On
 	return args.Get(0).(*v1.OnboardCompanyResponse), args.Error(1)
 }
 
+func (m *MockCompanyServiceClient) RotateAgentToken(ctx context.Context, in *v1.RotateAgentTokenRequest, opts ...grpc.CallOption) (*v1.RotateAgentTokenResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.RotateAgentTokenResponse), args.Error(1)
+}
+
+func (m *MockCompanyServiceClient) RevokeAgentToken(ctx context.Context, in *v1.RevokeAgentTokenRequest, opts ...grpc.CallOption) (*v1.RevokeAgentTokenResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.RevokeAgentTokenResponse), args.Error(1)
+}
+
 func (m *MockCompanyServiceClient) WatchCompanyUpdates(ctx context.Context, in *v1.WatchCompanyUpdatesRequest, opts ...grpc.CallOption) (v1.CompanyService_WatchCompanyUpdatesClient, error) {
 	args := m.Called(ctx, in)
 	if args.Get(0) == nil {
@@ -502,6 +518,20 @@ func TestClient_CompanyMethods(t *testing.T) {
 	respL, err := client.ListCompanies(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, respL, 0)
+
+	// RotateAgentToken
+	mockCompany.On("RotateAgentToken", ctx, &v1.RotateAgentTokenRequest{CompanyId: "c1"}).
+		Return(&v1.RotateAgentTokenResponse{AgentToken: "ag_rotated-token"}, nil)
+	respR, err := client.RotateAgentToken(ctx, "c1")
+	assert.NoError(t, err)
+	assert.Equal(t, "ag_rotated-token", respR.AgentToken)
+
+	// RevokeAgentToken
+	mockCompany.On("RevokeAgentToken", ctx, &v1.RevokeAgentTokenRequest{CompanyId: "c1"}).
+		Return(&v1.RevokeAgentTokenResponse{Success: true}, nil)
+	respV, err := client.RevokeAgentToken(ctx, "c1")
+	assert.NoError(t, err)
+	assert.True(t, respV.Success)
 }
 
 func TestNewClient(t *testing.T) {
@@ -627,6 +657,8 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	mockCompany.On("ListCompanies", mock.Anything, mock.Anything).Return((*v1.ListCompaniesResponse)(nil), fmt.Errorf("rpc error"))
 	mockCompany.On("CreateCompany", mock.Anything, mock.Anything).Return((*v1.CreateCompanyResponse)(nil), fmt.Errorf("rpc error"))
 	mockCompany.On("OnboardCompany", mock.Anything, mock.Anything).Return((*v1.OnboardCompanyResponse)(nil), fmt.Errorf("rpc error"))
+	mockCompany.On("RotateAgentToken", mock.Anything, mock.Anything).Return((*v1.RotateAgentTokenResponse)(nil), fmt.Errorf("rpc error"))
+	mockCompany.On("RevokeAgentToken", mock.Anything, mock.Anything).Return((*v1.RevokeAgentTokenResponse)(nil), fmt.Errorf("rpc error"))
 
 	_, err := client.SearchCompanies(ctx, "q")
 	assert.Error(t, err)
@@ -638,6 +670,12 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	assert.Error(t, err)
 
 	_, err = client.OnboardCompany(ctx, "c", "n", "e", "p")
+	assert.Error(t, err)
+
+	_, err = client.RotateAgentToken(ctx, "c1")
+	assert.Error(t, err)
+
+	_, err = client.RevokeAgentToken(ctx, "c1")
 	assert.Error(t, err)
 
 	// Nil service error cases
@@ -655,6 +693,14 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	assert.Contains(t, err.Error(), "not initialized")
 
 	_, err = client.OnboardCompany(ctx, "c", "n", "e", "p")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.RotateAgentToken(ctx, "c1")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.RevokeAgentToken(ctx, "c1")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 

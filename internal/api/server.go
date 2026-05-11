@@ -60,6 +60,8 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 			auth.GET("/companies", middleware.RequirePermission(middleware.ScopeCompanyRead), h.ListCompaniesHandler)
 			auth.POST("/companies", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.CreateCompanyHandler)
 			auth.POST("/companies/onboard", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.OnboardCompanyHandler)
+			auth.POST("/companies/me/agent-token/rotate", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.RotateAgentTokenHandler)
+			auth.POST("/companies/me/agent-token/revoke", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.RevokeAgentTokenHandler)
 
 			// Administrative search
 			admin := auth.Group("/admin")

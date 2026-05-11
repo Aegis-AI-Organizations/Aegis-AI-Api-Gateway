@@ -49,6 +49,22 @@ func (m *MockCompanyServiceClient) OnboardCompany(ctx context.Context, in *v1.On
 	return args.Get(0).(*v1.OnboardCompanyResponse), args.Error(1)
 }
 
+func (m *MockCompanyServiceClient) RotateAgentToken(ctx context.Context, in *v1.RotateAgentTokenRequest, opts ...grpc.CallOption) (*v1.RotateAgentTokenResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.RotateAgentTokenResponse), args.Error(1)
+}
+
+func (m *MockCompanyServiceClient) RevokeAgentToken(ctx context.Context, in *v1.RevokeAgentTokenRequest, opts ...grpc.CallOption) (*v1.RevokeAgentTokenResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.RevokeAgentTokenResponse), args.Error(1)
+}
+
 func (m *MockCompanyServiceClient) WatchCompanyUpdates(ctx context.Context, in *v1.WatchCompanyUpdatesRequest, opts ...grpc.CallOption) (v1.CompanyService_WatchCompanyUpdatesClient, error) {
 	args := m.Called(ctx, in)
 	if args.Get(0) == nil {
@@ -287,4 +303,89 @@ func TestOnboardCompanyHandler_Error(t *testing.T) {
 	api.OnboardCompanyHandler(c)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestRotateAgentTokenHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/companies/me/agent-token/rotate", nil)
+
+	mockCompany.On("RotateAgentToken", mock.Anything, &v1.RotateAgentTokenRequest{}).
+		Return(&v1.RotateAgentTokenResponse{AgentToken: "ag_rotated-token"}, nil)
+
+	api.RotateAgentTokenHandler(c)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Contains(t, w.Body.String(), "ag_rotated-token")
+}
+
+func TestRotateAgentTokenHandler_Forbidden(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/companies/me/agent-token/rotate", nil)
+
+	mockCompany.On("RotateAgentToken", mock.Anything, &v1.RotateAgentTokenRequest{}).
+		Return(nil, status.Error(codes.PermissionDenied, "forbidden"))
+
+	api.RotateAgentTokenHandler(c)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
+func TestRevokeAgentTokenHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/companies/me/agent-token/revoke", nil)
+
+	mockCompany.On("RevokeAgentToken", mock.Anything, &v1.RevokeAgentTokenRequest{}).
+		Return(&v1.RevokeAgentTokenResponse{Success: true}, nil)
+
+	api.RevokeAgentTokenHandler(c)
+
+	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestRevokeAgentTokenHandler_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/companies/me/agent-token/revoke", nil)
+
+	mockCompany.On("RevokeAgentToken", mock.Anything, &v1.RevokeAgentTokenRequest{}).
+		Return(nil, status.Error(codes.NotFound, "not found"))
+
+	api.RevokeAgentTokenHandler(c)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
 }
