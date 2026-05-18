@@ -491,6 +491,24 @@ func (c *Client) GetUploadLink(ctx context.Context, agentID, filename string) (*
 	})
 }
 
+func (c *Client) ListAgents(ctx context.Context, companyID string) (*v1.ListAgentsResponse, error) {
+	if c.AgentService == nil {
+		return nil, fmt.Errorf("agent service not initialized")
+	}
+	return c.AgentService.ListAgents(WithMetadata(ctx), &v1.ListAgentsRequest{
+		CompanyId: companyID,
+	})
+}
+
+func (c *Client) GetAgentStatusSummary(ctx context.Context, companyID string) (*v1.GetAgentStatusSummaryResponse, error) {
+	if c.AgentService == nil {
+		return nil, fmt.Errorf("agent service not initialized")
+	}
+	return c.AgentService.GetAgentStatusSummary(WithMetadata(ctx), &v1.GetAgentStatusSummaryRequest{
+		CompanyId: companyID,
+	})
+}
+
 func (c *Client) VerifyAgentSecret(ctx context.Context, agentID, secret string) (*v1.VerifyAgentSecretResponse, error) {
 	if c.AgentService == nil {
 		return nil, fmt.Errorf("agent service not initialized")

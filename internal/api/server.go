@@ -63,6 +63,10 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 			auth.POST("/companies/me/agent-token/rotate", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.RotateAgentTokenHandler)
 			auth.POST("/companies/me/agent-token/revoke", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.RevokeAgentTokenHandler)
 
+			// Agent status routes for the dashboard
+			auth.GET("/agents", middleware.RequirePermission(middleware.ScopeCompanyRead), h.ListAgentsHandler)
+			auth.GET("/agents/status", middleware.RequirePermission(middleware.ScopeCompanyRead), h.GetAgentStatusSummaryHandler)
+
 			// Administrative search
 			admin := auth.Group("/admin")
 			{
