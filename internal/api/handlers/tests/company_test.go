@@ -235,10 +235,9 @@ func TestOnboardCompanyHandler_Success(t *testing.T) {
 	}
 
 	payload := map[string]string{
-		"company_name":   "Onboard Co",
-		"owner_name":     "John Doe",
-		"owner_email":    "john@example.com",
-		"owner_password": "securepassword123",
+		"company_name": "Onboard Co",
+		"owner_name":   "John Doe",
+		"owner_email":  "john@example.com",
 	}
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()
@@ -246,10 +245,9 @@ func TestOnboardCompanyHandler_Success(t *testing.T) {
 	c.Request, _ = http.NewRequest("POST", "/companies/onboard", bytes.NewBuffer(body))
 
 	mockCompany.On("OnboardCompany", mock.Anything, &v1.OnboardCompanyRequest{
-		CompanyName:   "Onboard Co",
-		OwnerName:     "John Doe",
-		OwnerEmail:    "john@example.com",
-		OwnerPassword: "securepassword123",
+		CompanyName: "Onboard Co",
+		OwnerName:   "John Doe",
+		OwnerEmail:  "john@example.com",
 	}).Return(&v1.OnboardCompanyResponse{
 		CompanyId:       "c3",
 		OwnerId:         "u1",
@@ -287,10 +285,9 @@ func TestOnboardCompanyHandler_Error(t *testing.T) {
 	}
 
 	payload := map[string]string{
-		"company_name":   "Onboard Co",
-		"owner_name":     "John Doe",
-		"owner_email":    "john@example.com",
-		"owner_password": "securepassword123",
+		"company_name": "Onboard Co",
+		"owner_name":   "John Doe",
+		"owner_email":  "john@example.com",
 	}
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()
@@ -346,6 +343,43 @@ func TestRotateAgentTokenHandler_Forbidden(t *testing.T) {
 	api.RotateAgentTokenHandler(c)
 
 	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
+func TestAdminRotateAgentTokenHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{{Key: "id", Value: "company-123"}}
+	c.Request, _ = http.NewRequest("POST", "/admin/companies/company-123/agent-token/rotate", nil)
+
+	mockCompany.On("RotateAgentToken", mock.Anything, &v1.RotateAgentTokenRequest{CompanyId: "company-123"}).
+		Return(&v1.RotateAgentTokenResponse{AgentToken: "ag_admin-rotated-token"}, nil)
+
+	api.AdminRotateAgentTokenHandler(c)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Contains(t, w.Body.String(), "ag_admin-rotated-token")
+}
+
+func TestAdminRotateAgentTokenHandler_MissingCompanyID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/admin/companies//agent-token/rotate", nil)
+
+	api.AdminRotateAgentTokenHandler(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "company id is required")
 }
 
 func TestRevokeAgentTokenHandler_Success(t *testing.T) {

@@ -49,14 +49,13 @@ func (a *API) CreateCompanyHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
-// OnboardCompanyHandler performs a full onboarding (Company + Owner + Token).
+// OnboardCompanyHandler creates a tenant and pending owner, then triggers first-login activation.
 func (a *API) OnboardCompanyHandler(c *gin.Context) {
 	var req struct {
-		CompanyName   string `json:"company_name" binding:"required"`
-		OwnerName     string `json:"owner_name" binding:"required"`
-		OwnerEmail    string `json:"owner_email" binding:"required,email"`
-		OwnerPassword string `json:"owner_password" binding:"required"`
-		PlanID        string `json:"plan_id"`
+		CompanyName string `json:"company_name" binding:"required"`
+		OwnerName   string `json:"owner_name" binding:"required"`
+		OwnerEmail  string `json:"owner_email" binding:"required,email"`
+		PlanID      string `json:"plan_id"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -71,7 +70,7 @@ func (a *API) OnboardCompanyHandler(c *gin.Context) {
 	md := metadata.Pairs("x-plan-id", req.PlanID)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
-	resp, err := a.GRPCClient.OnboardCompany(ctx, req.CompanyName, req.OwnerName, req.OwnerEmail, req.OwnerPassword)
+	resp, err := a.GRPCClient.OnboardCompany(ctx, req.CompanyName, req.OwnerName, req.OwnerEmail)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -82,10 +81,25 @@ func (a *API) OnboardCompanyHandler(c *gin.Context) {
 
 // RotateAgentTokenHandler generates a fresh agent deployment token for the authenticated company.
 func (a *API) RotateAgentTokenHandler(c *gin.Context) {
+	a.rotateAgentToken(c, "")
+}
+
+// AdminRotateAgentTokenHandler generates a fresh agent deployment token for a target company.
+func (a *API) AdminRotateAgentTokenHandler(c *gin.Context) {
+	companyID := c.Param("id")
+	if companyID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "company id is required"})
+		return
+	}
+
+	a.rotateAgentToken(c, companyID)
+}
+
+func (a *API) rotateAgentToken(c *gin.Context, companyID string) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	resp, err := a.GRPCClient.RotateAgentToken(ctx, "")
+	resp, err := a.GRPCClient.RotateAgentToken(ctx, companyID)
 	if err != nil {
 		writeAgentTokenGRPCError(c, err)
 		return

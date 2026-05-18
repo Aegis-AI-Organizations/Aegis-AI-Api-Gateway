@@ -359,15 +359,14 @@ func (c *Client) ListCompanies(ctx context.Context) ([]*v1.CompanySummary, error
 	return resp.Companies, nil
 }
 
-func (c *Client) OnboardCompany(ctx context.Context, companyName, ownerName, ownerEmail, ownerPassword string) (*v1.OnboardCompanyResponse, error) {
+func (c *Client) OnboardCompany(ctx context.Context, companyName, ownerName, ownerEmail string) (*v1.OnboardCompanyResponse, error) {
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")
 	}
 	return c.CompanyService.OnboardCompany(WithMetadata(ctx), &v1.OnboardCompanyRequest{
-		CompanyName:   companyName,
-		OwnerName:     ownerName,
-		OwnerEmail:    ownerEmail,
-		OwnerPassword: ownerPassword,
+		CompanyName: companyName,
+		OwnerName:   ownerName,
+		OwnerEmail:  ownerEmail,
 	})
 }
 
