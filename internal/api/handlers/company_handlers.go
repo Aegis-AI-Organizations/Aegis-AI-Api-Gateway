@@ -49,14 +49,13 @@ func (a *API) CreateCompanyHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
-// OnboardCompanyHandler performs a full onboarding (Company + Owner + Token).
+// OnboardCompanyHandler creates a tenant and pending owner, then triggers first-login activation.
 func (a *API) OnboardCompanyHandler(c *gin.Context) {
 	var req struct {
-		CompanyName   string `json:"company_name" binding:"required"`
-		OwnerName     string `json:"owner_name" binding:"required"`
-		OwnerEmail    string `json:"owner_email" binding:"required,email"`
-		OwnerPassword string `json:"owner_password" binding:"required"`
-		PlanID        string `json:"plan_id"`
+		CompanyName string `json:"company_name" binding:"required"`
+		OwnerName   string `json:"owner_name" binding:"required"`
+		OwnerEmail  string `json:"owner_email" binding:"required,email"`
+		PlanID      string `json:"plan_id"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -71,7 +70,7 @@ func (a *API) OnboardCompanyHandler(c *gin.Context) {
 	md := metadata.Pairs("x-plan-id", req.PlanID)
 	ctx = metadata.NewOutgoingContext(ctx, md)
 
-	resp, err := a.GRPCClient.OnboardCompany(ctx, req.CompanyName, req.OwnerName, req.OwnerEmail, req.OwnerPassword)
+	resp, err := a.GRPCClient.OnboardCompany(ctx, req.CompanyName, req.OwnerName, req.OwnerEmail)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

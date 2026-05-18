@@ -235,10 +235,9 @@ func TestOnboardCompanyHandler_Success(t *testing.T) {
 	}
 
 	payload := map[string]string{
-		"company_name":   "Onboard Co",
-		"owner_name":     "John Doe",
-		"owner_email":    "john@example.com",
-		"owner_password": "securepassword123",
+		"company_name": "Onboard Co",
+		"owner_name":   "John Doe",
+		"owner_email":  "john@example.com",
 	}
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()
@@ -246,10 +245,9 @@ func TestOnboardCompanyHandler_Success(t *testing.T) {
 	c.Request, _ = http.NewRequest("POST", "/companies/onboard", bytes.NewBuffer(body))
 
 	mockCompany.On("OnboardCompany", mock.Anything, &v1.OnboardCompanyRequest{
-		CompanyName:   "Onboard Co",
-		OwnerName:     "John Doe",
-		OwnerEmail:    "john@example.com",
-		OwnerPassword: "securepassword123",
+		CompanyName: "Onboard Co",
+		OwnerName:   "John Doe",
+		OwnerEmail:  "john@example.com",
 	}).Return(&v1.OnboardCompanyResponse{
 		CompanyId:       "c3",
 		OwnerId:         "u1",
@@ -287,10 +285,9 @@ func TestOnboardCompanyHandler_Error(t *testing.T) {
 	}
 
 	payload := map[string]string{
-		"company_name":   "Onboard Co",
-		"owner_name":     "John Doe",
-		"owner_email":    "john@example.com",
-		"owner_password": "securepassword123",
+		"company_name": "Onboard Co",
+		"owner_name":   "John Doe",
+		"owner_email":  "john@example.com",
 	}
 	body, _ := json.Marshal(payload)
 	w := httptest.NewRecorder()

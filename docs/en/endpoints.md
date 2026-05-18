@@ -60,7 +60,10 @@ The API uses JWTs for access security and HTTP-only cookies for session persiste
 ### `GET /companies`
 - **Description:** Lists all companies on the platform.
 ### `POST /companies/onboard`
-- **Description:** **Complete onboarding workflow.** Creates the company, generates a deployment token, and creates the owner account in a single atomic step.
+- **Description:** **Post-payment onboarding workflow.** Creates the company and owner account in `pending_activation`, then triggers the first-login invitation email.
+
+### `POST /auth/setup-password`
+- **Description:** Activates the invited owner account, sets the password, starts the session, and returns the clear agent token once.
 
 ## Real-time Flux (Streaming)
 
