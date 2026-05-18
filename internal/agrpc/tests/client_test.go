@@ -636,13 +636,12 @@ func TestClient_OnboardCompany(t *testing.T) {
 	}
 
 	mockCompany.On("OnboardCompany", mock.Anything, &v1.OnboardCompanyRequest{
-		CompanyName:   "Co",
-		OwnerName:     "Owner",
-		OwnerEmail:    "e",
-		OwnerPassword: "p",
+		CompanyName: "Co",
+		OwnerName:   "Owner",
+		OwnerEmail:  "e",
 	}).Return(&v1.OnboardCompanyResponse{CompanyId: "c1"}, nil)
 
-	resp, err := client.OnboardCompany(context.Background(), "Co", "Owner", "e", "p")
+	resp, err := client.OnboardCompany(context.Background(), "Co", "Owner", "e")
 	assert.NoError(t, err)
 	assert.Equal(t, "c1", resp.CompanyId)
 }
@@ -669,7 +668,7 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	_, err = client.AdminCreateUser(ctx, "n", "e", "p", "r", "c1")
 	assert.Error(t, err)
 
-	_, err = client.OnboardCompany(ctx, "c", "n", "e", "p")
+	_, err = client.OnboardCompany(ctx, "c", "n", "e")
 	assert.Error(t, err)
 
 	_, err = client.RotateAgentToken(ctx, "c1")
@@ -692,7 +691,7 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
-	_, err = client.OnboardCompany(ctx, "c", "n", "e", "p")
+	_, err = client.OnboardCompany(ctx, "c", "n", "e")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
