@@ -3,9 +3,47 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"time"
 
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+type agentRecordResponse struct {
+	ID        string     `json:"id"`
+	CompanyID string     `json:"company_id"`
+	Name      string     `json:"name"`
+	Status    string     `json:"status"`
+	LastSeen  *time.Time `json:"last_seen"`
+	CreatedAt *time.Time `json:"created_at"`
+}
+
+type agentStatusSummaryResponse struct {
+	TotalAgents    int32      `json:"total_agents"`
+	ActiveAgents   int32      `json:"active_agents"`
+	InactiveAgents int32      `json:"inactive_agents"`
+	LastSeen       *time.Time `json:"last_seen"`
+}
+
+func timestampToTime(ts *timestamppb.Timestamp) *time.Time {
+	if ts == nil {
+		return nil
+	}
+	t := ts.AsTime()
+	return &t
+}
+
+func agentRecordToResponse(agent *v1.AgentRecord) agentRecordResponse {
+	return agentRecordResponse{
+		ID:        agent.GetId(),
+		CompanyID: agent.GetCompanyId(),
+		Name:      agent.GetName(),
+		Status:    agent.GetStatus(),
+		LastSeen:  timestampToTime(agent.GetLastSeen()),
+		CreatedAt: timestampToTime(agent.GetCreatedAt()),
+	}
+}
 
 // RegisterAgentHandler handles the onboarding of a new agent using a deployment token.
 func (a *API) RegisterAgentHandler(c *gin.Context) {
@@ -74,4 +112,40 @@ func (a *API) GetUploadLinkHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+// ListAgentsHandler returns agents visible from the authenticated company scope.
+func (a *API) ListAgentsHandler(c *gin.Context) {
+	companyID := c.Query("company_id")
+
+	resp, err := a.GRPCClient.ListAgents(c.Request.Context(), companyID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list agents"})
+		return
+	}
+
+	agents := make([]agentRecordResponse, 0, len(resp.GetAgents()))
+	for _, agent := range resp.GetAgents() {
+		agents = append(agents, agentRecordToResponse(agent))
+	}
+
+	c.JSON(http.StatusOK, gin.H{"agents": agents})
+}
+
+// GetAgentStatusSummaryHandler returns aggregated agent health for the authenticated company scope.
+func (a *API) GetAgentStatusSummaryHandler(c *gin.Context) {
+	companyID := c.Query("company_id")
+
+	resp, err := a.GRPCClient.GetAgentStatusSummary(c.Request.Context(), companyID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get agent status summary"})
+		return
+	}
+
+	c.JSON(http.StatusOK, agentStatusSummaryResponse{
+		TotalAgents:    resp.GetTotalAgents(),
+		ActiveAgents:   resp.GetActiveAgents(),
+		InactiveAgents: resp.GetInactiveAgents(),
+		LastSeen:       timestampToTime(resp.GetLastSeen()),
+	})
 }

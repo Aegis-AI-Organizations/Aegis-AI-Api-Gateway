@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type MockAgentServiceClient struct {
@@ -52,6 +53,22 @@ func (m *MockAgentServiceClient) VerifyAgentSecret(ctx context.Context, in *v1.V
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*v1.VerifyAgentSecretResponse), args.Error(1)
+}
+
+func (m *MockAgentServiceClient) ListAgents(ctx context.Context, in *v1.ListAgentsRequest, opts ...grpc.CallOption) (*v1.ListAgentsResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.ListAgentsResponse), args.Error(1)
+}
+
+func (m *MockAgentServiceClient) GetAgentStatusSummary(ctx context.Context, in *v1.GetAgentStatusSummaryRequest, opts ...grpc.CallOption) (*v1.GetAgentStatusSummaryResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetAgentStatusSummaryResponse), args.Error(1)
 }
 
 func TestRegisterAgentHandler(t *testing.T) {
@@ -203,4 +220,66 @@ func TestGetUploadLinkHandler_Error(t *testing.T) {
 	api.GetUploadLinkHandler(c)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestListAgentsHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAgent := new(MockAgentServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AgentService: mockAgent,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/agents", nil)
+
+	mockAgent.On("ListAgents", mock.Anything, &v1.ListAgentsRequest{}).
+		Return(&v1.ListAgentsResponse{
+			Agents: []*v1.AgentRecord{
+				{
+					Id:        "a1",
+					CompanyId: "c1",
+					Name:      "Agent 1",
+					Status:    "IDLE",
+					LastSeen:  timestamppb.Now(),
+				},
+			},
+		}, nil)
+
+	api.ListAgentsHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"agents"`)
+	assert.Contains(t, w.Body.String(), `"id":"a1"`)
+}
+
+func TestGetAgentStatusSummaryHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockAgent := new(MockAgentServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			AgentService: mockAgent,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/agents/status", nil)
+
+	mockAgent.On("GetAgentStatusSummary", mock.Anything, &v1.GetAgentStatusSummaryRequest{}).
+		Return(&v1.GetAgentStatusSummaryResponse{
+			TotalAgents:    2,
+			ActiveAgents:   1,
+			InactiveAgents: 1,
+			LastSeen:       timestamppb.Now(),
+		}, nil)
+
+	api.GetAgentStatusSummaryHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"total_agents":2`)
+	assert.Contains(t, w.Body.String(), `"active_agents":1`)
+	assert.Contains(t, w.Body.String(), `"inactive_agents":1`)
 }
