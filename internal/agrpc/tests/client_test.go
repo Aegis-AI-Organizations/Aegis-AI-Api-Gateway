@@ -91,6 +91,22 @@ func (m *MockAgentServiceClient) VerifyAgentSecret(ctx context.Context, in *v1.V
 	return args.Get(0).(*v1.VerifyAgentSecretResponse), args.Error(1)
 }
 
+func (m *MockAgentServiceClient) ListAgents(ctx context.Context, in *v1.ListAgentsRequest, opts ...grpc.CallOption) (*v1.ListAgentsResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.ListAgentsResponse), args.Error(1)
+}
+
+func (m *MockAgentServiceClient) GetAgentStatusSummary(ctx context.Context, in *v1.GetAgentStatusSummaryRequest, opts ...grpc.CallOption) (*v1.GetAgentStatusSummaryResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.GetAgentStatusSummaryResponse), args.Error(1)
+}
+
 type MockVulnerabilityServiceClient struct {
 	mock.Mock
 }
@@ -841,6 +857,20 @@ func TestClient_AgentMethods(t *testing.T) {
 	respG, err := client.GetUploadLink(ctx, "a1", "f1")
 	assert.NoError(t, err)
 	assert.Equal(t, "http://minio/f1", respG.Url)
+
+	// ListAgents
+	mockAgent.On("ListAgents", mock.Anything, &v1.ListAgentsRequest{CompanyId: "c1"}).
+		Return(&v1.ListAgentsResponse{Agents: []*v1.AgentRecord{{Id: "a1"}}}, nil)
+	respL, err := client.ListAgents(ctx, "c1")
+	assert.NoError(t, err)
+	assert.Len(t, respL.Agents, 1)
+
+	// GetAgentStatusSummary
+	mockAgent.On("GetAgentStatusSummary", mock.Anything, &v1.GetAgentStatusSummaryRequest{CompanyId: "c1"}).
+		Return(&v1.GetAgentStatusSummaryResponse{TotalAgents: 1, ActiveAgents: 1}, nil)
+	respS, err := client.GetAgentStatusSummary(ctx, "c1")
+	assert.NoError(t, err)
+	assert.Equal(t, int32(1), respS.TotalAgents)
 }
 
 type MockInternalAuthServiceClient struct {

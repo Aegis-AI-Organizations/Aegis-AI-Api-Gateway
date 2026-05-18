@@ -65,6 +65,26 @@ The API uses JWTs for access security and HTTP-only cookies for session persiste
 ### `POST /auth/setup-password`
 - **Description:** Activates the invited owner account, sets the password, starts the session, and returns the clear agent token once.
 
+## Agent Management
+
+### `GET /agents`
+- **Description:** Lists the persistent agents attached to the authenticated company.
+- **Proxied to:** `aegis.v2.AgentService.ListAgents`
+
+### `GET /agents/status`
+- **Description:** Returns aggregated agent status counters for the dashboard (`total_agents`, `active_agents`, `inactive_agents`, `last_seen`).
+- **Proxied to:** `aegis.v2.AgentService.GetAgentStatusSummary`
+
+### `POST /agents/register`
+- **Description:** Registers a deployed agent using the company deployment token.
+- **Auth:** Agent deployment token in `Authorization: Bearer <ag_...>`.
+- **Proxied to:** `aegis.v2.AgentService.RegisterAgent`
+
+### `POST /agents/{id}/status`
+- **Description:** Receives the agent heartbeat/status update.
+- **Auth:** Agent operational secret in `Authorization: Bearer <agent_secret>`.
+- **Proxied to:** `aegis.v2.AgentService.UpdateAgentStatus`
+
 ## Real-time Flux (Streaming)
 
 ### `GET /scans/stream`
