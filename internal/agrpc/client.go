@@ -471,13 +471,14 @@ func (c *Client) RegisterAgent(ctx context.Context, token, name string) (*v1.Reg
 	})
 }
 
-func (c *Client) UpdateAgentStatus(ctx context.Context, agentID, status string) (*v1.UpdateAgentStatusResponse, error) {
+func (c *Client) UpdateAgentStatus(ctx context.Context, agentID, status, payloadKey string) (*v1.UpdateAgentStatusResponse, error) {
 	if c.AgentService == nil {
 		return nil, fmt.Errorf("agent service not initialized")
 	}
 	return c.AgentService.UpdateAgentStatus(ctx, &v1.UpdateAgentStatusRequest{
-		AgentId: agentID,
-		Status:  status,
+		AgentId:    agentID,
+		Status:     status,
+		PayloadKey: payloadKey,
 	})
 }
 

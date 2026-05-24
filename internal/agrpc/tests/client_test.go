@@ -473,7 +473,7 @@ func TestClient_NilServices(t *testing.T) {
 	_, err = client.RegisterAgent(context.Background(), "t", "n")
 	assert.Error(t, err)
 
-	_, err = client.UpdateAgentStatus(context.Background(), "a", "s")
+	_, err = client.UpdateAgentStatus(context.Background(), "a", "s", "pk")
 	assert.Error(t, err)
 
 	_, err = client.SetupPassword(context.Background(), "i", "n")
@@ -845,9 +845,9 @@ func TestClient_AgentMethods(t *testing.T) {
 	assert.Equal(t, "a1", respR.AgentId)
 
 	// UpdateAgentStatus
-	mockAgent.On("UpdateAgentStatus", ctx, &v1.UpdateAgentStatusRequest{AgentId: "a1", Status: "IDLE"}).
+	mockAgent.On("UpdateAgentStatus", ctx, &v1.UpdateAgentStatusRequest{AgentId: "a1", Status: "IDLE", PayloadKey: "pk1"}).
 		Return(&v1.UpdateAgentStatusResponse{Success: true}, nil)
-	respU, err := client.UpdateAgentStatus(ctx, "a1", "IDLE")
+	respU, err := client.UpdateAgentStatus(ctx, "a1", "IDLE", "pk1")
 	assert.NoError(t, err)
 	assert.True(t, respU.Success)
 
