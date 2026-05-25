@@ -11,7 +11,6 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 )
@@ -62,6 +61,10 @@ func WithMetadata(ctx context.Context) context.Context {
 }
 
 func NewClient(addr string, conf TLSConfig) (*Client, error) {
+	if !conf.Enable {
+		return nil, fmt.Errorf("mTLS is required for Brain gRPC connections")
+	}
+
 	var opts []grpc.DialOption
 
 	// Add keepalive parameters
@@ -76,15 +79,11 @@ func NewClient(addr string, conf TLSConfig) (*Client, error) {
 		grpc.MaxCallRecvMsgSize(50*1024*1024),
 	))
 
-	if conf.Enable {
-		creds, err := loadTLSCredentials(conf)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load TLS credentials: %w", err)
-		}
-		opts = append(opts, grpc.WithTransportCredentials(creds))
-	} else {
-		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	creds, err := loadTLSCredentials(conf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load TLS credentials: %w", err)
 	}
+	opts = append(opts, grpc.WithTransportCredentials(creds))
 
 	conn, err := grpc.NewClient(addr, opts...)
 	if err != nil {

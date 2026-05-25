@@ -551,11 +551,9 @@ func TestClient_CompanyMethods(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	// Should succeed in creating the structure even if connection is lazy/not established yet
-	c, err := agrpc.NewClient("localhost:1234", agrpc.TLSConfig{})
-	assert.NoError(t, err)
-	assert.NotNil(t, c)
-	defer func() { _ = c.Close() }()
+	_, err := agrpc.NewClient("localhost:1234", agrpc.TLSConfig{})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "mTLS is required")
 }
 
 func TestClient_GetMe(t *testing.T) {
