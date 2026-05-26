@@ -14,12 +14,9 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Set up Go
+    - name: Verify Go toolchain
       if: hashFiles('go.mod') != ''
-      uses: actions/setup-go@v6
-      with:
-        go-version: 'stable'
-
+      run: go version
 
     - name: Run code linters (pre-commit)
       uses: pre-commit/action@v3.0.1
