@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "**" ]
   pull_request:
+  # Allows maintainers to rerun CI when GitHub does not schedule a push run.
   workflow_dispatch:
 
 permissions:
