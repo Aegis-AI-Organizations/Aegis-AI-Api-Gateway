@@ -382,6 +382,42 @@ func TestAdminRotateAgentTokenHandler_MissingCompanyID(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "company id is required")
 }
 
+func TestAdminRevokeAgentTokenHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{{Key: "id", Value: "company-123"}}
+	c.Request, _ = http.NewRequest("POST", "/admin/companies/company-123/agent-token/revoke", nil)
+
+	mockCompany.On("RevokeAgentToken", mock.Anything, &v1.RevokeAgentTokenRequest{CompanyId: "company-123"}).
+		Return(&v1.RevokeAgentTokenResponse{Success: true}, nil)
+
+	api.AdminRevokeAgentTokenHandler(c)
+
+	assert.Equal(t, http.StatusNoContent, w.Code)
+}
+
+func TestAdminRevokeAgentTokenHandler_MissingCompanyID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/admin/companies//agent-token/revoke", nil)
+
+	api.AdminRevokeAgentTokenHandler(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "company id is required")
+}
+
 func TestRevokeAgentTokenHandler_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockCompany := new(MockCompanyServiceClient)
