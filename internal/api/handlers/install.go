@@ -28,7 +28,7 @@ fi
 
 # Download binary from release bucket
 echo "Downloading Aegis AI Agent binary..."
-curl -sLf -o "$INSTALL_DIR/$BINARY_NAME" "https://storage.aegis-ai.fr/releases/aegis-ai-agent"
+curl -sLf -o "$INSTALL_DIR/$BINARY_NAME" "https://github.com/Aegis-AI-Organizations/Aegis-AI-Agent/releases/latest/download/aegis-ai-agent"
 chmod 755 "$INSTALL_DIR/$BINARY_NAME"
 
 # Prepare config directory
