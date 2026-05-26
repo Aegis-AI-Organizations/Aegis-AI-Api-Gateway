@@ -96,14 +96,14 @@ echo "-------------------------------------------------------"
 // InstallScriptHandler serves the installer script dynamically with the token pre-injected.
 func (a *API) InstallScriptHandler(c *gin.Context) {
 	token := c.Query("token")
-	
+
 	// Inject token into template (fallback to placeholder if empty)
 	if token == "" {
 		token = "TOKEN_VALUE_NOT_PROVIDED"
 	}
-	
+
 	scriptContent := strings.Replace(installScriptTemplate, "TOKEN_VALUE", token, 1)
-	
+
 	c.Header("Content-Type", "text/x-shellscript")
 	c.String(http.StatusOK, scriptContent)
 }

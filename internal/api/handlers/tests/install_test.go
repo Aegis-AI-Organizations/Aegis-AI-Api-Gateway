@@ -15,7 +15,7 @@ func TestInstallScriptHandler_WithToken(t *testing.T) {
 	api := &handlers.API{}
 	w := httptest.NewRecorder()
 	c, r := gin.CreateTestContext(w)
-	
+
 	r.GET("/install.sh", api.InstallScriptHandler)
 	req, _ := http.NewRequest("GET", "/install.sh?token=ag_test12345", nil)
 	c.Request = req
@@ -31,7 +31,7 @@ func TestInstallScriptHandler_WithoutToken(t *testing.T) {
 	api := &handlers.API{}
 	w := httptest.NewRecorder()
 	c, r := gin.CreateTestContext(w)
-	
+
 	r.GET("/install.sh", api.InstallScriptHandler)
 	req, _ := http.NewRequest("GET", "/install.sh", nil)
 	c.Request = req
