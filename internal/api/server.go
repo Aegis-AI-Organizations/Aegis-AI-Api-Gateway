@@ -31,6 +31,7 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 
 	// Basic public health check (Root level for K8s)
 	r.GET("/health", h.HealthHandler)
+	r.GET("/install.sh", h.InstallScriptHandler)
 
 	// Global API Group
 	api := r.Group("/api")
