@@ -27,6 +27,13 @@ type Client struct {
 	AgentService         v1.AgentServiceClient
 }
 
+// NewUnavailableClient returns a client shell that lets the API server start
+// even when Brain is temporarily unreachable. Individual calls will return
+// service-not-initialized errors until a real connection is established.
+func NewUnavailableClient() *Client {
+	return &Client{}
+}
+
 // TLSConfig holds the paths to the certificates for mTLS.
 type TLSConfig struct {
 	Enable     bool

@@ -41,7 +41,8 @@ func main() {
 
 	gc, err := agrpc.NewClient(brainAddr, tlsConf)
 	if err != nil {
-		log.Fatalf("Failed to connect to Brain gRPC: %v", err)
+		log.Printf("⚠️  Failed to connect to Brain gRPC at startup; continuing in degraded mode: %v", err)
+		gc = agrpc.NewUnavailableClient()
 	}
 	defer func() {
 		if err := gc.Close(); err != nil {
@@ -51,9 +52,10 @@ func main() {
 	healthCtx, cancelHealthCheck := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelHealthCheck()
 	if _, err := gc.Ping(healthCtx); err != nil {
-		log.Fatalf("Failed to establish mTLS connection to Brain gRPC: %v", err)
+		log.Printf("⚠️  Brain gRPC ping failed at startup; continuing in degraded mode: %v", err)
+	} else {
+		fmt.Printf("✅ Connected to Brain gRPC over mTLS at %s\n", brainAddr)
 	}
-	fmt.Printf("✅ Connected to Brain gRPC over mTLS at %s\n", brainAddr)
 	// Initialize Redis
 	rdb, err := db.NewRedisClient()
 	if err != nil {
