@@ -8,7 +8,7 @@ import (
 )
 
 const installScriptTemplate = `#!/bin/bash
-set -e
+set -euo pipefail
 
 # Configuration
 AGENT_USER="aegis-agent"
@@ -28,7 +28,7 @@ fi
 
 # Download binary from release bucket
 echo "Downloading Aegis AI Agent binary..."
-curl -sLf -o "$INSTALL_DIR/$BINARY_NAME" "https://storage.aegis-ai.fr/releases/aegis-ai-agent"
+curl -fsSL -o "$INSTALL_DIR/$BINARY_NAME" "https://storage.aegis-ai.fr/releases/aegis-ai-agent"
 chmod 755 "$INSTALL_DIR/$BINARY_NAME"
 
 # Prepare config directory
@@ -95,11 +95,11 @@ echo "-------------------------------------------------------"
 
 // InstallScriptHandler serves the installer script dynamically with the token pre-injected.
 func (a *API) InstallScriptHandler(c *gin.Context) {
-	token := c.Query("token")
-
-	// Inject token into template (fallback to placeholder if empty)
-	if token == "" {
-		token = "TOKEN_VALUE_NOT_PROVIDED"
+	token := strings.TrimSpace(c.Query("token"))
+	if token == "" || !strings.HasPrefix(token, "ag_") {
+		c.Header("Content-Type", "text/plain; charset=utf-8")
+		c.String(http.StatusBadRequest, "missing or invalid agent deployment token\n")
+		return
 	}
 
 	scriptContent := strings.Replace(installScriptTemplate, "TOKEN_VALUE", token, 1)

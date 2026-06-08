@@ -24,6 +24,7 @@ func TestInstallScriptHandler_WithToken(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Equal(t, "text/x-shellscript", w.Header().Get("Content-Type"))
 	assert.Contains(t, w.Body.String(), "DEPLOYMENT_TOKEN=ag_test12345")
+	assert.Contains(t, w.Body.String(), "curl -fsSL")
 }
 
 func TestInstallScriptHandler_WithoutToken(t *testing.T) {
@@ -37,7 +38,6 @@ func TestInstallScriptHandler_WithoutToken(t *testing.T) {
 	c.Request = req
 	r.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, "text/x-shellscript", w.Header().Get("Content-Type"))
-	assert.Contains(t, w.Body.String(), "DEPLOYMENT_TOKEN=TOKEN_VALUE_NOT_PROVIDED")
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "missing or invalid agent deployment token")
 }
