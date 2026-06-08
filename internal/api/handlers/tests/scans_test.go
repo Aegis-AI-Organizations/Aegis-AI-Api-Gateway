@@ -144,6 +144,41 @@ func TestCreateScanHandler(t *testing.T) {
 	mockBilling.AssertExpectations(t)
 }
 
+func TestCreateScanHandler_TopologySelection(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockScan := new(MockScanServiceClient)
+	mockBilling := new(MockBillingServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			ScanService:    mockScan,
+			BillingService: mockBilling,
+		},
+	}
+
+	payload := map[string]any{
+		"scope":           "topology",
+		"target_node_ids": []string{"container-b", "container-a"},
+	}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("company_id", "test-company")
+	c.Request, _ = http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
+
+	mockBilling.On("PreFlightCheck", mock.Anything, mock.Anything).
+		Return(&v1.PreFlightCheckResponse{SufficientBalance: true, EstimatedCost: 10}, nil)
+	mockBilling.On("AdjustTokens", mock.Anything, mock.Anything).
+		Return(&v1.AdjustTokensResponse{Balance: 90}, nil)
+	mockScan.On("StartScan", mock.Anything, &v1.StartScanRequest{TargetImage: "topology:container-a,container-b"}).
+		Return(&v1.StartScanResponse{ScanId: "s1", Status: "PENDING"}, nil)
+
+	api.CreateScanHandler(c)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+	mockScan.AssertExpectations(t)
+	mockBilling.AssertExpectations(t)
+}
+
 func TestCreateScanHandler_GRPCFailure(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	mockScan := new(MockScanServiceClient)
