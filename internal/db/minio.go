@@ -10,9 +10,13 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
+const PublicMinioEndpoint = "storage.aegis-ai.fr"
+const defaultMinioRegion = "us-east-1"
+
 type MinioClient struct {
-	Client *minio.Client
-	Bucket string
+	Client        *minio.Client
+	PresignClient *minio.Client
+	Bucket        string
 }
 
 func NewMinioClient() (*MinioClient, error) {
@@ -34,9 +38,19 @@ func NewMinioClient() (*MinioClient, error) {
 		return nil, err
 	}
 
+	presignClient, err := minio.New(PublicMinioEndpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
+		Secure: true,
+		Region: defaultMinioRegion,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &MinioClient{
-		Client: client,
-		Bucket: bucket,
+		Client:        client,
+		PresignClient: presignClient,
+		Bucket:        bucket,
 	}, nil
 }
 
@@ -44,7 +58,12 @@ func (m *MinioClient) GeneratePresignedPutURL(ctx context.Context, objectName st
 	// URL expires after 15 minutes as per requirements
 	expiry := time.Duration(15) * time.Minute
 
-	presignedURL, err := m.Client.PresignedPutObject(ctx, m.Bucket, objectName, expiry)
+	presignClient := m.PresignClient
+	if presignClient == nil {
+		presignClient = m.Client
+	}
+
+	presignedURL, err := presignClient.PresignedPutObject(ctx, m.Bucket, objectName, expiry)
 	if err != nil {
 		return "", err
 	}

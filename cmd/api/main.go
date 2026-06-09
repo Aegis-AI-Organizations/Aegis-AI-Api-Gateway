@@ -1,10 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
-
 	"os"
+	"time"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api"
@@ -21,7 +22,7 @@ func main() {
 
 	// TLS Configuration for Brain gRPC
 	tlsConf := agrpc.TLSConfig{
-		Enable:     os.Getenv("BRAIN_TLS_ENABLE") == "true",
+		Enable:     true,
 		CAPath:     os.Getenv("BRAIN_TLS_CA_CERT"),
 		CertPath:   os.Getenv("BRAIN_TLS_CLIENT_CERT"),
 		KeyPath:    os.Getenv("BRAIN_TLS_CLIENT_KEY"),
@@ -40,14 +41,21 @@ func main() {
 
 	gc, err := agrpc.NewClient(brainAddr, tlsConf)
 	if err != nil {
-		log.Fatalf("Failed to connect to Brain gRPC: %v", err)
+		log.Printf("⚠️  Failed to connect to Brain gRPC at startup; continuing in degraded mode: %v", err)
+		gc = agrpc.NewUnavailableClient()
 	}
 	defer func() {
 		if err := gc.Close(); err != nil {
 			log.Printf("Failed to close Brain gRPC client: %v", err)
 		}
 	}()
-	fmt.Printf("✅ Connected to Brain gRPC at %s\n", brainAddr)
+	healthCtx, cancelHealthCheck := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelHealthCheck()
+	if _, err := gc.Ping(healthCtx); err != nil {
+		log.Printf("⚠️  Brain gRPC ping failed at startup; continuing in degraded mode: %v", err)
+	} else {
+		fmt.Printf("✅ Connected to Brain gRPC over mTLS at %s\n", brainAddr)
+	}
 	// Initialize Redis
 	rdb, err := db.NewRedisClient()
 	if err != nil {

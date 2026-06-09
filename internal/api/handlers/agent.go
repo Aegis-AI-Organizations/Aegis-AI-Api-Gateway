@@ -69,14 +69,15 @@ func (a *API) RegisterAgentHandler(c *gin.Context) {
 func (a *API) UpdateAgentStatusHandler(c *gin.Context) {
 	agentID := c.Param("id")
 	var req struct {
-		Status string `json:"status" binding:"required"`
+		Status     string `json:"status" binding:"required"`
+		PayloadKey string `json:"payload_key"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	resp, err := a.GRPCClient.UpdateAgentStatus(c.Request.Context(), agentID, req.Status)
+	resp, err := a.GRPCClient.UpdateAgentStatus(c.Request.Context(), agentID, req.Status, req.PayloadKey)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update agent status"})
 		return

@@ -95,6 +95,17 @@ func (a *API) AdminRotateAgentTokenHandler(c *gin.Context) {
 	a.rotateAgentToken(c, companyID)
 }
 
+// AdminRevokeAgentTokenHandler invalidates the deployment token for a target company.
+func (a *API) AdminRevokeAgentTokenHandler(c *gin.Context) {
+	companyID := c.Param("id")
+	if companyID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "company id is required"})
+		return
+	}
+
+	a.revokeAgentToken(c, companyID)
+}
+
 func (a *API) rotateAgentToken(c *gin.Context, companyID string) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -110,10 +121,14 @@ func (a *API) rotateAgentToken(c *gin.Context, companyID string) {
 
 // RevokeAgentTokenHandler invalidates the current agent deployment token.
 func (a *API) RevokeAgentTokenHandler(c *gin.Context) {
+	a.revokeAgentToken(c, "")
+}
+
+func (a *API) revokeAgentToken(c *gin.Context, companyID string) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	if _, err := a.GRPCClient.RevokeAgentToken(ctx, ""); err != nil {
+	if _, err := a.GRPCClient.RevokeAgentToken(ctx, companyID); err != nil {
 		writeAgentTokenGRPCError(c, err)
 		return
 	}

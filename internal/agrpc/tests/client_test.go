@@ -473,7 +473,7 @@ func TestClient_NilServices(t *testing.T) {
 	_, err = client.RegisterAgent(context.Background(), "t", "n")
 	assert.Error(t, err)
 
-	_, err = client.UpdateAgentStatus(context.Background(), "a", "s")
+	_, err = client.UpdateAgentStatus(context.Background(), "a", "s", "pk")
 	assert.Error(t, err)
 
 	_, err = client.SetupPassword(context.Background(), "i", "n")
@@ -551,11 +551,9 @@ func TestClient_CompanyMethods(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-	// Should succeed in creating the structure even if connection is lazy/not established yet
-	c, err := agrpc.NewClient("localhost:1234", agrpc.TLSConfig{})
-	assert.NoError(t, err)
-	assert.NotNil(t, c)
-	defer func() { _ = c.Close() }()
+	_, err := agrpc.NewClient("localhost:1234", agrpc.TLSConfig{})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "mTLS is required")
 }
 
 func TestClient_GetMe(t *testing.T) {
@@ -626,7 +624,7 @@ func TestClient_AdminMethods(t *testing.T) {
 		OwnerEmail: "user@test.com",
 	}).Return(&v1.CreateCompanyResponse{Id: "u2"}, nil)
 
-	respC, err := client.AdminCreateUser(ctx, "New User", "user@test.com", "pass1234", "admin", "c1")
+	respC, err := client.AdminCreateUser(ctx, "New User", "user@test.com", "admin", "c1")
 	assert.NoError(t, err)
 	assert.Equal(t, "u2", respC.Id)
 }
@@ -681,7 +679,7 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	_, err = client.SearchUsers(ctx, "q", "c1")
 	assert.Error(t, err)
 
-	_, err = client.AdminCreateUser(ctx, "n", "e", "p", "r", "c1")
+	_, err = client.AdminCreateUser(ctx, "n", "e", "r", "c1")
 	assert.Error(t, err)
 
 	_, err = client.OnboardCompany(ctx, "c", "n", "e")
@@ -703,7 +701,7 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
-	_, err = client.AdminCreateUser(ctx, "n", "e", "p", "r", "c1")
+	_, err = client.AdminCreateUser(ctx, "n", "e", "r", "c1")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
@@ -845,9 +843,9 @@ func TestClient_AgentMethods(t *testing.T) {
 	assert.Equal(t, "a1", respR.AgentId)
 
 	// UpdateAgentStatus
-	mockAgent.On("UpdateAgentStatus", ctx, &v1.UpdateAgentStatusRequest{AgentId: "a1", Status: "IDLE"}).
+	mockAgent.On("UpdateAgentStatus", ctx, &v1.UpdateAgentStatusRequest{AgentId: "a1", Status: "IDLE", PayloadKey: "pk1"}).
 		Return(&v1.UpdateAgentStatusResponse{Success: true}, nil)
-	respU, err := client.UpdateAgentStatus(ctx, "a1", "IDLE")
+	respU, err := client.UpdateAgentStatus(ctx, "a1", "IDLE", "pk1")
 	assert.NoError(t, err)
 	assert.True(t, respU.Success)
 

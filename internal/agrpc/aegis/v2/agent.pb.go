@@ -130,6 +130,7 @@ type UpdateAgentStatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AgentId       string                 `protobuf:"bytes,1,opt,name=agent_id,json=agentId,proto3" json:"agent_id,omitempty"`
 	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"` // IDLE, UPLOADING, UPDATING_CONFIG, ERROR, etc.
+	PayloadKey    string                 `protobuf:"bytes,3,opt,name=payload_key,json=payloadKey,proto3" json:"payload_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -174,6 +175,13 @@ func (x *UpdateAgentStatusRequest) GetAgentId() string {
 func (x *UpdateAgentStatusRequest) GetStatus() string {
 	if x != nil {
 		return x.Status
+	}
+	return ""
+}
+
+func (x *UpdateAgentStatusRequest) GetPayloadKey() string {
+	if x != nil {
+		return x.PayloadKey
 	}
 	return ""
 }
@@ -286,6 +294,7 @@ type GetUploadLinkResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
 	Method        string                 `protobuf:"bytes,2,opt,name=method,proto3" json:"method,omitempty"`
+	ObjectName    string                 `protobuf:"bytes,3,opt,name=object_name,json=objectName,proto3" json:"object_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -330,6 +339,13 @@ func (x *GetUploadLinkResponse) GetUrl() string {
 func (x *GetUploadLinkResponse) GetMethod() string {
 	if x != nil {
 		return x.Method
+	}
+	return ""
+}
+
+func (x *GetUploadLinkResponse) GetObjectName() string {
+	if x != nil {
+		return x.ObjectName
 	}
 	return ""
 }
@@ -734,19 +750,23 @@ const file_aegis_v2_agent_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\"U\n" +
 	"\x15RegisterAgentResponse\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12!\n" +
-	"\fagent_secret\x18\x02 \x01(\tR\vagentSecret\"M\n" +
+	"\fagent_secret\x18\x02 \x01(\tR\vagentSecret\"n\n" +
 	"\x18UpdateAgentStatusRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\"5\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\x12\x1f\n" +
+	"\vpayload_key\x18\x03 \x01(\tR\n" +
+	"payloadKey\"5\n" +
 	"\x19UpdateAgentStatusResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"p\n" +
 	"\x14GetUploadLinkRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x1a\n" +
 	"\bfilename\x18\x02 \x01(\tR\bfilename\x12!\n" +
-	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\"A\n" +
+	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\"b\n" +
 	"\x15GetUploadLinkResponse\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12\x16\n" +
-	"\x06method\x18\x02 \x01(\tR\x06method\"M\n" +
+	"\x06method\x18\x02 \x01(\tR\x06method\x12\x1f\n" +
+	"\vobject_name\x18\x03 \x01(\tR\n" +
+	"objectName\"M\n" +
 	"\x18VerifyAgentSecretRequest\x12\x19\n" +
 	"\bagent_id\x18\x01 \x01(\tR\aagentId\x12\x16\n" +
 	"\x06secret\x18\x02 \x01(\tR\x06secret\"N\n" +

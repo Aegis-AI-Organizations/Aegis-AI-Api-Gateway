@@ -11,7 +11,6 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 )
@@ -26,6 +25,13 @@ type Client struct {
 	BillingService       v1.BillingServiceClient
 	InternalAuthService  v1.InternalAuthServiceClient
 	AgentService         v1.AgentServiceClient
+}
+
+// NewUnavailableClient returns a client shell that lets the API server start
+// even when Brain is temporarily unreachable. Individual calls will return
+// service-not-initialized errors until a real connection is established.
+func NewUnavailableClient() *Client {
+	return &Client{}
 }
 
 // TLSConfig holds the paths to the certificates for mTLS.
@@ -62,6 +68,10 @@ func WithMetadata(ctx context.Context) context.Context {
 }
 
 func NewClient(addr string, conf TLSConfig) (*Client, error) {
+	if !conf.Enable {
+		return nil, fmt.Errorf("mTLS is required for Brain gRPC connections")
+	}
+
 	var opts []grpc.DialOption
 
 	// Add keepalive parameters
@@ -76,15 +86,11 @@ func NewClient(addr string, conf TLSConfig) (*Client, error) {
 		grpc.MaxCallRecvMsgSize(50*1024*1024),
 	))
 
-	if conf.Enable {
-		creds, err := loadTLSCredentials(conf)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load TLS credentials: %w", err)
-		}
-		opts = append(opts, grpc.WithTransportCredentials(creds))
-	} else {
-		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	creds, err := loadTLSCredentials(conf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load TLS credentials: %w", err)
 	}
+	opts = append(opts, grpc.WithTransportCredentials(creds))
 
 	conn, err := grpc.NewClient(addr, opts...)
 	if err != nil {
@@ -168,14 +174,13 @@ func (c *Client) SearchUsers(ctx context.Context, query, companyID string) ([]*v
 	return resp.Companies, nil
 }
 
-func (c *Client) AdminCreateUser(ctx context.Context, name, email, password, role, companyID string) (*v1.CreateCompanyResponse, error) {
+func (c *Client) AdminCreateUser(ctx context.Context, name, email, role, companyID string) (*v1.CreateCompanyResponse, error) {
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")
 	}
 	authCtx := WithMetadata(ctx)
 	newCtx := metadata.AppendToOutgoingContext(authCtx,
 		"x-action", "create-user",
-		"x-user-password", password,
 		"x-user-role", role,
 		"x-company-id", companyID,
 	)
@@ -471,13 +476,14 @@ func (c *Client) RegisterAgent(ctx context.Context, token, name string) (*v1.Reg
 	})
 }
 
-func (c *Client) UpdateAgentStatus(ctx context.Context, agentID, status string) (*v1.UpdateAgentStatusResponse, error) {
+func (c *Client) UpdateAgentStatus(ctx context.Context, agentID, status, payloadKey string) (*v1.UpdateAgentStatusResponse, error) {
 	if c.AgentService == nil {
 		return nil, fmt.Errorf("agent service not initialized")
 	}
 	return c.AgentService.UpdateAgentStatus(ctx, &v1.UpdateAgentStatusRequest{
-		AgentId: agentID,
-		Status:  status,
+		AgentId:    agentID,
+		Status:     status,
+		PayloadKey: payloadKey,
 	})
 }
 

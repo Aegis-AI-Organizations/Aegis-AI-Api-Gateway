@@ -8,43 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const DashboardOrigin = "https://app.aegis-ai.fr"
+
 // CORSMiddleware adds Cross-Origin Resource Sharing headers to every response and
 // handles OPTIONS preflight requests so the browser can call the API from
-// a different origin (e.g. app.aegis.pre-alpha.local → api.aegis.pre-alpha.local).
+// the public dashboard origin.
 func CORSMiddleware() gin.HandlerFunc {
-	var allowedOrigins []string
-
-	// Load from environment if available (Overrides defaults)
-	if envOrigins := os.Getenv("ALLOWED_ORIGINS"); envOrigins != "" {
-		for _, o := range strings.Split(envOrigins, ",") {
-			trimmed := strings.TrimSpace(o)
-			if trimmed != "" {
-				allowedOrigins = append(allowedOrigins, trimmed)
-			}
-		}
-	} else {
-		// Default allowed origins for development if NO override provided
-		allowedOrigins = []string{
-			"http://localhost:3000",
-			"http://app.aegis.pre-alpha.local",
-			"https://app.aegis.pre-alpha.local",
-		}
-	}
+	allowedOrigins := allowedCORSOrigins()
 
 	return func(c *gin.Context) {
 		origin := c.GetHeader("Origin")
-		isAllowed := false
 
-		if origin != "" {
-			for _, allowed := range allowedOrigins {
-				if origin == allowed {
-					isAllowed = true
-					break
-				}
-			}
-		}
-
-		if isAllowed {
+		if allowedOrigins[origin] {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 			c.Writer.Header().Set("Vary", "Origin")
 			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -61,4 +36,21 @@ func CORSMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+func allowedCORSOrigins() map[string]bool {
+	rawOrigins := os.Getenv("ALLOWED_ORIGINS")
+	if rawOrigins == "" {
+		rawOrigins = DashboardOrigin
+	}
+
+	origins := make(map[string]bool)
+	for _, origin := range strings.Split(rawOrigins, ",") {
+		origin = strings.TrimSpace(origin)
+		if origin != "" {
+			origins[origin] = true
+		}
+	}
+
+	return origins
 }

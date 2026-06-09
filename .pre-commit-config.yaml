@@ -21,7 +21,7 @@ repos:
 
   # 3. Linter Code Go
   - repo: https://github.com/golangci/golangci-lint
-    rev: v1.64.5
+    rev: v2.12.2
     hooks:
       - id: golangci-lint
         args: [--timeout=5m]
