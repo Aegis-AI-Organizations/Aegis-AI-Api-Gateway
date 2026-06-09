@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +23,6 @@ const (
 	defaultNeo4jUser     = "neo4j"
 	defaultNeo4jPassword = "neo4j_password"
 	defaultNeo4jDatabase = "neo4j"
-	publicAPIHostname    = "api.aegis-ai.fr"
 )
 
 type TopologyResponse struct {
@@ -137,19 +137,9 @@ func (a *API) GetTopologyHandler(c *gin.Context) {
 		return
 	}
 
-	companyID := c.Param("id")
-	if companyID == "" {
-		if value, ok := c.Get(string(types.CompanyIDKey)); ok {
-			companyID = fmt.Sprint(value)
-		}
-	}
-	if companyID == "" {
-		companyID = c.Query("company_id")
-	}
-
-	companyID = strings.TrimSpace(companyID)
-	if companyID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "company_id is required"})
+	companyID, err := resolveTopologyCompanyID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -160,6 +150,43 @@ func (a *API) GetTopologyHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func resolveTopologyCompanyID(c *gin.Context) (string, error) {
+	currentCompanyID := strings.TrimSpace(fmt.Sprint(c.GetString(string(types.CompanyIDKey))))
+	requestedCompanyID := strings.TrimSpace(c.Query("company_id"))
+
+	if requestedCompanyID == "" {
+		if currentCompanyID == "" {
+			return "", fmt.Errorf("company_id is required")
+		}
+		return currentCompanyID, nil
+	}
+
+	roleValue, exists := c.Get(string(types.RoleKey))
+	if !exists {
+		if currentCompanyID == "" {
+			return "", fmt.Errorf("company_id is required")
+		}
+		return currentCompanyID, nil
+	}
+
+	role, ok := roleValue.(string)
+	if !ok || role == "" {
+		if currentCompanyID == "" {
+			return "", fmt.Errorf("company_id is required")
+		}
+		return currentCompanyID, nil
+	}
+
+	if !middleware.HasScope(types.UserRole(role), middleware.ScopeAll) {
+		if currentCompanyID == "" {
+			return "", fmt.Errorf("company_id is required")
+		}
+		return currentCompanyID, nil
+	}
+
+	return requestedCompanyID, nil
 }
 
 func (s *Neo4jTopologyService) GetTopology(ctx context.Context, companyID string) (TopologyResponse, error) {
@@ -182,8 +209,6 @@ func (s *Neo4jTopologyService) GetTopology(ctx context.Context, companyID string
 	if err := s.loadContainerProcesses(ctx, companyID, hosts); err != nil {
 		return TopologyResponse{}, err
 	}
-
-	s.ensurePublicApiHost(hosts)
 
 	return TopologyResponse{Hosts: renderHosts(hosts)}, nil
 }
@@ -384,23 +409,6 @@ func (s *Neo4jTopologyService) loadContainerProcesses(
 	}
 
 	return nil
-}
-
-func (s *Neo4jTopologyService) ensurePublicApiHost(hosts map[string]*topologyHostBuilder) {
-	for _, host := range hosts {
-		if strings.EqualFold(host.host.Hostname, publicAPIHostname) || host.host.ID == "api-route" {
-			return
-		}
-	}
-
-	hosts["api-route"] = &topologyHostBuilder{
-		host: TopologyHost{
-			ID:       "api-route",
-			Hostname: publicAPIHostname,
-		},
-		containers: map[string]*topologyContainerBuilder{},
-		processes:  map[string]TopologyProcess{},
-	}
 }
 
 func renderHosts(hosts map[string]*topologyHostBuilder) []TopologyHost {
