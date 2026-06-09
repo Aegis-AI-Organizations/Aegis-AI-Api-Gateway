@@ -11,6 +11,7 @@ import (
 )
 
 func TestCORSMiddleware(t *testing.T) {
+	t.Setenv("ALLOWED_ORIGINS", middleware.DashboardOrigin)
 	gin.SetMode(gin.TestMode)
 
 	r := gin.New()
@@ -39,7 +40,27 @@ func TestCORSMiddleware(t *testing.T) {
 	assert.Equal(t, middleware.DashboardOrigin, rr.Header().Get("Access-Control-Allow-Origin"))
 }
 
-func TestCORSMiddlewareRejectsDefaultLocalhostOrigin(t *testing.T) {
+func TestCORSMiddlewareAllowsConfiguredLocalhostOrigin(t *testing.T) {
+	t.Setenv("ALLOWED_ORIGINS", "http://localhost,http://localhost:3000")
+	gin.SetMode(gin.TestMode)
+
+	r := gin.New()
+	r.Use(middleware.CORSMiddleware())
+	r.GET("/test", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+
+	req, _ := http.NewRequest("GET", "/test", nil)
+	req.Header.Set("Origin", "http://localhost:3000")
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code)
+	assert.Equal(t, "http://localhost:3000", rr.Header().Get("Access-Control-Allow-Origin"))
+}
+
+func TestCORSMiddlewareRejectsUnconfiguredOrigin(t *testing.T) {
+	t.Setenv("ALLOWED_ORIGINS", middleware.DashboardOrigin)
 	gin.SetMode(gin.TestMode)
 
 	r := gin.New()

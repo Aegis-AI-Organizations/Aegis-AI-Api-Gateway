@@ -39,8 +39,8 @@ func (m *MockAdminGRPCClient) SearchUsers(ctx context.Context, query, companyID 
 	return args.Get(0).([]*v1.CompanySummary), args.Error(1)
 }
 
-func (m *MockAdminGRPCClient) AdminCreateUser(ctx context.Context, name, email, password, role, companyID string) (*v1.CreateCompanyResponse, error) {
-	args := m.Called(ctx, name, email, password, role, companyID)
+func (m *MockAdminGRPCClient) AdminCreateUser(ctx context.Context, name, email, role, companyID string) (*v1.CreateCompanyResponse, error) {
+	args := m.Called(ctx, name, email, role, companyID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -176,7 +176,6 @@ func TestCreateUserHandler_Success(t *testing.T) {
 	payload := map[string]string{
 		"name":       "New User",
 		"email":      "user@test.com",
-		"password":   "password123",
 		"role":       "admin",
 		"company_id": "c1",
 	}
@@ -222,7 +221,6 @@ func TestCreateUserHandler_ServerError(t *testing.T) {
 	payload := map[string]string{
 		"name":       "New User",
 		"email":      "user@test.com",
-		"password":   "password123",
 		"role":       "admin",
 		"company_id": "c1",
 	}
