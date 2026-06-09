@@ -17,6 +17,8 @@ CONFIG_DIR="/etc/aegis-agent"
 VAR_DIR="/var/lib/aegis-agent"
 BINARY_NAME="aegis-ai-agent"
 SERVICE_NAME="aegis-agent.service"
+PRIMARY_BINARY_URL="https://github.com/Aegis-AI-Organizations/Aegis-AI-Agent/releases/latest/download/aegis-ai-agent"
+MIRROR_BINARY_URL="https://storage.aegis-ai.fr/releases/aegis-ai-agent"
 
 echo "Installing Aegis AI Agent..."
 
@@ -26,10 +28,22 @@ if ! id "$AGENT_USER" &>/dev/null; then
     useradd --system --shell /usr/sbin/nologin --no-create-home "$AGENT_USER"
 fi
 
-# Download binary from release bucket
+# Download binary from the primary GitHub release asset, then fall back to the public MinIO mirror.
+download_binary() {
+    local url="$1"
+    rm -f "$INSTALL_DIR/$BINARY_NAME"
+    curl -fsSL -o "$INSTALL_DIR/$BINARY_NAME" "$url"
+    chmod 755 "$INSTALL_DIR/$BINARY_NAME"
+}
+
 echo "Downloading Aegis AI Agent binary..."
-curl -fsSL -o "$INSTALL_DIR/$BINARY_NAME" "https://storage.aegis-ai.fr/releases/aegis-ai-agent"
-chmod 755 "$INSTALL_DIR/$BINARY_NAME"
+if ! download_binary "$PRIMARY_BINARY_URL"; then
+    echo "Primary download failed, trying the public mirror..."
+    if ! download_binary "$MIRROR_BINARY_URL"; then
+        echo "Error: unable to download Aegis AI Agent binary from either source." >&2
+        exit 1
+    fi
+fi
 
 # Prepare config directory
 mkdir -p "$CONFIG_DIR"
