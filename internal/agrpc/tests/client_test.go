@@ -624,7 +624,7 @@ func TestClient_AdminMethods(t *testing.T) {
 		OwnerEmail: "user@test.com",
 	}).Return(&v1.CreateCompanyResponse{Id: "u2"}, nil)
 
-	respC, err := client.AdminCreateUser(ctx, "New User", "user@test.com", "pass1234", "admin", "c1")
+	respC, err := client.AdminCreateUser(ctx, "New User", "user@test.com", "admin", "c1")
 	assert.NoError(t, err)
 	assert.Equal(t, "u2", respC.Id)
 }
@@ -679,7 +679,7 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	_, err = client.SearchUsers(ctx, "q", "c1")
 	assert.Error(t, err)
 
-	_, err = client.AdminCreateUser(ctx, "n", "e", "p", "r", "c1")
+	_, err = client.AdminCreateUser(ctx, "n", "e", "r", "c1")
 	assert.Error(t, err)
 
 	_, err = client.OnboardCompany(ctx, "c", "n", "e")
@@ -701,7 +701,7 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
-	_, err = client.AdminCreateUser(ctx, "n", "e", "p", "r", "c1")
+	_, err = client.AdminCreateUser(ctx, "n", "e", "r", "c1")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
