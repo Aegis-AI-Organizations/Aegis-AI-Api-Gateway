@@ -23,6 +23,7 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 	h := &handlers.API{
 		GRPCClient: gc,
 		Redis:      rdb,
+		Topology:   handlers.NewNeo4jTopologyServiceFromEnv(),
 	}
 
 	mh := &handlers.MinioHandler{
@@ -84,6 +85,9 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 			auth.GET("/scans/:id", middleware.RequirePermission(middleware.ScopeScanRead), h.GetScanByIDHandler)
 			auth.GET("/scans/:id/vulnerabilities", middleware.RequirePermission(middleware.ScopeVulnerabilityRead), h.GetVulnerabilitiesHandler)
 			auth.GET("/scans/:id/report", middleware.RequirePermission(middleware.ScopeReportRead), h.GetScanReportHandler)
+			auth.GET("/topology", middleware.RequirePermission(middleware.ScopeCompanyRead), h.GetTopologyHandler)
+			auth.GET("/topology/latest", middleware.RequirePermission(middleware.ScopeCompanyRead), h.GetTopologyHandler)
+			auth.GET("/infrastructure/topology", middleware.RequirePermission(middleware.ScopeCompanyRead), h.GetTopologyHandler)
 
 			// Billing routes
 			auth.GET("/billing/balance", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetBalanceHandler)
