@@ -11,6 +11,7 @@ import (
 
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -46,8 +47,8 @@ func TestGetTopologyHandler(t *testing.T) {
 	expected := handlers.TopologyResponse{
 		Hosts: []handlers.TopologyHost{
 			{
-				ID:       "api-route",
-				Hostname: "api.aegis-ai.fr",
+				ID:       "host-1",
+				Hostname: "host-a.local",
 			},
 		},
 	}
@@ -62,11 +63,39 @@ func TestGetTopologyHandler(t *testing.T) {
 	api.GetTopologyHandler(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Contains(t, w.Body.String(), `"api.aegis-ai.fr"`)
+	assert.Contains(t, w.Body.String(), `"host-1"`)
 	mockTopology.AssertExpectations(t)
 }
 
-func TestNeo4jTopologyService_AppendsPublicApiRoute(t *testing.T) {
+func TestGetTopologyHandler_AllowsAdminCompanyOverride(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockTopology := new(MockTopologyService)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{},
+		Topology:   mockTopology,
+	}
+
+	expected := handlers.TopologyResponse{
+		Hosts: []handlers.TopologyHost{{ID: "host-override", Hostname: "company-b.local"}},
+	}
+
+	mockTopology.On("GetTopology", mock.Anything, "company-456").Return(expected, nil)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set(string(types.CompanyIDKey), "company-123")
+	c.Set(string(types.RoleKey), string(types.RoleAdmin))
+	c.Request, _ = http.NewRequest("GET", "/api/topology?company_id=company-456", nil)
+
+	api.GetTopologyHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"company-b.local"`)
+	mockTopology.AssertExpectations(t)
+}
+
+func TestNeo4jTopologyService_DoesNotAppendPublicApiRoute(t *testing.T) {
 	callCount := 0
 	client := &http.Client{
 		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -90,10 +119,7 @@ func TestNeo4jTopologyService_AppendsPublicApiRoute(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.GreaterOrEqual(t, callCount, 1)
-	if assert.Len(t, resp.Hosts, 1) {
-		assert.Equal(t, "api-route", resp.Hosts[0].ID)
-		assert.Equal(t, "api.aegis-ai.fr", resp.Hosts[0].Hostname)
-	}
+	assert.Empty(t, resp.Hosts)
 }
 
 func TestNeo4jTopologyService_RendersNeo4jTopologyGraph(t *testing.T) {
@@ -141,26 +167,18 @@ func TestNeo4jTopologyService_RendersNeo4jTopologyGraph(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, 4, callCount)
-	if assert.Len(t, resp.Hosts, 2) {
-		assert.Equal(t, "api-route", resp.Hosts[0].ID)
-		assert.Equal(t, "api.aegis-ai.fr", resp.Hosts[0].Hostname)
-
-		var hostFound bool
-		for _, host := range resp.Hosts {
-			if host.ID == "host-1" {
-				hostFound = true
-				assert.Equal(t, []string{"10.0.0.1"}, host.IPAddresses)
-				assert.Len(t, host.Containers, 1)
-				assert.Len(t, host.Processes, 1)
-				assert.Equal(t, "web", host.Containers[0].Name)
-				assert.Equal(t, "nginx:latest", host.Containers[0].Image)
-				assert.Equal(t, map[string]string{"FOO": "bar"}, host.Containers[0].Env)
-				assert.Len(t, host.Containers[0].Ports, 1)
-				assert.Len(t, host.Containers[0].ExposedPorts, 1)
-				assert.Len(t, host.Containers[0].Processes, 1)
-			}
-		}
-		assert.True(t, hostFound, "expected host-1 to be present")
+	if assert.Len(t, resp.Hosts, 1) {
+		host := resp.Hosts[0]
+		assert.Equal(t, "host-1", host.ID)
+		assert.Equal(t, []string{"10.0.0.1"}, host.IPAddresses)
+		assert.Len(t, host.Containers, 1)
+		assert.Len(t, host.Processes, 1)
+		assert.Equal(t, "web", host.Containers[0].Name)
+		assert.Equal(t, "nginx:latest", host.Containers[0].Image)
+		assert.Equal(t, map[string]string{"FOO": "bar"}, host.Containers[0].Env)
+		assert.Len(t, host.Containers[0].Ports, 1)
+		assert.Len(t, host.Containers[0].ExposedPorts, 1)
+		assert.Len(t, host.Containers[0].Processes, 1)
 	}
 }
 
