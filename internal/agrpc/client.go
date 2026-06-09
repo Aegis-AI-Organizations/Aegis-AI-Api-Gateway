@@ -174,13 +174,14 @@ func (c *Client) SearchUsers(ctx context.Context, query, companyID string) ([]*v
 	return resp.Companies, nil
 }
 
-func (c *Client) AdminCreateUser(ctx context.Context, name, email, role, companyID string) (*v1.CreateCompanyResponse, error) {
+func (c *Client) AdminCreateUser(ctx context.Context, name, email, password, role, companyID string) (*v1.CreateCompanyResponse, error) {
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")
 	}
 	authCtx := WithMetadata(ctx)
 	newCtx := metadata.AppendToOutgoingContext(authCtx,
 		"x-action", "create-user",
+		"x-user-password", password,
 		"x-user-role", role,
 		"x-company-id", companyID,
 	)
