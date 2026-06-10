@@ -27,8 +27,10 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	companyID, _ := c.Get(string(types.CompanyIDKey))
 	idStr := companyID.(string)
 
+	ipCount, apiCount, webappCount := scanBillingCounts(req)
+
 	// 1. Billing Pre-flight Check
-	check, err := a.GRPCClient.PreFlightCheck(c.Request.Context(), idStr, req.IpCount, req.ApiCount, req.WebappCount)
+	check, err := a.GRPCClient.PreFlightCheck(c.Request.Context(), idStr, ipCount, apiCount, webappCount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Billing system unavailable"})
 		return
@@ -76,26 +78,49 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, res)
 }
 
+func scanBillingCounts(req models.CreateScanRequest) (int32, int32, int32) {
+	ipCount := req.IpCount
+	apiCount := req.ApiCount
+	webappCount := req.WebappCount
+
+	if strings.EqualFold(strings.TrimSpace(req.Scope), "topology") &&
+		ipCount == 0 && apiCount == 0 && webappCount == 0 {
+		targetIDs := scanTargetIDs(req)
+		if len(targetIDs) > 0 {
+			webappCount = int32(len(targetIDs))
+		} else {
+			webappCount = 1
+		}
+	}
+
+	return ipCount, apiCount, webappCount
+}
+
+func scanTargetIDs(req models.CreateScanRequest) []string {
+	targetIDs := make([]string, 0, len(req.TargetNodeIDs))
+	seen := map[string]struct{}{}
+	for _, targetID := range req.TargetNodeIDs {
+		normalized := strings.TrimSpace(targetID)
+		if normalized == "" {
+			continue
+		}
+		if _, exists := seen[normalized]; exists {
+			continue
+		}
+		seen[normalized] = struct{}{}
+		targetIDs = append(targetIDs, normalized)
+	}
+	sort.Strings(targetIDs)
+	return targetIDs
+}
+
 func scanTargetRef(req models.CreateScanRequest) string {
 	if strings.TrimSpace(req.TargetImage) != "" {
 		return strings.TrimSpace(req.TargetImage)
 	}
 
 	if strings.EqualFold(strings.TrimSpace(req.Scope), "topology") {
-		targetIDs := make([]string, 0, len(req.TargetNodeIDs))
-		seen := map[string]struct{}{}
-		for _, targetID := range req.TargetNodeIDs {
-			normalized := strings.TrimSpace(targetID)
-			if normalized == "" {
-				continue
-			}
-			if _, exists := seen[normalized]; exists {
-				continue
-			}
-			seen[normalized] = struct{}{}
-			targetIDs = append(targetIDs, normalized)
-		}
-		sort.Strings(targetIDs)
+		targetIDs := scanTargetIDs(req)
 		if len(targetIDs) == 0 {
 			return "topology:all"
 		}

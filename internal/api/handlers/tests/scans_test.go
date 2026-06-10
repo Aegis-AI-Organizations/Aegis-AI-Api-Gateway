@@ -165,7 +165,13 @@ func TestCreateScanHandler_TopologySelection(t *testing.T) {
 	c.Set("company_id", "test-company")
 	c.Request, _ = http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
 
-	mockBilling.On("PreFlightCheck", mock.Anything, mock.Anything).
+	mockBilling.On("PreFlightCheck", mock.Anything, mock.MatchedBy(func(req *v1.PreFlightCheckRequest) bool {
+		return req.CompanyId == "test-company" &&
+			req.TargetConfig != nil &&
+			req.TargetConfig.IpCount == 0 &&
+			req.TargetConfig.ApiCount == 0 &&
+			req.TargetConfig.WebappCount == 2
+	})).
 		Return(&v1.PreFlightCheckResponse{SufficientBalance: true, EstimatedCost: 10}, nil)
 	mockBilling.On("AdjustTokens", mock.Anything, mock.Anything).
 		Return(&v1.AdjustTokensResponse{Balance: 90}, nil)
