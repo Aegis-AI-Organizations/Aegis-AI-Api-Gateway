@@ -95,6 +95,34 @@ func TestGetTopologyHandler_AllowsAdminCompanyOverride(t *testing.T) {
 	mockTopology.AssertExpectations(t)
 }
 
+func TestGetTopologyHandler_AllowsAdminGlobalScope(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockTopology := new(MockTopologyService)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{},
+		Topology:   mockTopology,
+	}
+
+	expected := handlers.TopologyResponse{
+		Hosts: []handlers.TopologyHost{{ID: "host-global", Hostname: "all-companies.local"}},
+	}
+
+	mockTopology.On("GetTopology", mock.Anything, "all").Return(expected, nil)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set(string(types.CompanyIDKey), "company-123")
+	c.Set(string(types.RoleKey), string(types.RoleAdmin))
+	c.Request, _ = http.NewRequest("GET", "/api/topology?company_id=all", nil)
+
+	api.GetTopologyHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"all-companies.local"`)
+	mockTopology.AssertExpectations(t)
+}
+
 func TestNeo4jTopologyService_DoesNotAppendPublicApiRoute(t *testing.T) {
 	callCount := 0
 	client := &http.Client{
@@ -187,4 +215,29 @@ func TestNeo4jTopologyService_RejectsEmptyCompany(t *testing.T) {
 	_, err := service.GetTopology(context.Background(), " ")
 
 	assert.Error(t, err)
+}
+
+func TestNeo4jTopologyService_AllScopeOmitsCompanyFilter(t *testing.T) {
+	callCount := 0
+	client := &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			callCount++
+			body, _ := io.ReadAll(req.Body)
+			assert.NotContains(t, string(body), "company_id")
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader(`{"results":[{"data":[]}],"errors":[]}`)),
+				Request:    req,
+			}, nil
+		}),
+	}
+
+	service := handlers.NewNeo4jTopologyService("http://neo4j.local:7474", "neo4j", "secret", "neo4j", client)
+	resp, err := service.GetTopology(context.Background(), "all")
+
+	assert.NoError(t, err)
+	assert.Empty(t, resp.Hosts)
+	assert.GreaterOrEqual(t, callCount, 1)
 }

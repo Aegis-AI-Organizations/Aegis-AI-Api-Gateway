@@ -186,6 +186,10 @@ func resolveTopologyCompanyID(c *gin.Context) (string, error) {
 		return currentCompanyID, nil
 	}
 
+	if strings.EqualFold(requestedCompanyID, "all") {
+		return "all", nil
+	}
+
 	return requestedCompanyID, nil
 }
 
@@ -218,15 +222,24 @@ func (s *Neo4jTopologyService) loadHosts(
 	companyID string,
 	hosts map[string]*topologyHostBuilder,
 ) error {
-	rows, err := s.executeQuery(ctx, `
+	filterClause := ""
+	params := map[string]any{}
+	if companyID != "all" {
+		filterClause = "WHERE h.companyId = $company_id"
+		params["company_id"] = companyID
+	}
+
+	query := fmt.Sprintf(`
 		MATCH (h:Host)
-		WHERE h.companyId = $company_id
+		%s
 		RETURN
 		  h.id AS id,
 		  coalesce(h.hostname, h.rawId, h.id) AS hostname,
 		  coalesce(h.ipAddresses, []) AS ip_addresses
 		ORDER BY hostname ASC
-	`, map[string]any{"company_id": companyID})
+	`, filterClause)
+
+	rows, err := s.executeQuery(ctx, query, params)
 	if err != nil {
 		return err
 	}
@@ -253,9 +266,16 @@ func (s *Neo4jTopologyService) loadContainers(
 	companyID string,
 	hosts map[string]*topologyHostBuilder,
 ) error {
-	rows, err := s.executeQuery(ctx, `
+	filterClause := ""
+	params := map[string]any{}
+	if companyID != "all" {
+		filterClause = "WHERE h.companyId = $company_id"
+		params["company_id"] = companyID
+	}
+
+	query := fmt.Sprintf(`
 		MATCH (h:Host)-[:RUNS_CONTAINER]->(c:Container)
-		WHERE h.companyId = $company_id
+		%s
 		RETURN
 		  h.id AS host_id,
 		  coalesce(h.hostname, h.rawId, h.id) AS host_hostname,
@@ -267,7 +287,9 @@ func (s *Neo4jTopologyService) loadContainers(
 		  coalesce(c.ports, []) AS ports,
 		  coalesce(c.exposedPorts, []) AS exposed_ports
 		ORDER BY host_hostname ASC, container_name ASC
-	`, map[string]any{"company_id": companyID})
+	`, filterClause)
+
+	rows, err := s.executeQuery(ctx, query, params)
 	if err != nil {
 		return err
 	}
@@ -324,9 +346,16 @@ func (s *Neo4jTopologyService) loadHostProcesses(
 	companyID string,
 	hosts map[string]*topologyHostBuilder,
 ) error {
-	rows, err := s.executeQuery(ctx, `
+	filterClause := ""
+	params := map[string]any{}
+	if companyID != "all" {
+		filterClause = "WHERE h.companyId = $company_id"
+		params["company_id"] = companyID
+	}
+
+	query := fmt.Sprintf(`
 		MATCH (h:Host)-[:RUNS_PROCESS]->(p:Process)
-		WHERE h.companyId = $company_id
+		%s
 		RETURN
 		  h.id AS host_id,
 		  p.id AS process_id,
@@ -335,7 +364,9 @@ func (s *Neo4jTopologyService) loadHostProcesses(
 		  p.commandLine AS command_line,
 		  p.user AS user
 		ORDER BY p.pid ASC, p.name ASC
-	`, map[string]any{"company_id": companyID})
+	`, filterClause)
+
+	rows, err := s.executeQuery(ctx, query, params)
 	if err != nil {
 		return err
 	}
@@ -365,9 +396,16 @@ func (s *Neo4jTopologyService) loadContainerProcesses(
 	companyID string,
 	hosts map[string]*topologyHostBuilder,
 ) error {
-	rows, err := s.executeQuery(ctx, `
+	filterClause := ""
+	params := map[string]any{}
+	if companyID != "all" {
+		filterClause = "WHERE h.companyId = $company_id"
+		params["company_id"] = companyID
+	}
+
+	query := fmt.Sprintf(`
 		MATCH (h:Host)-[:RUNS_CONTAINER]->(c:Container)-[:RUNS_PROCESS]->(p:Process)
-		WHERE h.companyId = $company_id
+		%s
 		RETURN
 		  h.id AS host_id,
 		  c.id AS container_id,
@@ -377,7 +415,9 @@ func (s *Neo4jTopologyService) loadContainerProcesses(
 		  p.commandLine AS command_line,
 		  p.user AS user
 		ORDER BY p.pid ASC, p.name ASC
-	`, map[string]any{"company_id": companyID})
+	`, filterClause)
+
+	rows, err := s.executeQuery(ctx, query, params)
 	if err != nil {
 		return err
 	}
