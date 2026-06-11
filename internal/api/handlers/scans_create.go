@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
@@ -49,7 +50,7 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	}
 
 	// 2. Deduct tokens
-	_, err = a.GRPCClient.AdjustTokens(c.Request.Context(), idStr, -check.EstimatedCost, "Scan consumption: "+targetRef)
+	_, err = a.GRPCClient.AdjustTokens(c.Request.Context(), idStr, -check.EstimatedCost, scanConsumptionReason(req, targetRef))
 	if err != nil {
 		log.Printf("Failed to process token consumption for company %s and target %s: %v", idStr, targetRef, err)
 		c.JSON(tokenConsumptionErrorStatus(err), gin.H{"error": tokenConsumptionErrorMessage(err)})
@@ -109,6 +110,26 @@ func tokenConsumptionErrorMessage(err error) string {
 	default:
 		return "Failed to process token consumption"
 	}
+}
+
+func scanConsumptionReason(req models.CreateScanRequest, targetRef string) string {
+	if strings.EqualFold(strings.TrimSpace(req.Scope), "topology") {
+		targetIDs := scanTargetIDs(req)
+		if len(targetIDs) == 0 {
+			return "Scan consumption: topology all"
+		}
+		return "Scan consumption: topology selection (" + strconv.Itoa(len(targetIDs)) + " targets)"
+	}
+
+	return truncateBillingReason("Scan consumption: " + targetRef)
+}
+
+func truncateBillingReason(reason string) string {
+	const maxBillingReasonLength = 255
+	if len(reason) <= maxBillingReasonLength {
+		return reason
+	}
+	return reason[:maxBillingReasonLength]
 }
 
 func scanBillingCounts(req models.CreateScanRequest) (int32, int32, int32) {

@@ -132,7 +132,11 @@ func TestCreateScanHandler(t *testing.T) {
 		Return(&v1.PreFlightCheckResponse{SufficientBalance: true, EstimatedCost: 10}, nil)
 
 	// Mock Token Deduction
-	mockBilling.On("AdjustTokens", mock.Anything, mock.Anything).
+	mockBilling.On("AdjustTokens", mock.Anything, mock.MatchedBy(func(req *v1.AdjustTokensRequest) bool {
+		return req.CompanyId == "test-company" &&
+			req.Amount == -10 &&
+			req.Reason == "Scan consumption: nginx:latest"
+	})).
 		Return(&v1.AdjustTokensResponse{Balance: 90}, nil)
 
 	// Mock Scan Launch
@@ -175,7 +179,11 @@ func TestCreateScanHandler_TopologySelection(t *testing.T) {
 			req.TargetConfig.WebappCount == 2
 	})).
 		Return(&v1.PreFlightCheckResponse{SufficientBalance: true, EstimatedCost: 10}, nil)
-	mockBilling.On("AdjustTokens", mock.Anything, mock.Anything).
+	mockBilling.On("AdjustTokens", mock.Anything, mock.MatchedBy(func(req *v1.AdjustTokensRequest) bool {
+		return req.CompanyId == "test-company" &&
+			req.Amount == -10 &&
+			req.Reason == "Scan consumption: topology selection (2 targets)"
+	})).
 		Return(&v1.AdjustTokensResponse{Balance: 90}, nil)
 	mockScan.On("StartScan", mock.Anything, &v1.StartScanRequest{TargetImage: "topology:container-a,container-b"}).
 		Return(&v1.StartScanResponse{ScanId: "s1", Status: "PENDING"}, nil)
