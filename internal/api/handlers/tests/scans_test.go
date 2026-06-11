@@ -16,6 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -182,6 +184,37 @@ func TestCreateScanHandler_TopologySelection(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, w.Code)
 	mockScan.AssertExpectations(t)
+	mockBilling.AssertExpectations(t)
+}
+
+func TestCreateScanHandler_TokenConsumptionPermissionDenied(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockScan := new(MockScanServiceClient)
+	mockBilling := new(MockBillingServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			ScanService:    mockScan,
+			BillingService: mockBilling,
+		},
+	}
+
+	payload := map[string]string{"target_image": "nginx:latest"}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("company_id", "test-company")
+	c.Request, _ = http.NewRequest("POST", "/scans", bytes.NewBuffer(body))
+
+	mockBilling.On("PreFlightCheck", mock.Anything, mock.Anything).
+		Return(&v1.PreFlightCheckResponse{SufficientBalance: true, EstimatedCost: 10}, nil)
+	mockBilling.On("AdjustTokens", mock.Anything, mock.Anything).
+		Return(nil, status.Error(codes.PermissionDenied, "permission denied"))
+
+	api.CreateScanHandler(c)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+	assert.Contains(t, w.Body.String(), "Token consumption is not allowed")
+	mockScan.AssertNotCalled(t, "StartScan", mock.Anything, mock.Anything)
 	mockBilling.AssertExpectations(t)
 }
 

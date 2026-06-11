@@ -9,6 +9,8 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (a *API) CreateScanHandler(c *gin.Context) {
@@ -49,7 +51,8 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	// 2. Deduct tokens
 	_, err = a.GRPCClient.AdjustTokens(c.Request.Context(), idStr, -check.EstimatedCost, "Scan consumption: "+targetRef)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process token consumption"})
+		log.Printf("Failed to process token consumption for company %s and target %s: %v", idStr, targetRef, err)
+		c.JSON(tokenConsumptionErrorStatus(err), gin.H{"error": tokenConsumptionErrorMessage(err)})
 		return
 	}
 
@@ -76,6 +79,36 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, res)
+}
+
+func tokenConsumptionErrorStatus(err error) int {
+	code := status.Code(err)
+	switch code {
+	case codes.FailedPrecondition:
+		return http.StatusPaymentRequired
+	case codes.PermissionDenied:
+		return http.StatusForbidden
+	case codes.Unavailable, codes.DeadlineExceeded:
+		return http.StatusServiceUnavailable
+	default:
+		return http.StatusInternalServerError
+	}
+}
+
+func tokenConsumptionErrorMessage(err error) string {
+	st, ok := status.FromError(err)
+	if !ok || st.Message() == "" {
+		return "Failed to process token consumption"
+	}
+
+	switch st.Code() {
+	case codes.FailedPrecondition:
+		return st.Message()
+	case codes.PermissionDenied:
+		return "Token consumption is not allowed for this user"
+	default:
+		return "Failed to process token consumption"
+	}
 }
 
 func scanBillingCounts(req models.CreateScanRequest) (int32, int32, int32) {
