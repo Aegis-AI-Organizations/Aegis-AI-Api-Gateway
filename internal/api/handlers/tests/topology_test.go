@@ -131,6 +131,53 @@ func TestGetTopologyHandler_AllowsAdminGlobalScope(t *testing.T) {
 	mockTopology.AssertExpectations(t)
 }
 
+func TestGetTopologyDebugHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mockTopology := new(MockTopologyService)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{},
+		Topology:   mockTopology,
+	}
+
+	expected := handlers.TopologyDebugResponse{
+		CompanyID: "company-123",
+		Summary: handlers.TopologyDebugSummary{
+			Hosts:      1,
+			Containers: 1,
+			Relations:  2,
+		},
+		Agents: []string{"agent-1"},
+		Hosts: []handlers.TopologyHost{
+			{
+				ID: "host-1",
+				Containers: []handlers.TopologyContainer{
+					{ID: "container-1", Name: "api"},
+				},
+			},
+		},
+		Relations: []handlers.TopologyDebugRelation{
+			{Type: "RUNS_CONTAINER", Source: "host-1", Target: "api"},
+			{Type: "DEPENDS_ON", Source: "api", Target: "postgres"},
+		},
+	}
+
+	mockTopology.On("GetTopologyDebug", mock.Anything, "company-123").Return(expected, nil)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set(string(types.CompanyIDKey), "company-123")
+	c.Request, _ = http.NewRequest("GET", "/api/admin/topology/latest", nil)
+
+	api.GetTopologyDebugHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"company_id":"company-123"`)
+	assert.Contains(t, w.Body.String(), `"agents":["agent-1"]`)
+	assert.Contains(t, w.Body.String(), `"type":"DEPENDS_ON"`)
+	mockTopology.AssertExpectations(t)
+}
+
 func TestNeo4jTopologyService_DoesNotAppendPublicApiRoute(t *testing.T) {
 	callCount := 0
 	client := &http.Client{
@@ -217,6 +264,75 @@ func TestNeo4jTopologyService_RendersNeo4jTopologyGraph(t *testing.T) {
 		assert.Len(t, host.Containers[0].Ports, 1)
 		assert.Len(t, host.Containers[0].ExposedPorts, 1)
 		assert.Len(t, host.Containers[0].Processes, 1)
+	}
+}
+
+func TestNeo4jTopologyService_RendersTopologyDebug(t *testing.T) {
+	callCount := 0
+	client := &http.Client{
+		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
+			callCount++
+			body, _ := io.ReadAll(req.Body)
+			var payload struct {
+				Statements []struct {
+					Statement string `json:"statement"`
+				} `json:"statements"`
+			}
+			_ = json.Unmarshal(body, &payload)
+			statement := ""
+			if len(payload.Statements) > 0 {
+				statement = payload.Statements[0].Statement
+			}
+
+			var responseBody string
+			switch {
+			case strings.Contains(statement, "MATCH (source)-[rel:RUNS_CONTAINER|RUNS_PROCESS|CONNECTED_TO|DEPENDS_ON|ROUTE_FROM|ROUTE_TO]->(target)"):
+				responseBody = `{"results":[{"data":[{"row":["RUNS_CONTAINER","host-1","api"]},{"row":["DEPENDS_ON","api","postgres"]}]}],"errors":[]}`
+			case strings.Contains(statement, "WITH DISTINCT n.agentId AS agent_id"):
+				responseBody = `{"results":[{"data":[{"row":["agent-1"]},{"row":["agent-1"]},{"row":["agent-2"]}]}],"errors":[]}`
+			case strings.Contains(statement, "MATCH (h:Host)-[:RUNS_CONTAINER]->(c:Container)-[:RUNS_PROCESS]->(p:Process)"):
+				responseBody = `{"results":[{"data":[{"row":["host-1","container-1","process-1",7,"node","node server.js","node"]}]}],"errors":[]}`
+			case strings.Contains(statement, "MATCH (h:Host)-[:RUNS_PROCESS]->(p:Process)"):
+				responseBody = `{"results":[{"data":[{"row":["host-1","process-2",1,"systemd","/sbin/init","root"]}]}],"errors":[]}`
+			case strings.Contains(statement, "MATCH (h:Host)-[:RUNS_CONTAINER]->(c:Container)"):
+				responseBody = `{"results":[{"data":[{"row":["host-1","host-1.local",["10.0.0.1"],"container-1","api","node:20",["DB_HOST=postgres"],["com.docker.compose.service=api"],["backend"],["3000:tcp:LISTEN"],["3000:tcp:LISTEN"]]}]}],"errors":[]}`
+			case strings.Contains(statement, "MATCH (h:Host)"):
+				responseBody = `{"results":[{"data":[{"row":["host-1","host-1.local",["10.0.0.1"]]}]}],"errors":[]}`
+			default:
+				responseBody = `{"results":[{"data":[]}],"errors":[]}`
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Header:     make(http.Header),
+				Body:       io.NopCloser(strings.NewReader(responseBody)),
+				Request:    req,
+			}, nil
+		}),
+	}
+
+	service := handlers.NewNeo4jTopologyService("http://neo4j.local:7474", "neo4j", "secret", "neo4j", client)
+	resp, err := service.GetTopologyDebug(context.Background(), "company-123")
+
+	assert.NoError(t, err)
+	assert.Equal(t, 6, callCount)
+	assert.Equal(t, "company-123", resp.CompanyID)
+	assert.Equal(t, []string{"agent-1", "agent-2"}, resp.Agents)
+	assert.Equal(t, handlers.TopologyDebugSummary{
+		Hosts:      1,
+		Containers: 1,
+		Processes:  2,
+		Relations:  2,
+	}, resp.Summary)
+	if assert.Len(t, resp.Relations, 2) {
+		assert.Equal(t, handlers.TopologyDebugRelation{Type: "RUNS_CONTAINER", Source: "host-1", Target: "api"}, resp.Relations[0])
+		assert.Equal(t, handlers.TopologyDebugRelation{Type: "DEPENDS_ON", Source: "api", Target: "postgres"}, resp.Relations[1])
+	}
+	if assert.Len(t, resp.Hosts, 1) && assert.Len(t, resp.Hosts[0].Containers, 1) {
+		container := resp.Hosts[0].Containers[0]
+		assert.Equal(t, map[string]string{"DB_HOST": "postgres"}, container.Env)
+		assert.Equal(t, map[string]string{"com.docker.compose.service": "api"}, container.Labels)
+		assert.Equal(t, []string{"backend"}, container.Networks)
 	}
 }
 
