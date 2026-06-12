@@ -77,6 +77,7 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 				admin.POST("/users", middleware.RequirePermission(middleware.ScopeUserWrite), h.CreateUserHandler)
 				admin.GET("/teams/stream", middleware.RequirePermission(middleware.ScopeCompanyRead), h.TeamStreamHandler)
 				admin.GET("/audit-logs", middleware.RequirePermission(middleware.ScopeCompanyRead), h.ListAuditLogsHandler)
+				admin.GET("/topology/latest", middleware.RequirePermission(middleware.ScopeAdminRead), h.GetTopologyDebugHandler)
 			}
 
 			// Scan routes

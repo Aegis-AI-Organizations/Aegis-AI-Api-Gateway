@@ -35,6 +35,14 @@ func (m *MockTopologyService) GetTopology(ctx context.Context, companyID string)
 	return args.Get(0).(handlers.TopologyResponse), args.Error(1)
 }
 
+func (m *MockTopologyService) GetTopologyDebug(ctx context.Context, companyID string) (handlers.TopologyDebugResponse, error) {
+	args := m.Called(ctx, companyID)
+	if args.Get(0) == nil {
+		return handlers.TopologyDebugResponse{}, args.Error(1)
+	}
+	return args.Get(0).(handlers.TopologyDebugResponse), args.Error(1)
+}
+
 func TestGetTopologyHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -174,7 +182,7 @@ func TestNeo4jTopologyService_RendersNeo4jTopologyGraph(t *testing.T) {
 			case strings.Contains(statement, "MATCH (h:Host)-[:RUNS_PROCESS]->(p:Process)"):
 				responseBody = `{"results":[{"data":[{"row":["host-1","process-1",12,"sshd","/usr/sbin/sshd","root"]}]}],"errors":[]}`
 			case strings.Contains(statement, "MATCH (h:Host)-[:RUNS_CONTAINER]->(c:Container)"):
-				responseBody = `{"results":[{"data":[{"row":["host-1","host-1.local",["10.0.0.1"],"container-1","web","nginx:latest",{"FOO":"bar"},["80:tcp:LISTEN"],["8080:tcp:LISTEN"]]}]}],"errors":[]}`
+				responseBody = `{"results":[{"data":[{"row":["host-1","host-1.local",["10.0.0.1"],"container-1","web","nginx:latest",{"FOO":"bar"},{"com.docker.compose.service":"web"},["frontend"],["80:tcp:LISTEN"],["8080:tcp:LISTEN"]]}]}],"errors":[]}`
 			case strings.Contains(statement, "MATCH (h:Host)"):
 				responseBody = `{"results":[{"data":[{"row":["host-1","host-1.local",["10.0.0.1"]]}]}],"errors":[]}`
 			default:
@@ -204,6 +212,8 @@ func TestNeo4jTopologyService_RendersNeo4jTopologyGraph(t *testing.T) {
 		assert.Equal(t, "web", host.Containers[0].Name)
 		assert.Equal(t, "nginx:latest", host.Containers[0].Image)
 		assert.Equal(t, map[string]string{"FOO": "bar"}, host.Containers[0].Env)
+		assert.Equal(t, map[string]string{"com.docker.compose.service": "web"}, host.Containers[0].Labels)
+		assert.Equal(t, []string{"frontend"}, host.Containers[0].Networks)
 		assert.Len(t, host.Containers[0].Ports, 1)
 		assert.Len(t, host.Containers[0].ExposedPorts, 1)
 		assert.Len(t, host.Containers[0].Processes, 1)

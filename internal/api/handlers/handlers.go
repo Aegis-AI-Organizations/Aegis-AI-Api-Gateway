@@ -18,6 +18,7 @@ type API struct {
 
 type TopologyService interface {
 	GetTopology(ctx context.Context, companyID string) (TopologyResponse, error)
+	GetTopologyDebug(ctx context.Context, companyID string) (TopologyDebugResponse, error)
 }
 
 // HealthHandler returns a simple 200 OK status for Kubernetes liveness probes.

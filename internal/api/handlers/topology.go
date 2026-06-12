@@ -29,6 +29,27 @@ type TopologyResponse struct {
 	Hosts []TopologyHost `json:"hosts"`
 }
 
+type TopologyDebugResponse struct {
+	CompanyID string                  `json:"company_id"`
+	Summary   TopologyDebugSummary    `json:"summary"`
+	Agents    []string                `json:"agents,omitempty"`
+	Hosts     []TopologyHost          `json:"hosts"`
+	Relations []TopologyDebugRelation `json:"relations,omitempty"`
+}
+
+type TopologyDebugSummary struct {
+	Hosts      int `json:"hosts"`
+	Containers int `json:"containers"`
+	Processes  int `json:"processes"`
+	Relations  int `json:"relations"`
+}
+
+type TopologyDebugRelation struct {
+	Type   string `json:"type"`
+	Source string `json:"source"`
+	Target string `json:"target"`
+}
+
 type TopologyHost struct {
 	ID          string              `json:"id"`
 	Hostname    string              `json:"hostname,omitempty"`
@@ -42,6 +63,8 @@ type TopologyContainer struct {
 	Name         string            `json:"name,omitempty"`
 	Image        string            `json:"image,omitempty"`
 	Env          map[string]string `json:"env,omitempty"`
+	Labels       map[string]string `json:"labels,omitempty"`
+	Networks     []string          `json:"networks,omitempty"`
 	Ports        []TopologyPort    `json:"ports,omitempty"`
 	ExposedPorts []TopologyPort    `json:"exposed_ports,omitempty"`
 	Processes    []TopologyProcess `json:"processes,omitempty"`
@@ -152,6 +175,27 @@ func (a *API) GetTopologyHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func (a *API) GetTopologyDebugHandler(c *gin.Context) {
+	if a.Topology == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Topology service unavailable"})
+		return
+	}
+
+	companyID, err := resolveTopologyCompanyID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp, err := a.Topology.GetTopologyDebug(c.Request.Context(), companyID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load topology debug"})
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
 func resolveTopologyCompanyID(c *gin.Context) (string, error) {
 	currentCompanyID := strings.TrimSpace(fmt.Sprint(c.GetString(string(types.CompanyIDKey))))
 	requestedCompanyID := strings.TrimSpace(c.Query("company_id"))
@@ -215,6 +259,39 @@ func (s *Neo4jTopologyService) GetTopology(ctx context.Context, companyID string
 	}
 
 	return TopologyResponse{Hosts: renderHosts(hosts)}, nil
+}
+
+func (s *Neo4jTopologyService) GetTopologyDebug(ctx context.Context, companyID string) (TopologyDebugResponse, error) {
+	topology, err := s.GetTopology(ctx, companyID)
+	if err != nil {
+		return TopologyDebugResponse{}, err
+	}
+
+	agents, err := s.loadTopologyAgents(ctx, companyID)
+	if err != nil {
+		return TopologyDebugResponse{}, err
+	}
+	relations, err := s.loadTopologyRelations(ctx, companyID)
+	if err != nil {
+		return TopologyDebugResponse{}, err
+	}
+
+	summary := TopologyDebugSummary{Hosts: len(topology.Hosts), Relations: len(relations)}
+	for _, host := range topology.Hosts {
+		summary.Containers += len(host.Containers)
+		summary.Processes += len(host.Processes)
+		for _, container := range host.Containers {
+			summary.Processes += len(container.Processes)
+		}
+	}
+
+	return TopologyDebugResponse{
+		CompanyID: companyID,
+		Summary:   summary,
+		Agents:    agents,
+		Hosts:     topology.Hosts,
+		Relations: relations,
+	}, nil
 }
 
 func (s *Neo4jTopologyService) loadHosts(
@@ -284,6 +361,8 @@ func (s *Neo4jTopologyService) loadContainers(
 		  coalesce(c.name, c.rawId, c.id) AS container_name,
 		  coalesce(c.image, "") AS image,
 		  coalesce(c.env, []) AS env,
+		  coalesce(c.labels, []) AS labels,
+		  coalesce(c.networks, []) AS networks,
 		  coalesce(c.ports, []) AS ports,
 		  coalesce(c.exposedPorts, []) AS exposed_ports
 		ORDER BY host_hostname ASC, container_name ASC
@@ -295,7 +374,7 @@ func (s *Neo4jTopologyService) loadContainers(
 	}
 
 	for _, row := range rows {
-		if len(row) < 9 {
+		if len(row) < 11 {
 			continue
 		}
 
@@ -330,15 +409,91 @@ func (s *Neo4jTopologyService) loadContainers(
 		if len(container.container.Env) == 0 {
 			container.container.Env = parseEnv(row[6])
 		}
+		if len(container.container.Labels) == 0 {
+			container.container.Labels = parseEnv(row[7])
+		}
+		if len(container.container.Networks) == 0 {
+			container.container.Networks = uniqueStrings(asStringSlice(row[8]))
+		}
 		if len(container.container.Ports) == 0 {
-			container.container.Ports = parsePorts(row[7])
+			container.container.Ports = parsePorts(row[9])
 		}
 		if len(container.container.ExposedPorts) == 0 {
-			container.container.ExposedPorts = parsePorts(row[8])
+			container.container.ExposedPorts = parsePorts(row[10])
 		}
 	}
 
 	return nil
+}
+
+func (s *Neo4jTopologyService) loadTopologyAgents(ctx context.Context, companyID string) ([]string, error) {
+	filterClause := ""
+	params := map[string]any{}
+	if companyID != "all" {
+		filterClause = "WHERE n.companyId = $company_id"
+		params["company_id"] = companyID
+	}
+
+	query := fmt.Sprintf(`
+		MATCH (n)
+		%s
+		WITH DISTINCT n.agentId AS agent_id
+		WHERE agent_id IS NOT NULL AND agent_id <> ""
+		RETURN agent_id
+		ORDER BY agent_id ASC
+	`, filterClause)
+
+	rows, err := s.executeQuery(ctx, query, params)
+	if err != nil {
+		return nil, err
+	}
+	agents := make([]string, 0, len(rows))
+	for _, row := range rows {
+		if len(row) == 0 {
+			continue
+		}
+		if agentID := stringValue(row[0]); agentID != "" {
+			agents = append(agents, agentID)
+		}
+	}
+	return uniqueStrings(agents), nil
+}
+
+func (s *Neo4jTopologyService) loadTopologyRelations(ctx context.Context, companyID string) ([]TopologyDebugRelation, error) {
+	filterClause := ""
+	params := map[string]any{}
+	if companyID != "all" {
+		filterClause = "WHERE source.companyId = $company_id"
+		params["company_id"] = companyID
+	}
+
+	query := fmt.Sprintf(`
+		MATCH (source)-[rel:RUNS_CONTAINER|RUNS_PROCESS|CONNECTED_TO|DEPENDS_ON|ROUTE_FROM|ROUTE_TO]->(target)
+		%s
+		RETURN
+		  type(rel) AS relation_type,
+		  coalesce(source.name, source.hostname, source.rawId, source.id) AS source_name,
+		  coalesce(target.name, target.hostname, target.rawId, target.id) AS target_name
+		ORDER BY relation_type ASC, source_name ASC, target_name ASC
+		LIMIT 500
+	`, filterClause)
+
+	rows, err := s.executeQuery(ctx, query, params)
+	if err != nil {
+		return nil, err
+	}
+	relations := make([]TopologyDebugRelation, 0, len(rows))
+	for _, row := range rows {
+		if len(row) < 3 {
+			continue
+		}
+		relations = append(relations, TopologyDebugRelation{
+			Type:   stringValue(row[0]),
+			Source: stringValue(row[1]),
+			Target: stringValue(row[2]),
+		})
+	}
+	return relations, nil
 }
 
 func (s *Neo4jTopologyService) loadHostProcesses(
