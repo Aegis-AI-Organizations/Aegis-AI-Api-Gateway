@@ -8,6 +8,7 @@ import (
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/middleware"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/db"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,6 +24,7 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 	h := &handlers.API{
 		GRPCClient: gc,
 		Redis:      rdb,
+		Topology:   handlers.NewNeo4jTopologyServiceFromEnv(),
 	}
 
 	mh := &handlers.MinioHandler{
@@ -56,6 +58,11 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 			auth.DELETE("/users/me/profile/avatar", middleware.RequirePermission(middleware.ScopeAuthRead), h.RemoveAvatarHandler)
 			auth.PUT("/users/me/email", middleware.RequirePermission(middleware.ScopeAuthRead), h.UpdateEmailHandler)
 			auth.PUT("/users/me/password", middleware.RequirePermission(middleware.ScopeAuthRead), h.UpdatePasswordHandler)
+			auth.GET("/users", middleware.RequirePermission(middleware.ScopeUserRead), h.ListTenantUsersHandler)
+			auth.POST("/users/invitations", middleware.RequirePermission(middleware.ScopeUserWrite), h.InviteTenantUserHandler)
+			auth.PATCH("/users/:id/role", middleware.RequirePermission(middleware.ScopeUserWrite), h.UpdateTenantUserRoleHandler)
+			auth.PATCH("/users/:id/status", middleware.RequirePermission(middleware.ScopeUserWrite), h.UpdateTenantUserStatusHandler)
+			auth.DELETE("/users/:id", middleware.RequirePermission(middleware.ScopeUserWrite), h.DeactivateTenantUserHandler)
 
 			// Company management
 			auth.GET("/companies", middleware.RequirePermission(middleware.ScopeCompanyRead), h.ListCompaniesHandler)
@@ -76,6 +83,7 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 				admin.POST("/users", middleware.RequirePermission(middleware.ScopeUserWrite), h.CreateUserHandler)
 				admin.GET("/teams/stream", middleware.RequirePermission(middleware.ScopeCompanyRead), h.TeamStreamHandler)
 				admin.GET("/audit-logs", middleware.RequirePermission(middleware.ScopeCompanyRead), h.ListAuditLogsHandler)
+				admin.GET("/topology/latest", middleware.RequirePermission(middleware.ScopeAdminRead), h.GetTopologyDebugHandler)
 			}
 
 			// Scan routes
@@ -84,19 +92,22 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 			auth.GET("/scans/:id", middleware.RequirePermission(middleware.ScopeScanRead), h.GetScanByIDHandler)
 			auth.GET("/scans/:id/vulnerabilities", middleware.RequirePermission(middleware.ScopeVulnerabilityRead), h.GetVulnerabilitiesHandler)
 			auth.GET("/scans/:id/report", middleware.RequirePermission(middleware.ScopeReportRead), h.GetScanReportHandler)
+			auth.GET("/topology", middleware.RequirePermission(middleware.ScopeTopologyRead), h.GetTopologyHandler)
+			auth.GET("/topology/latest", middleware.RequirePermission(middleware.ScopeTopologyRead), h.GetTopologyHandler)
+			auth.GET("/infrastructure/topology", middleware.RequirePermission(middleware.ScopeTopologyRead), h.GetTopologyHandler)
 
 			// Billing routes
-			auth.GET("/billing/balance", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetBalanceHandler)
-			auth.GET("/billing/ledger", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetLedgerHandler)
-			auth.GET("/billing/stats", middleware.RequirePermission(middleware.ScopeBillingRead), h.GetUsageStatsHandler)
+			auth.GET("/billing/balance", middleware.RequireAnyRole(types.RoleOwner, types.RoleSuperAdmin), middleware.RequirePermission(middleware.ScopeBillingRead), h.GetBalanceHandler)
+			auth.GET("/billing/ledger", middleware.RequireAnyRole(types.RoleOwner, types.RoleSuperAdmin), middleware.RequirePermission(middleware.ScopeBillingRead), h.GetLedgerHandler)
+			auth.GET("/billing/stats", middleware.RequireAnyRole(types.RoleOwner, types.RoleSuperAdmin), middleware.RequirePermission(middleware.ScopeBillingRead), h.GetUsageStatsHandler)
 
 			// Admin billing adjustment and management
 			admin.POST("/companies/:id/agent-token/rotate", middleware.RequirePermission(middleware.ScopeAdminWrite), h.AdminRotateAgentTokenHandler)
 			admin.POST("/companies/:id/agent-token/revoke", middleware.RequirePermission(middleware.ScopeAdminWrite), h.AdminRevokeAgentTokenHandler)
 			admin.POST("/companies/:id/tokens/adjust", middleware.RequirePermission(middleware.ScopeAdminWrite), h.AdjustTokensHandler)
-			admin.GET("/companies/:id/billing/balance", middleware.RequirePermission(middleware.ScopeAdminRead), h.GetBalanceHandler)
-			admin.GET("/companies/:id/billing/ledger", middleware.RequirePermission(middleware.ScopeAdminRead), h.GetLedgerHandler)
-			admin.GET("/companies/:id/billing/stats", middleware.RequirePermission(middleware.ScopeAdminRead), h.GetUsageStatsHandler)
+			admin.GET("/companies/:id/billing/balance", middleware.RequireAnyRole(types.RoleSuperAdmin), middleware.RequirePermission(middleware.ScopeAdminRead), h.GetBalanceHandler)
+			admin.GET("/companies/:id/billing/ledger", middleware.RequireAnyRole(types.RoleSuperAdmin), middleware.RequirePermission(middleware.ScopeAdminRead), h.GetLedgerHandler)
+			admin.GET("/companies/:id/billing/stats", middleware.RequireAnyRole(types.RoleSuperAdmin), middleware.RequirePermission(middleware.ScopeAdminRead), h.GetUsageStatsHandler)
 
 			// Vulnerability routes
 			auth.GET("/vulnerabilities/:id/evidences", middleware.RequirePermission(middleware.ScopeVulnerabilityRead), h.GetEvidencesHandler)

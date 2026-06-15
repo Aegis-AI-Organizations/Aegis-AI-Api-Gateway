@@ -624,9 +624,30 @@ func TestClient_AdminMethods(t *testing.T) {
 		OwnerEmail: "user@test.com",
 	}).Return(&v1.CreateCompanyResponse{Id: "u2"}, nil)
 
-	respC, err := client.AdminCreateUser(ctx, "New User", "user@test.com", "admin", "c1")
+	respC, err := client.AdminCreateUser(ctx, "New User", "user@test.com", "pass1234", "admin", "c1")
 	assert.NoError(t, err)
 	assert.Equal(t, "u2", respC.Id)
+
+	mockCompany.On("CreateCompany", mock.Anything, &v1.CreateCompanyRequest{
+		Name:       "Tenant User",
+		OwnerEmail: "tenant@test.com",
+	}).Return(&v1.CreateCompanyResponse{Id: "u3"}, nil)
+
+	respT, err := client.InviteTenantUser(ctx, "Tenant User", "tenant@test.com", "viewer", "c1")
+	assert.NoError(t, err)
+	assert.Equal(t, "u3", respT.Id)
+
+	mockCompany.On("CreateCompany", mock.Anything, &v1.CreateCompanyRequest{
+		Name: "u3",
+	}).Return(&v1.CreateCompanyResponse{Id: "u3"}, nil).Twice()
+
+	respRole, err := client.UpdateTenantUserRole(ctx, "u3", "operateur", "c1")
+	assert.NoError(t, err)
+	assert.Equal(t, "u3", respRole.Id)
+
+	respDeactivate, err := client.DeactivateTenantUser(ctx, "u3", "c1")
+	assert.NoError(t, err)
+	assert.Equal(t, "u3", respDeactivate.Id)
 }
 
 func TestClient_RemoveAvatar(t *testing.T) {
@@ -679,7 +700,16 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	_, err = client.SearchUsers(ctx, "q", "c1")
 	assert.Error(t, err)
 
-	_, err = client.AdminCreateUser(ctx, "n", "e", "r", "c1")
+	_, err = client.AdminCreateUser(ctx, "n", "e", "p", "r", "c1")
+	assert.Error(t, err)
+
+	_, err = client.InviteTenantUser(ctx, "n", "e", "r", "c1")
+	assert.Error(t, err)
+
+	_, err = client.UpdateTenantUserRole(ctx, "u", "r", "c1")
+	assert.Error(t, err)
+
+	_, err = client.DeactivateTenantUser(ctx, "u", "c1")
 	assert.Error(t, err)
 
 	_, err = client.OnboardCompany(ctx, "c", "n", "e")
@@ -701,7 +731,19 @@ func TestClient_AdminMethods_Errors(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 
-	_, err = client.AdminCreateUser(ctx, "n", "e", "r", "c1")
+	_, err = client.AdminCreateUser(ctx, "n", "e", "p", "r", "c1")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.InviteTenantUser(ctx, "n", "e", "r", "c1")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.UpdateTenantUserRole(ctx, "u", "r", "c1")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not initialized")
+
+	_, err = client.DeactivateTenantUser(ctx, "u", "c1")
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not initialized")
 

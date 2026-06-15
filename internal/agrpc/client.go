@@ -174,7 +174,24 @@ func (c *Client) SearchUsers(ctx context.Context, query, companyID string) ([]*v
 	return resp.Companies, nil
 }
 
-func (c *Client) AdminCreateUser(ctx context.Context, name, email, role, companyID string) (*v1.CreateCompanyResponse, error) {
+func (c *Client) AdminCreateUser(ctx context.Context, name, email, password, role, companyID string) (*v1.CreateCompanyResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	authCtx := WithMetadata(ctx)
+	newCtx := metadata.AppendToOutgoingContext(authCtx,
+		"x-action", "create-user",
+		"x-user-password", password,
+		"x-user-role", role,
+		"x-company-id", companyID,
+	)
+	return c.CompanyService.CreateCompany(newCtx, &v1.CreateCompanyRequest{
+		Name:       name,
+		OwnerEmail: email,
+	})
+}
+
+func (c *Client) InviteTenantUser(ctx context.Context, name, email, role, companyID string) (*v1.CreateCompanyResponse, error) {
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")
 	}
@@ -187,6 +204,44 @@ func (c *Client) AdminCreateUser(ctx context.Context, name, email, role, company
 	return c.CompanyService.CreateCompany(newCtx, &v1.CreateCompanyRequest{
 		Name:       name,
 		OwnerEmail: email,
+	})
+}
+
+func (c *Client) UpdateTenantUserRole(ctx context.Context, userID, role, companyID string) (*v1.CreateCompanyResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	authCtx := WithMetadata(ctx)
+	newCtx := metadata.AppendToOutgoingContext(authCtx,
+		"x-action", "update-user-role",
+		"x-user-role", role,
+		"x-company-id", companyID,
+	)
+	return c.CompanyService.CreateCompany(newCtx, &v1.CreateCompanyRequest{
+		Name: userID,
+	})
+}
+
+func (c *Client) DeactivateTenantUser(ctx context.Context, userID, companyID string) (*v1.CreateCompanyResponse, error) {
+	return c.SetTenantUserActive(ctx, userID, companyID, false)
+}
+
+func (c *Client) SetTenantUserActive(ctx context.Context, userID, companyID string, isActive bool) (*v1.CreateCompanyResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	activeValue := "false"
+	if isActive {
+		activeValue = "true"
+	}
+	authCtx := WithMetadata(ctx)
+	newCtx := metadata.AppendToOutgoingContext(authCtx,
+		"x-action", "set-user-active",
+		"x-user-active", activeValue,
+		"x-company-id", companyID,
+	)
+	return c.CompanyService.CreateCompany(newCtx, &v1.CreateCompanyRequest{
+		Name: userID,
 	})
 }
 

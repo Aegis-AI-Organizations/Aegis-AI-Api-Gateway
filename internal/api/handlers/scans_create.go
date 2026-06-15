@@ -4,11 +4,14 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/models"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (a *API) CreateScanHandler(c *gin.Context) {
@@ -27,8 +30,10 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	companyID, _ := c.Get(string(types.CompanyIDKey))
 	idStr := companyID.(string)
 
+	ipCount, apiCount, webappCount := scanBillingCounts(req)
+
 	// 1. Billing Pre-flight Check
-	check, err := a.GRPCClient.PreFlightCheck(c.Request.Context(), idStr, req.IpCount, req.ApiCount, req.WebappCount)
+	check, err := a.GRPCClient.PreFlightCheck(c.Request.Context(), idStr, ipCount, apiCount, webappCount)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Billing system unavailable"})
 		return
@@ -45,9 +50,10 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	}
 
 	// 2. Deduct tokens
-	_, err = a.GRPCClient.AdjustTokens(c.Request.Context(), idStr, -check.EstimatedCost, "Scan consumption: "+targetRef)
+	_, err = a.GRPCClient.AdjustTokens(c.Request.Context(), idStr, -check.EstimatedCost, scanConsumptionReason(req, targetRef))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process token consumption"})
+		log.Printf("Failed to process token consumption for company %s and target %s: %v", idStr, targetRef, err)
+		c.JSON(tokenConsumptionErrorStatus(err), gin.H{"error": tokenConsumptionErrorMessage(err)})
 		return
 	}
 
@@ -76,26 +82,99 @@ func (a *API) CreateScanHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, res)
 }
 
+func tokenConsumptionErrorStatus(err error) int {
+	code := status.Code(err)
+	switch code {
+	case codes.FailedPrecondition:
+		return http.StatusPaymentRequired
+	case codes.PermissionDenied:
+		return http.StatusForbidden
+	case codes.Unavailable, codes.DeadlineExceeded:
+		return http.StatusServiceUnavailable
+	default:
+		return http.StatusInternalServerError
+	}
+}
+
+func tokenConsumptionErrorMessage(err error) string {
+	st, ok := status.FromError(err)
+	if !ok || st.Message() == "" {
+		return "Failed to process token consumption"
+	}
+
+	switch st.Code() {
+	case codes.FailedPrecondition:
+		return st.Message()
+	case codes.PermissionDenied:
+		return "Token consumption is not allowed for this user"
+	default:
+		return "Failed to process token consumption"
+	}
+}
+
+func scanConsumptionReason(req models.CreateScanRequest, targetRef string) string {
+	if strings.EqualFold(strings.TrimSpace(req.Scope), "topology") {
+		targetIDs := scanTargetIDs(req)
+		if len(targetIDs) == 0 {
+			return "Scan consumption: topology all"
+		}
+		return "Scan consumption: topology selection (" + strconv.Itoa(len(targetIDs)) + " targets)"
+	}
+
+	return truncateBillingReason("Scan consumption: " + targetRef)
+}
+
+func truncateBillingReason(reason string) string {
+	const maxBillingReasonLength = 255
+	if len(reason) <= maxBillingReasonLength {
+		return reason
+	}
+	return reason[:maxBillingReasonLength]
+}
+
+func scanBillingCounts(req models.CreateScanRequest) (int32, int32, int32) {
+	ipCount := req.IpCount
+	apiCount := req.ApiCount
+	webappCount := req.WebappCount
+
+	if strings.EqualFold(strings.TrimSpace(req.Scope), "topology") &&
+		ipCount == 0 && apiCount == 0 && webappCount == 0 {
+		targetIDs := scanTargetIDs(req)
+		if len(targetIDs) > 0 {
+			webappCount = int32(len(targetIDs))
+		} else {
+			webappCount = 1
+		}
+	}
+
+	return ipCount, apiCount, webappCount
+}
+
+func scanTargetIDs(req models.CreateScanRequest) []string {
+	targetIDs := make([]string, 0, len(req.TargetNodeIDs))
+	seen := map[string]struct{}{}
+	for _, targetID := range req.TargetNodeIDs {
+		normalized := strings.TrimSpace(targetID)
+		if normalized == "" {
+			continue
+		}
+		if _, exists := seen[normalized]; exists {
+			continue
+		}
+		seen[normalized] = struct{}{}
+		targetIDs = append(targetIDs, normalized)
+	}
+	sort.Strings(targetIDs)
+	return targetIDs
+}
+
 func scanTargetRef(req models.CreateScanRequest) string {
 	if strings.TrimSpace(req.TargetImage) != "" {
 		return strings.TrimSpace(req.TargetImage)
 	}
 
 	if strings.EqualFold(strings.TrimSpace(req.Scope), "topology") {
-		targetIDs := make([]string, 0, len(req.TargetNodeIDs))
-		seen := map[string]struct{}{}
-		for _, targetID := range req.TargetNodeIDs {
-			normalized := strings.TrimSpace(targetID)
-			if normalized == "" {
-				continue
-			}
-			if _, exists := seen[normalized]; exists {
-				continue
-			}
-			seen[normalized] = struct{}{}
-			targetIDs = append(targetIDs, normalized)
-		}
-		sort.Strings(targetIDs)
+		targetIDs := scanTargetIDs(req)
 		if len(targetIDs) == 0 {
 			return "topology:all"
 		}

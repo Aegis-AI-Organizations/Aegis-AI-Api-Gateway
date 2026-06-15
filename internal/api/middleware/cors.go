@@ -2,8 +2,6 @@ package middleware
 
 import (
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,12 +12,10 @@ const DashboardOrigin = "https://app.aegis-ai.fr"
 // handles OPTIONS preflight requests so the browser can call the API from
 // the public dashboard origin.
 func CORSMiddleware() gin.HandlerFunc {
-	allowedOrigins := allowedCORSOrigins()
-
 	return func(c *gin.Context) {
 		origin := c.GetHeader("Origin")
 
-		if allowedOrigins[origin] {
+		if origin == DashboardOrigin {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 			c.Writer.Header().Set("Vary", "Origin")
 			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -36,21 +32,4 @@ func CORSMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
-}
-
-func allowedCORSOrigins() map[string]bool {
-	rawOrigins := os.Getenv("ALLOWED_ORIGINS")
-	if rawOrigins == "" {
-		rawOrigins = DashboardOrigin
-	}
-
-	origins := make(map[string]bool)
-	for _, origin := range strings.Split(rawOrigins, ",") {
-		origin = strings.TrimSpace(origin)
-		if origin != "" {
-			origins[origin] = true
-		}
-	}
-
-	return origins
 }

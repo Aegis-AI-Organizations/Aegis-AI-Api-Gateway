@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,6 +41,11 @@ type UserSearchResult struct {
 	Role      string `json:"role"`
 	CompanyID string `json:"company_id"`
 	AvatarURL string `json:"avatar_url"`
+	IsActive  bool   `json:"is_active"`
+}
+
+func userSummaryIsActive(user *v1.CompanySummary) bool {
+	return user.OrgType != v1.OrganizationType_ORGANIZATION_TYPE_UNSPECIFIED
 }
 
 // SearchCompaniesHandler searches for companies by name or ID via Brain gRPC.
@@ -86,17 +92,19 @@ func (a *API) SearchUsersHandler(c *gin.Context) {
 			Role:      u.DeploymentToken, // mapped from response
 			CompanyID: u.OwnerId,         // mapped from response
 			AvatarURL: u.AvatarUrl,
+			IsActive:  userSummaryIsActive(u),
 		})
 	}
 
 	c.JSON(http.StatusOK, results)
 }
 
-// CreateUserHandler invites a new user via Brain gRPC proxy.
+// CreateUserHandler creates a new user via Brain gRPC proxy.
 func (a *API) CreateUserHandler(c *gin.Context) {
 	var req struct {
 		Name      string `json:"name" binding:"required"`
 		Email     string `json:"email" binding:"required,email"`
+		Password  string `json:"password" binding:"required,min=8"`
 		Role      string `json:"role" binding:"required"`
 		CompanyID string `json:"company_id" binding:"required"`
 	}
@@ -106,7 +114,7 @@ func (a *API) CreateUserHandler(c *gin.Context) {
 		return
 	}
 
-	resp, err := a.GRPCClient.AdminCreateUser(c.Request.Context(), req.Name, req.Email, req.Role, req.CompanyID)
+	resp, err := a.GRPCClient.AdminCreateUser(c.Request.Context(), req.Name, req.Email, req.Password, req.Role, req.CompanyID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -114,6 +122,6 @@ func (a *API) CreateUserHandler(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"id":      resp.Id,
-		"message": "Invitation collaborateur envoyée",
+		"message": "Utilisateur créé avec succès",
 	})
 }

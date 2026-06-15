@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
@@ -12,6 +13,12 @@ import (
 type API struct {
 	GRPCClient *agrpc.Client
 	Redis      *db.RedisClient
+	Topology   TopologyService
+}
+
+type TopologyService interface {
+	GetTopology(ctx context.Context, companyID string) (TopologyResponse, error)
+	GetTopologyDebug(ctx context.Context, companyID string) (TopologyDebugResponse, error)
 }
 
 // HealthHandler returns a simple 200 OK status for Kubernetes liveness probes.

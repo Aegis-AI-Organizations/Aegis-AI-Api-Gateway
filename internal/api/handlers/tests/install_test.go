@@ -25,6 +25,8 @@ func TestInstallScriptHandler_WithToken(t *testing.T) {
 	assert.Equal(t, "text/x-shellscript", w.Header().Get("Content-Type"))
 	assert.Contains(t, w.Body.String(), "DEPLOYMENT_TOKEN=ag_test12345")
 	assert.Contains(t, w.Body.String(), "curl -fsSL")
+	assert.Contains(t, w.Body.String(), "releases/download/v2.0.180/aegis-ai-agent")
+	assert.Contains(t, w.Body.String(), "storage.aegis-ai.fr/releases/aegis-ai-agent")
 }
 
 func TestInstallScriptHandler_WithoutToken(t *testing.T) {
