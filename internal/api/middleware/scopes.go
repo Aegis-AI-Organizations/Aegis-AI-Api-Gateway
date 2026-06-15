@@ -17,6 +17,7 @@ const (
 	ScopeUserWrite          = "user:write"
 	ScopeCompanyRead        = "company:read"
 	ScopeCompanyWrite       = "company:write"
+	ScopeTopologyRead       = "topology:read"
 	ScopeBillingRead        = "billing:read"
 	ScopeBillingWrite       = "billing:write"
 	ScopeAdminWrite         = "admin:write"
@@ -42,6 +43,7 @@ var roleScopes = map[types.UserRole][]string{
 		ScopeScanExecute,
 		ScopeVulnerabilityWrite,
 		ScopeCompanyRead,
+		ScopeTopologyRead,
 	},
 	types.RoleOwner: {
 		ScopeScanRead,
@@ -55,6 +57,7 @@ var roleScopes = map[types.UserRole][]string{
 		ScopeUserWrite,
 		ScopeCompanyRead,
 		ScopeCompanyWrite,
+		ScopeTopologyRead,
 		ScopeBillingRead,
 	},
 	types.RoleAdmin: {
@@ -76,16 +79,17 @@ var roleScopes = map[types.UserRole][]string{
 		ScopeReportRead,
 		ScopeAuthRead,
 		ScopeCompanyRead,
+		ScopeTopologyRead,
 	},
 	types.RoleSupport: {
 		ScopeScanRead,
 		ScopeAuthRead,
 		ScopeCompanyRead,
+		ScopeTopologyRead,
 	},
 	types.RoleBillingClient: {
 		ScopeAuthRead,
 		ScopeCompanyRead,
-		ScopeBillingRead,
 	},
 }
 
