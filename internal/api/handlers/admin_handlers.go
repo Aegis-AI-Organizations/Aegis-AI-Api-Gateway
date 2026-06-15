@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,6 +41,11 @@ type UserSearchResult struct {
 	Role      string `json:"role"`
 	CompanyID string `json:"company_id"`
 	AvatarURL string `json:"avatar_url"`
+	IsActive  bool   `json:"is_active"`
+}
+
+func userSummaryIsActive(user *v1.CompanySummary) bool {
+	return user.OrgType != v1.OrganizationType_ORGANIZATION_TYPE_UNSPECIFIED
 }
 
 // SearchCompaniesHandler searches for companies by name or ID via Brain gRPC.
@@ -86,6 +92,7 @@ func (a *API) SearchUsersHandler(c *gin.Context) {
 			Role:      u.DeploymentToken, // mapped from response
 			CompanyID: u.OwnerId,         // mapped from response
 			AvatarURL: u.AvatarUrl,
+			IsActive:  userSummaryIsActive(u),
 		})
 	}
 

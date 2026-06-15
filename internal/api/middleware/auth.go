@@ -113,3 +113,32 @@ func RequirePermission(requiredScope string) gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// RequireAnyRole restricts a route to an explicit set of roles.
+func RequireAnyRole(allowedRoles ...types.UserRole) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		roleValue, exists := c.Get(string(types.RoleKey))
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+			c.Abort()
+			return
+		}
+
+		role, ok := roleValue.(string)
+		if !ok || role == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid role in identity"})
+			c.Abort()
+			return
+		}
+
+		for _, allowedRole := range allowedRoles {
+			if types.UserRole(role) == allowedRole {
+				c.Next()
+				return
+			}
+		}
+
+		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden for this role"})
+		c.Abort()
+	}
+}

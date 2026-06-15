@@ -20,10 +20,14 @@ func TestHasScope(t *testing.T) {
 	}{
 		{"Viewer can read scans", types.RoleViewer, middleware.ScopeScanRead, true},
 		{"Viewer cannot write scans", types.RoleViewer, middleware.ScopeScanWrite, false},
+		{"Viewer cannot read topology", types.RoleViewer, middleware.ScopeTopologyRead, false},
 		{"Operator can write scans", types.RoleOperateur, middleware.ScopeScanWrite, true},
 		{"Operator can execute scans", types.RoleOperateur, middleware.ScopeScanExecute, true},
+		{"Operator can read topology", types.RoleOperateur, middleware.ScopeTopologyRead, true},
 		{"Owner can read users", types.RoleOwner, middleware.ScopeUserRead, true},
 		{"Owner can write users", types.RoleOwner, middleware.ScopeUserWrite, true},
+		{"Owner can read billing", types.RoleOwner, middleware.ScopeBillingRead, true},
+		{"Billing client cannot read billing", types.RoleBillingClient, middleware.ScopeBillingRead, false},
 		{"SuperAdmin has all access", types.RoleSuperAdmin, "any:scope", true},
 		{"Viewer has auth read", types.RoleViewer, middleware.ScopeAuthRead, true},
 		{"Unknown role has no access", "unknown", middleware.ScopeScanRead, false},
@@ -32,6 +36,41 @@ func TestHasScope(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, middleware.HasScope(tt.role, tt.requiredScope))
+		})
+	}
+}
+
+func TestRequireAnyRoleMiddleware(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name           string
+		role           types.UserRole
+		expectedStatus int
+	}{
+		{"Owner allowed", types.RoleOwner, http.StatusOK},
+		{"SuperAdmin allowed", types.RoleSuperAdmin, http.StatusOK},
+		{"Admin denied", types.RoleAdmin, http.StatusForbidden},
+		{"Billing client denied", types.RoleBillingClient, http.StatusForbidden},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+			r.Use(func(c *gin.Context) {
+				c.Set("role", string(tt.role))
+				c.Next()
+			})
+			r.Use(middleware.RequireAnyRole(types.RoleOwner, types.RoleSuperAdmin))
+			r.GET("/test", func(c *gin.Context) {
+				c.Status(http.StatusOK)
+			})
+
+			req, _ := http.NewRequest(http.MethodGet, "/test", nil)
+			r.ServeHTTP(w, req)
+
+			assert.Equal(t, tt.expectedStatus, w.Code)
 		})
 	}
 }
