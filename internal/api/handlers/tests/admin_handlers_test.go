@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -189,6 +190,36 @@ func TestCreateUserHandler_Success(t *testing.T) {
 
 	mockCompany.On("CreateCompany", mock.Anything, mock.Anything).
 		Return(&v1.CreateCompanyResponse{Id: "u2"}, nil)
+
+	api.CreateUserHandler(c)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+}
+
+func TestCreateUserHandler_InvitationWithoutPassword(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	payload := map[string]string{
+		"name":       "New User",
+		"email":      "user@test.com",
+		"role":       "operateur",
+		"company_id": "c1",
+	}
+	body, _ := json.Marshal(payload)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("POST", "/admin/users", bytes.NewBuffer(body))
+
+	mockCompany.On("CreateCompany", mock.Anything, &v1.CreateCompanyRequest{
+		Name:       "New User",
+		OwnerEmail: "user@test.com",
+	}).Return(&v1.CreateCompanyResponse{Id: "u2"}, nil)
 
 	api.CreateUserHandler(c)
 
@@ -406,6 +437,78 @@ func TestUpdateTenantUserStatusHandler_MapsPermissionError(t *testing.T) {
 	api.UpdateTenantUserStatusHandler(c)
 
 	assert.Equal(t, http.StatusForbidden, w.Code)
+}
+
+func TestAdminUpdateUserRoleHandler_ForwardsCompanyScope(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	body, _ := json.Marshal(map[string]string{
+		"role":       "operateur",
+		"company_id": "company-1",
+	})
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{{Key: "id", Value: "u1"}}
+	c.Request, _ = http.NewRequest("PATCH", "/admin/users/u1/role", bytes.NewBuffer(body))
+
+	mockCompany.On(
+		"CreateCompany",
+		mock.MatchedBy(func(ctx context.Context) bool {
+			md, ok := metadata.FromOutgoingContext(ctx)
+			return ok &&
+				assert.ObjectsAreEqual([]string{"update-user-role"}, md.Get("x-action")) &&
+				assert.ObjectsAreEqual([]string{"operateur"}, md.Get("x-user-role")) &&
+				assert.ObjectsAreEqual([]string{"company-1"}, md.Get("x-company-id"))
+		}),
+		&v1.CreateCompanyRequest{Name: "u1"},
+	).Return(&v1.CreateCompanyResponse{Id: "u1"}, nil)
+
+	api.UpdateTenantUserRoleHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockCompany.AssertExpectations(t)
+}
+
+func TestAdminUpdateUserStatusHandler_ForwardsCompanyScope(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	body, _ := json.Marshal(map[string]any{
+		"is_active":  false,
+		"company_id": "company-1",
+	})
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{{Key: "id", Value: "u1"}}
+	c.Request, _ = http.NewRequest("PATCH", "/admin/users/u1/status", bytes.NewBuffer(body))
+
+	mockCompany.On(
+		"CreateCompany",
+		mock.MatchedBy(func(ctx context.Context) bool {
+			md, ok := metadata.FromOutgoingContext(ctx)
+			return ok &&
+				assert.ObjectsAreEqual([]string{"set-user-active"}, md.Get("x-action")) &&
+				assert.ObjectsAreEqual([]string{"false"}, md.Get("x-user-active")) &&
+				assert.ObjectsAreEqual([]string{"company-1"}, md.Get("x-company-id"))
+		}),
+		&v1.CreateCompanyRequest{Name: "u1"},
+	).Return(&v1.CreateCompanyResponse{Id: "u1"}, nil)
+
+	api.UpdateTenantUserStatusHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockCompany.AssertExpectations(t)
 }
 
 func TestListAuditLogsHandler(t *testing.T) {
