@@ -104,7 +104,7 @@ func (a *API) CreateUserHandler(c *gin.Context) {
 	var req struct {
 		Name      string `json:"name" binding:"required"`
 		Email     string `json:"email" binding:"required,email"`
-		Password  string `json:"password" binding:"required,min=8"`
+		Password  string `json:"password"`
 		Role      string `json:"role" binding:"required"`
 		CompanyID string `json:"company_id" binding:"required"`
 	}

@@ -81,6 +81,8 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 				admin.GET("/companies", middleware.RequirePermission(middleware.ScopeCompanyRead), h.SearchCompaniesHandler)
 				admin.GET("/users", middleware.RequirePermission(middleware.ScopeAuthRead), h.SearchUsersHandler)
 				admin.POST("/users", middleware.RequirePermission(middleware.ScopeUserWrite), h.CreateUserHandler)
+				admin.PATCH("/users/:id/role", middleware.RequirePermission(middleware.ScopeUserWrite), h.UpdateTenantUserRoleHandler)
+				admin.PATCH("/users/:id/status", middleware.RequirePermission(middleware.ScopeUserWrite), h.UpdateTenantUserStatusHandler)
 				admin.GET("/teams/stream", middleware.RequirePermission(middleware.ScopeCompanyRead), h.TeamStreamHandler)
 				admin.GET("/audit-logs", middleware.RequirePermission(middleware.ScopeCompanyRead), h.ListAuditLogsHandler)
 				admin.GET("/topology/latest", middleware.RequirePermission(middleware.ScopeAdminRead), h.GetTopologyDebugHandler)
