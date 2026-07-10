@@ -107,6 +107,13 @@ func RedisRateLimiter(rdb interface{}) gin.HandlerFunc {
 
 		// Limit: 100 requests per minute
 		if count > 100 {
+			ttl, err := client.TTL(ctx, key).Result()
+			if err == nil && ttl <= 0 {
+				client.Expire(ctx, key, time.Minute)
+			} else if err != nil {
+				log.Printf("Redis ratelimit TTL error: %v", err)
+			}
+
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
 				"error": "Too many requests. Please try again later.",
 			})
@@ -151,6 +158,11 @@ func AgentRateLimiter(rdb interface{}) gin.HandlerFunc {
 		}
 
 		key := "ratelimit:agent:" + tenantID.(string)
+		if agentID, exists := c.Get(string(types.AgentIDKey)); exists {
+			if agentIDString, ok := agentID.(string); ok && agentIDString != "" {
+				key += ":" + agentIDString
+			}
+		}
 
 		// Atomic increment
 		count, err := client.Incr(ctx, key).Result()
@@ -167,6 +179,13 @@ func AgentRateLimiter(rdb interface{}) gin.HandlerFunc {
 
 		// Limit: 50 requests per second
 		if count > 50 {
+			ttl, err := client.TTL(ctx, key).Result()
+			if err == nil && ttl <= 0 {
+				client.Expire(ctx, key, time.Second)
+			} else if err != nil {
+				log.Printf("Redis agent ratelimit TTL error: %v", err)
+			}
+
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
 				"error": "Agent request limit exceeded (50 req/sec).",
 			})
