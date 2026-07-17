@@ -55,6 +55,14 @@ func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.Watc
 	return args.Get(0).(v1.ScanService_WatchScanStatusClient), args.Error(1)
 }
 
+func (m *MockScanServiceClient) UpdateScanStatus(ctx context.Context, in *v1.UpdateScanStatusRequest, opts ...grpc.CallOption) (*v1.UpdateScanStatusResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdateScanStatusResponse), args.Error(1)
+}
+
 type MockAgentServiceClient struct {
 	mock.Mock
 }
