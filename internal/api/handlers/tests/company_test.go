@@ -12,6 +12,7 @@ import (
 	agrpc "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc"
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/api/handlers"
+	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -144,6 +145,133 @@ func TestListCompaniesHandler_Error(t *testing.T) {
 	api.ListCompaniesHandler(c)
 
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestGetCurrentCompanyHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/companies/me", nil)
+	c.Set("company_id", "company-1")
+
+	mockCompany.On("ListCompanies", mock.Anything, &v1.ListCompaniesRequest{}).
+		Return(&v1.ListCompaniesResponse{
+			Companies: []*v1.CompanySummary{
+				{
+					Id:           "company-1",
+					Name:         "Tenant Corp",
+					OwnerEmail:   "owner@test.com",
+					MemberCount:  3,
+					OrgSize:      v1.OrganizationSize_ORGANIZATION_SIZE_11_50,
+					OrgType:      v1.OrganizationType_ORGANIZATION_TYPE_SOFTWARE_DEVELOPMENT,
+					TokenBalance: 42,
+				},
+			},
+		}, nil)
+
+	api.GetCurrentCompanyHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var resp handlers.CurrentCompanyResponse
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+	assert.Equal(t, "company-1", resp.ID)
+	assert.Equal(t, "Tenant Corp", resp.Name)
+	assert.Equal(t, "ORGANIZATION_SIZE_11_50", resp.OrgSize)
+	assert.Equal(t, "ORGANIZATION_TYPE_SOFTWARE_DEVELOPMENT", resp.OrgType)
+	assert.Equal(t, int64(42), resp.TokenBalance)
+}
+
+func TestGetCurrentCompanyHandler_MissingCompanyScope(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("GET", "/companies/me", nil)
+
+	api.GetCurrentCompanyHandler(c)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+	assert.Contains(t, w.Body.String(), "Missing company scope")
+}
+
+func TestUpdateCurrentCompanyHandler_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	mockCompany := new(MockCompanyServiceClient)
+	api := &handlers.API{
+		GRPCClient: &agrpc.Client{
+			CompanyService: mockCompany,
+		},
+	}
+
+	body, _ := json.Marshal(map[string]string{
+		"name":     "Tenant Updated",
+		"org_size": "ORGANIZATION_SIZE_51_200",
+		"org_type": "ORGANIZATION_TYPE_FINANCIAL_SERVICES",
+	})
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("PUT", "/companies/me", bytes.NewBuffer(body))
+	c.Set("company_id", "company-1")
+	c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), types.CompanyIDKey, "company-1"))
+
+	mockCompany.On(
+		"CreateCompany",
+		mock.MatchedBy(func(ctx context.Context) bool {
+			md, ok := metadata.FromOutgoingContext(ctx)
+			return ok &&
+				assert.ObjectsAreEqual([]string{"update-current-company"}, md.Get("x-action")) &&
+				assert.ObjectsAreEqual([]string{"company-1"}, md.Get("company-id"))
+		}),
+		&v1.CreateCompanyRequest{
+			Name:    "Tenant Updated",
+			OrgSize: v1.OrganizationSize_ORGANIZATION_SIZE_51_200,
+			OrgType: v1.OrganizationType_ORGANIZATION_TYPE_FINANCIAL_SERVICES,
+		},
+	).Return(&v1.CreateCompanyResponse{Id: "company-1", Name: "Tenant Updated"}, nil)
+	mockCompany.On("ListCompanies", mock.Anything, &v1.ListCompaniesRequest{}).
+		Return(&v1.ListCompaniesResponse{
+			Companies: []*v1.CompanySummary{
+				{
+					Id:      "company-1",
+					Name:    "Tenant Updated",
+					OrgSize: v1.OrganizationSize_ORGANIZATION_SIZE_51_200,
+					OrgType: v1.OrganizationType_ORGANIZATION_TYPE_FINANCIAL_SERVICES,
+				},
+			},
+		}, nil)
+
+	api.UpdateCurrentCompanyHandler(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "Tenant Updated")
+	mockCompany.AssertExpectations(t)
+}
+
+func TestUpdateCurrentCompanyHandler_InvalidOrgSize(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	api := &handlers.API{}
+
+	body, _ := json.Marshal(map[string]string{
+		"name":     "Tenant Updated",
+		"org_size": "bad-size",
+	})
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request, _ = http.NewRequest("PUT", "/companies/me", bytes.NewBuffer(body))
+	c.Set("company_id", "company-1")
+
+	api.UpdateCurrentCompanyHandler(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "Invalid org_size")
 }
 
 func TestCreateCompanyHandler_Success(t *testing.T) {
