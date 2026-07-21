@@ -149,6 +149,8 @@ type Container struct {
 	Image         string                 `protobuf:"bytes,3,opt,name=image,proto3" json:"image,omitempty"`
 	Processes     []*Process             `protobuf:"bytes,4,rep,name=processes,proto3" json:"processes,omitempty"`
 	Ports         []*Port                `protobuf:"bytes,5,rep,name=ports,proto3" json:"ports,omitempty"`
+	ImageVersion  *string                `protobuf:"bytes,6,opt,name=image_version,json=imageVersion,proto3,oneof" json:"image_version,omitempty"`
+	ImageHash     *string                `protobuf:"bytes,7,opt,name=image_hash,json=imageHash,proto3,oneof" json:"image_hash,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -216,6 +218,20 @@ func (x *Container) GetPorts() []*Port {
 		return x.Ports
 	}
 	return nil
+}
+
+func (x *Container) GetImageVersion() string {
+	if x != nil && x.ImageVersion != nil {
+		return *x.ImageVersion
+	}
+	return ""
+}
+
+func (x *Container) GetImageHash() string {
+	if x != nil && x.ImageHash != nil {
+		return *x.ImageHash
+	}
+	return ""
 }
 
 type Process struct {
@@ -360,13 +376,18 @@ const file_aegis_v2_topology_proto_rawDesc = "" +
 	"\n" +
 	"containers\x18\x04 \x03(\v2\x13.aegis.v2.ContainerR\n" +
 	"containers\x12/\n" +
-	"\tprocesses\x18\x05 \x03(\v2\x11.aegis.v2.ProcessR\tprocesses\"\x9c\x01\n" +
+	"\tprocesses\x18\x05 \x03(\v2\x11.aegis.v2.ProcessR\tprocesses\"\x8b\x02\n" +
 	"\tContainer\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05image\x18\x03 \x01(\tR\x05image\x12/\n" +
 	"\tprocesses\x18\x04 \x03(\v2\x11.aegis.v2.ProcessR\tprocesses\x12$\n" +
-	"\x05ports\x18\x05 \x03(\v2\x0e.aegis.v2.PortR\x05ports\"\x8a\x01\n" +
+	"\x05ports\x18\x05 \x03(\v2\x0e.aegis.v2.PortR\x05ports\x12(\n" +
+	"\rimage_version\x18\x06 \x01(\tH\x00R\fimageVersion\x88\x01\x01\x12\"\n" +
+	"\n" +
+	"image_hash\x18\a \x01(\tH\x01R\timageHash\x88\x01\x01B\x10\n" +
+	"\x0e_image_versionB\r\n" +
+	"\v_image_hash\"\x8a\x01\n" +
 	"\aProcess\x12\x10\n" +
 	"\x03pid\x18\x01 \x01(\x05R\x03pid\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12&\n" +
@@ -418,6 +439,7 @@ func file_aegis_v2_topology_proto_init() {
 	if File_aegis_v2_topology_proto != nil {
 		return
 	}
+	file_aegis_v2_topology_proto_msgTypes[2].OneofWrappers = []any{}
 	file_aegis_v2_topology_proto_msgTypes[3].OneofWrappers = []any{}
 	file_aegis_v2_topology_proto_msgTypes[4].OneofWrappers = []any{}
 	type x struct{}

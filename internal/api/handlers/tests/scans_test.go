@@ -65,6 +65,14 @@ func (m *MockScanServiceClient) WatchScanStatus(ctx context.Context, in *v1.Watc
 	return args.Get(0).(v1.ScanService_WatchScanStatusClient), args.Error(1)
 }
 
+func (m *MockScanServiceClient) UpdateScanStatus(ctx context.Context, in *v1.UpdateScanStatusRequest, opts ...grpc.CallOption) (*v1.UpdateScanStatusResponse, error) {
+	args := m.Called(ctx, in)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*v1.UpdateScanStatusResponse), args.Error(1)
+}
+
 type MockBillingServiceClient struct {
 	mock.Mock
 }
@@ -297,6 +305,7 @@ func TestGetScansHandler(t *testing.T) {
 				Status:             "PENDING",
 				StartedAt:          timestamppb.Now(),
 				CompletedAt:        nil,
+				DebugBundle:        "s3://aegis-debug/debug-bundles/s1/bundle.tar.gz",
 			},
 		},
 	}
@@ -311,6 +320,8 @@ func TestGetScansHandler(t *testing.T) {
 	api.GetScansHandler(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "debug_bundle")
+	assert.Contains(t, w.Body.String(), "s3://aegis-debug/debug-bundles/s1/bundle.tar.gz")
 }
 
 func TestGetScansHandler_GRPCError(t *testing.T) {
@@ -366,6 +377,7 @@ func TestGetScanByIDHandler_Found(t *testing.T) {
 		Status:             "PENDING",
 		StartedAt:          timestamppb.Now(),
 		CompletedAt:        nil,
+		DebugBundle:        "s3://aegis-debug/debug-bundles/s1/bundle.tar.gz",
 	}
 
 	mockService.On("GetScanStatus", mock.Anything, &v1.GetScanStatusRequest{ScanId: "s1"}).
@@ -379,6 +391,8 @@ func TestGetScanByIDHandler_Found(t *testing.T) {
 	api.GetScanByIDHandler(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "debug_bundle")
+	assert.Contains(t, w.Body.String(), "s3://aegis-debug/debug-bundles/s1/bundle.tar.gz")
 }
 
 func TestGetScanByIDHandler_NotFound(t *testing.T) {

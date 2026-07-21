@@ -50,12 +50,14 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 	response := &v1.GetVulnerabilitiesResponse{
 		Vulnerabilities: []*v1.Vulnerability{
 			{
-				Id:             "v1",
-				VulnType:       "SQL Injection",
-				Severity:       "HIGH",
-				TargetEndpoint: "http://target",
-				Description:    "Desc",
-				DiscoveredAt:   timestamppb.New(time.Now()),
+				Id:              "v1",
+				VulnType:        "SQL Injection",
+				Severity:        "HIGH",
+				TargetEndpoint:  "http://target",
+				Description:     "Desc",
+				LootProof:       "aegis-flag-1234",
+				ExfiltratedData: `[{"email":"admin@example.test"}]`,
+				DiscoveredAt:    timestamppb.New(time.Now()),
 			},
 		},
 	}
@@ -70,6 +72,8 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 	api.GetVulnerabilitiesHandler(c)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"loot_proof":"aegis-flag-1234"`)
+	assert.Contains(t, w.Body.String(), `"exfiltrated_data":[{"email":"admin@example.test"}]`)
 	mockService.AssertExpectations(t)
 }
 

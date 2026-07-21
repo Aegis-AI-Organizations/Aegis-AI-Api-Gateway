@@ -30,15 +30,18 @@ type Scan struct {
 	StartedAt          string  `json:"started_at"`
 	CompletedAt        *string `json:"completed_at,omitempty"`
 	CompanyName        string  `json:"company_name"`
+	DebugBundle        string  `json:"debug_bundle,omitempty"`
 }
 
 type Vulnerability struct {
-	ID             string     `json:"id"`
-	VulnType       string     `json:"vuln_type"`
-	Severity       string     `json:"severity"`
-	TargetEndpoint string     `json:"target_endpoint"`
-	Description    string     `json:"description"`
-	DiscoveredAt   *time.Time `json:"discovered_at,omitempty"`
+	ID              string          `json:"id"`
+	VulnType        string          `json:"vuln_type"`
+	Severity        string          `json:"severity"`
+	TargetEndpoint  string          `json:"target_endpoint"`
+	Description     string          `json:"description"`
+	LootProof       string          `json:"loot_proof,omitempty"`
+	ExfiltratedData json.RawMessage `json:"exfiltrated_data,omitempty"`
+	DiscoveredAt    *time.Time      `json:"discovered_at,omitempty"`
 }
 
 type Evidence struct {

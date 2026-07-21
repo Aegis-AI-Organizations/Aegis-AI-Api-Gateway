@@ -38,6 +38,7 @@ func (a *API) GetScansHandler(c *gin.Context) {
 			StartedAt:          startStr,
 			CompletedAt:        compStr,
 			CompanyName:        s.CompanyName,
+			DebugBundle:        s.DebugBundle,
 		})
 	}
 
@@ -78,6 +79,7 @@ func (a *API) GetScanByIDHandler(c *gin.Context) {
 		Status:             s.Status,
 		StartedAt:          startStr,
 		CompletedAt:        compStr,
+		DebugBundle:        s.DebugBundle,
 	}
 
 	c.JSON(http.StatusOK, found)

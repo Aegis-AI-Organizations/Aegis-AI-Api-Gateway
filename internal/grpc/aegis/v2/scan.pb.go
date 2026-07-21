@@ -178,6 +178,7 @@ type GetScanStatusResponse struct {
 	CompletedAt        *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
 	TemporalWorkflowId string                 `protobuf:"bytes,5,opt,name=temporal_workflow_id,json=temporalWorkflowId,proto3" json:"temporal_workflow_id,omitempty"`
 	TargetImage        string                 `protobuf:"bytes,6,opt,name=target_image,json=targetImage,proto3" json:"target_image,omitempty"`
+	DebugBundle        string                 `protobuf:"bytes,7,opt,name=debug_bundle,json=debugBundle,proto3" json:"debug_bundle,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -254,6 +255,13 @@ func (x *GetScanStatusResponse) GetTargetImage() string {
 	return ""
 }
 
+func (x *GetScanStatusResponse) GetDebugBundle() string {
+	if x != nil {
+		return x.DebugBundle
+	}
+	return ""
+}
+
 type ListScansRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -299,6 +307,7 @@ type ScanDetails struct {
 	StartedAt          *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
 	CompletedAt        *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=completed_at,json=completedAt,proto3" json:"completed_at,omitempty"`
 	CompanyName        string                 `protobuf:"bytes,7,opt,name=company_name,json=companyName,proto3" json:"company_name,omitempty"`
+	DebugBundle        string                 `protobuf:"bytes,8,opt,name=debug_bundle,json=debugBundle,proto3" json:"debug_bundle,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -378,6 +387,13 @@ func (x *ScanDetails) GetCompletedAt() *timestamppb.Timestamp {
 func (x *ScanDetails) GetCompanyName() string {
 	if x != nil {
 		return x.CompanyName
+	}
+	return ""
+}
+
+func (x *ScanDetails) GetDebugBundle() string {
+	if x != nil {
+		return x.DebugBundle
 	}
 	return ""
 }
@@ -719,7 +735,7 @@ const file_aegis_v2_scan_proto_rawDesc = "" +
 	"\n" +
 	"started_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\"/\n" +
 	"\x14GetScanStatusRequest\x12\x17\n" +
-	"\ascan_id\x18\x01 \x01(\tR\x06scanId\"\x97\x02\n" +
+	"\ascan_id\x18\x01 \x01(\tR\x06scanId\"\xba\x02\n" +
 	"\x15GetScanStatusResponse\x12\x17\n" +
 	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x129\n" +
@@ -727,8 +743,9 @@ const file_aegis_v2_scan_proto_rawDesc = "" +
 	"started_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
 	"\fcompleted_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\x120\n" +
 	"\x14temporal_workflow_id\x18\x05 \x01(\tR\x12temporalWorkflowId\x12!\n" +
-	"\ftarget_image\x18\x06 \x01(\tR\vtargetImage\"\x12\n" +
-	"\x10ListScansRequest\"\xb0\x02\n" +
+	"\ftarget_image\x18\x06 \x01(\tR\vtargetImage\x12!\n" +
+	"\fdebug_bundle\x18\a \x01(\tR\vdebugBundle\"\x12\n" +
+	"\x10ListScansRequest\"\xd3\x02\n" +
 	"\vScanDetails\x12\x17\n" +
 	"\ascan_id\x18\x01 \x01(\tR\x06scanId\x120\n" +
 	"\x14temporal_workflow_id\x18\x02 \x01(\tR\x12temporalWorkflowId\x12!\n" +
@@ -737,7 +754,8 @@ const file_aegis_v2_scan_proto_rawDesc = "" +
 	"\n" +
 	"started_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x12=\n" +
 	"\fcompleted_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\vcompletedAt\x12!\n" +
-	"\fcompany_name\x18\a \x01(\tR\vcompanyName\"@\n" +
+	"\fcompany_name\x18\a \x01(\tR\vcompanyName\x12!\n" +
+	"\fdebug_bundle\x18\b \x01(\tR\vdebugBundle\"@\n" +
 	"\x11ListScansResponse\x12+\n" +
 	"\x05scans\x18\x01 \x03(\v2\x15.aegis.v2.ScanDetailsR\x05scans\"/\n" +
 	"\x14GetScanReportRequest\x12\x17\n" +

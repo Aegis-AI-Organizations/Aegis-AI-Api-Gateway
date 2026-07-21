@@ -28,6 +28,7 @@ const (
 	CompanyIDKey     ContextKey = "company_id"
 	RoleKey          ContextKey = "role"
 	TokenKey         ContextKey = "token"
+	AgentIDKey       ContextKey = "agent_id"
 	AgentTenantIDKey ContextKey = "agent_tenant_id"
 	AgentTokenKey    ContextKey = "agent_token"
 )

@@ -17,7 +17,7 @@ CONFIG_DIR="/etc/aegis-agent"
 VAR_DIR="/var/lib/aegis-agent"
 BINARY_NAME="aegis-ai-agent"
 SERVICE_NAME="aegis-agent.service"
-PRIMARY_BINARY_URL="https://github.com/Aegis-AI-Organizations/Aegis-AI-Agent/releases/download/v2.0.180/aegis-ai-agent"
+PRIMARY_BINARY_URL="https://github.com/Aegis-AI-Organizations/Aegis-AI-Agent/releases/latest/download/aegis-ai-agent"
 MIRROR_BINARY_URL="https://storage.aegis-ai.fr/releases/aegis-ai-agent"
 
 echo "Installing Aegis AI Agent..."

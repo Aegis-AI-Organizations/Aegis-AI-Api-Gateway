@@ -170,6 +170,28 @@ func TestRedisRateLimiter_TooManyRequests(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 
 	mock.ExpectIncr("ratelimit:127.0.0.1").SetVal(101)
+	mock.ExpectTTL("ratelimit:127.0.0.1").SetVal(time.Minute)
+
+	r := gin.New()
+	r.Use(middleware.RedisRateLimiter(&mockRedisWrapper{client: db}))
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	req.RemoteAddr = "127.0.0.1:1234"
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusTooManyRequests, w.Code)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestRedisRateLimiter_RestoresMissingTTL(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, mock := redismock.NewClientMock()
+
+	mock.ExpectIncr("ratelimit:127.0.0.1").SetVal(101)
+	mock.ExpectTTL("ratelimit:127.0.0.1").SetVal(-1)
+	mock.ExpectExpire("ratelimit:127.0.0.1", time.Minute).SetVal(true)
 
 	r := gin.New()
 	r.Use(middleware.RedisRateLimiter(&mockRedisWrapper{client: db}))
@@ -212,6 +234,55 @@ func TestAgentRateLimiter_TooManyRequests(t *testing.T) {
 	db, mock := redismock.NewClientMock()
 
 	mock.ExpectIncr("ratelimit:agent:tenant1").SetVal(51)
+	mock.ExpectTTL("ratelimit:agent:tenant1").SetVal(time.Second)
+
+	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		c.Set(string(types.AgentTenantIDKey), "tenant1")
+		c.Next()
+	})
+	r.Use(middleware.AgentRateLimiter(&mockRedisWrapper{client: db}))
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusTooManyRequests, w.Code)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAgentRateLimiter_UsesAgentIDWhenAvailable(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, mock := redismock.NewClientMock()
+
+	mock.ExpectIncr("ratelimit:agent:tenant1:agent1").SetVal(1)
+	mock.ExpectExpire("ratelimit:agent:tenant1:agent1", 1*time.Second).SetVal(true)
+
+	r := gin.New()
+	r.Use(func(c *gin.Context) {
+		c.Set(string(types.AgentTenantIDKey), "tenant1")
+		c.Set(string(types.AgentIDKey), "agent1")
+		c.Next()
+	})
+	r.Use(middleware.AgentRateLimiter(&mockRedisWrapper{client: db}))
+	r.GET("/test", func(c *gin.Context) { c.Status(200) })
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/test", nil)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAgentRateLimiter_RestoresMissingTTL(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db, mock := redismock.NewClientMock()
+
+	mock.ExpectIncr("ratelimit:agent:tenant1").SetVal(51)
+	mock.ExpectTTL("ratelimit:agent:tenant1").SetVal(-1)
+	mock.ExpectExpire("ratelimit:agent:tenant1", 1*time.Second).SetVal(true)
 
 	r := gin.New()
 	r.Use(func(c *gin.Context) {

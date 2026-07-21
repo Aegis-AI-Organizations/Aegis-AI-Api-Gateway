@@ -419,6 +419,21 @@ func (c *Client) ListCompanies(ctx context.Context) ([]*v1.CompanySummary, error
 	return resp.Companies, nil
 }
 
+func (c *Client) UpdateCurrentCompany(ctx context.Context, name string, orgSize v1.OrganizationSize, orgType v1.OrganizationType) (*v1.CreateCompanyResponse, error) {
+	if c.CompanyService == nil {
+		return nil, fmt.Errorf("company service not initialized")
+	}
+	authCtx := WithMetadata(ctx)
+	newCtx := metadata.AppendToOutgoingContext(authCtx,
+		"x-action", "update-current-company",
+	)
+	return c.CompanyService.CreateCompany(newCtx, &v1.CreateCompanyRequest{
+		Name:    name,
+		OrgSize: orgSize,
+		OrgType: orgType,
+	})
+}
+
 func (c *Client) OnboardCompany(ctx context.Context, companyName, ownerName, ownerEmail string) (*v1.OnboardCompanyResponse, error) {
 	if c.CompanyService == nil {
 		return nil, fmt.Errorf("company service not initialized")

@@ -72,6 +72,9 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 		if redisClient != nil && redisClient.Client != nil {
 			tenantID, err := redisClient.Client.Get(c.Request.Context(), cacheKey).Result()
 			if err == nil && tenantID != "" {
+				if agentID != "" {
+					c.Set(string(types.AgentIDKey), agentID)
+				}
 				c.Set(string(types.AgentTenantIDKey), tenantID)
 				c.Set(string(types.AgentTokenKey), token)
 				c.Next()
@@ -116,6 +119,9 @@ func AgentAuthMiddleware(grpcClient *agrpc.Client, redisClient *db.RedisClient) 
 		}
 
 		// Set context
+		if agentID != "" {
+			c.Set(string(types.AgentIDKey), agentID)
+		}
 		c.Set(string(types.AgentTenantIDKey), tenantID)
 		c.Set(string(types.AgentTokenKey), token)
 		c.Next()

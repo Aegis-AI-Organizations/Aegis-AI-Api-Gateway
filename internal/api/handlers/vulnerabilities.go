@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -26,6 +27,16 @@ func (a *API) GetVulnerabilitiesHandler(c *gin.Context) {
 
 	var vulns []models.Vulnerability
 	for _, v := range grpcVulns {
+		var exfiltratedData json.RawMessage
+		if v.ExfiltratedData != "" {
+			if json.Valid([]byte(v.ExfiltratedData)) {
+				exfiltratedData = json.RawMessage(v.ExfiltratedData)
+			} else {
+				marshaledData, _ := json.Marshal(v.ExfiltratedData)
+				exfiltratedData = json.RawMessage(marshaledData)
+			}
+		}
+
 		var discoTime *time.Time
 		if v.DiscoveredAt != nil {
 			t := v.DiscoveredAt.AsTime()
@@ -33,12 +44,14 @@ func (a *API) GetVulnerabilitiesHandler(c *gin.Context) {
 		}
 
 		vulns = append(vulns, models.Vulnerability{
-			ID:             v.Id,
-			VulnType:       v.VulnType,
-			Severity:       v.Severity,
-			TargetEndpoint: v.TargetEndpoint,
-			Description:    v.Description,
-			DiscoveredAt:   discoTime,
+			ID:              v.Id,
+			VulnType:        v.VulnType,
+			Severity:        v.Severity,
+			TargetEndpoint:  v.TargetEndpoint,
+			Description:     v.Description,
+			LootProof:       v.LootProof,
+			ExfiltratedData: exfiltratedData,
+			DiscoveredAt:    discoTime,
 		})
 	}
 

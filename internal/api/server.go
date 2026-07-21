@@ -65,6 +65,8 @@ func NewRouter(gc *agrpc.Client, rdb *db.RedisClient, mclient *db.MinioClient) *
 			auth.DELETE("/users/:id", middleware.RequirePermission(middleware.ScopeUserWrite), h.DeactivateTenantUserHandler)
 
 			// Company management
+			auth.GET("/companies/me", middleware.RequirePermission(middleware.ScopeCompanyRead), h.GetCurrentCompanyHandler)
+			auth.PUT("/companies/me", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.UpdateCurrentCompanyHandler)
 			auth.GET("/companies", middleware.RequirePermission(middleware.ScopeCompanyRead), h.ListCompaniesHandler)
 			auth.POST("/companies", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.CreateCompanyHandler)
 			auth.POST("/companies/onboard", middleware.RequirePermission(middleware.ScopeCompanyWrite), h.OnboardCompanyHandler)
