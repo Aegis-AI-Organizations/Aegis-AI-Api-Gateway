@@ -378,6 +378,8 @@ func TestGetScanByIDHandler_Found(t *testing.T) {
 		StartedAt:          timestamppb.Now(),
 		CompletedAt:        nil,
 		DebugBundle:        "s3://aegis-debug/debug-bundles/s1/bundle.tar.gz",
+		CrewReportJson:     "{\"status\":\"COMPLETED\"}",
+		CrewReportMarkdown: "# CrewAI Pentest Report",
 	}
 
 	mockService.On("GetScanStatus", mock.Anything, &v1.GetScanStatusRequest{ScanId: "s1"}).
@@ -393,6 +395,8 @@ func TestGetScanByIDHandler_Found(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "debug_bundle")
 	assert.Contains(t, w.Body.String(), "s3://aegis-debug/debug-bundles/s1/bundle.tar.gz")
+	assert.Contains(t, w.Body.String(), "crew_report_json")
+	assert.Contains(t, w.Body.String(), "crew_report_markdown")
 }
 
 func TestGetScanByIDHandler_NotFound(t *testing.T) {

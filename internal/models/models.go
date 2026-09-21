@@ -31,6 +31,8 @@ type Scan struct {
 	CompletedAt        *string `json:"completed_at,omitempty"`
 	CompanyName        string  `json:"company_name"`
 	DebugBundle        string  `json:"debug_bundle,omitempty"`
+	CrewReportJSON     string  `json:"crew_report_json,omitempty"`
+	CrewReportMarkdown string  `json:"crew_report_markdown,omitempty"`
 }
 
 type Vulnerability struct {

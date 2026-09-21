@@ -80,6 +80,8 @@ func (a *API) GetScanByIDHandler(c *gin.Context) {
 		StartedAt:          startStr,
 		CompletedAt:        compStr,
 		DebugBundle:        s.DebugBundle,
+		CrewReportJSON:     s.CrewReportJson,
+		CrewReportMarkdown: s.CrewReportMarkdown,
 	}
 
 	c.JSON(http.StatusOK, found)
