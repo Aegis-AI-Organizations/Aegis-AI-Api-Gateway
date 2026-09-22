@@ -57,6 +57,12 @@ The API uses JWTs for access security and HTTP-only cookies for session persiste
 
 ## Company Management (Admin/Commercial Roles)
 
+### `GET /companies/me`
+- **Description:** Returns the authenticated tenant's own company profile (name, avatar, org size, org type, member count, owner email, token balance).
+- **Scope:** `ScopeCompanyRead`.
+### `PUT /companies/me`
+- **Description:** Updates editable fields on the authenticated tenant's company (name, avatar, org size, org type) — powers the Dashboard **Company Settings** screen.
+- **Scope:** `ScopeCompanyWrite`.
 ### `GET /companies`
 - **Description:** Lists all companies on the platform.
 ### `POST /companies/onboard`

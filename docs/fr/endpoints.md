@@ -57,6 +57,12 @@ L'API utilise des JWT pour sécuriser l'accès et des cookies HTTP-only pour la 
 
 ## Gestion des Entreprises (Roles Admin/Commercial)
 
+### `GET /companies/me`
+- **Description :** Retourne le profil de l'entreprise du tenant authentifié (nom, avatar, taille, type d'organisation, nombre de membres, email du owner, solde de tokens).
+- **Scope :** `ScopeCompanyRead`.
+### `PUT /companies/me`
+- **Description :** Met à jour les champs éditables de l'entreprise du tenant authentifié (nom, avatar, taille, type d'organisation) — alimente l'écran **Paramètres de l'entreprise** du Dashboard.
+- **Scope :** `ScopeCompanyWrite`.
 ### `GET /companies`
 - **Description :** Liste toutes les entreprises de la plateforme.
 ### `POST /companies/onboard`
