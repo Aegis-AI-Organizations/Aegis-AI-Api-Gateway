@@ -5,11 +5,15 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"net"
 	"os"
+	"strings"
+	"time"
 
 	v1 "github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/agrpc/aegis/v2"
 	"github.com/Aegis-AI-Organizations/aegis-ai-api-gateway/internal/types"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
@@ -67,6 +71,29 @@ func WithMetadata(ctx context.Context) context.Context {
 	return ctx
 }
 
+// dnsTarget ensures grpc actively re-resolves the backend's address instead
+// of caching a single resolved IP for the lifetime of the connection. In
+// Docker Compose / Kubernetes, a backend container restarting (crash, redeploy,
+// dependency reinstall) almost always gets a new IP; without forcing the
+// "dns" resolver scheme, a client that first connected (or first failed to
+// connect) to the old IP can keep retrying that dead IP indefinitely instead
+// of picking up the new one, leaving the client stuck until it is itself
+// restarted. IP literals are left untouched since there is nothing to
+// re-resolve.
+func dnsTarget(addr string) string {
+	if strings.Contains(addr, "://") {
+		return addr
+	}
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return addr
+	}
+	if net.ParseIP(host) != nil {
+		return addr
+	}
+	return "dns:///" + addr
+}
+
 func NewClient(addr string, conf TLSConfig) (*Client, error) {
 	if !conf.Enable {
 		return nil, fmt.Errorf("mTLS is required for Brain gRPC connections")
@@ -86,13 +113,27 @@ func NewClient(addr string, conf TLSConfig) (*Client, error) {
 		grpc.MaxCallRecvMsgSize(50*1024*1024),
 	))
 
+	// Cap reconnect backoff well below the ~120s default. If Brain is
+	// unreachable at startup (slow dep install, rolling restart) or its
+	// container is recreated mid-run, the client must stop retrying a dead
+	// connection within seconds, not minutes.
+	opts = append(opts, grpc.WithConnectParams(grpc.ConnectParams{
+		Backoff: backoff.Config{
+			BaseDelay:  1 * time.Second,
+			Multiplier: 1.6,
+			Jitter:     0.2,
+			MaxDelay:   10 * time.Second,
+		},
+		MinConnectTimeout: 5 * time.Second,
+	}))
+
 	creds, err := loadTLSCredentials(conf)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load TLS credentials: %w", err)
 	}
 	opts = append(opts, grpc.WithTransportCredentials(creds))
 
-	conn, err := grpc.NewClient(addr, opts...)
+	conn, err := grpc.NewClient(dnsTarget(addr), opts...)
 	if err != nil {
 		return nil, err
 	}
