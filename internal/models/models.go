@@ -43,6 +43,8 @@ type Vulnerability struct {
 	Description     string          `json:"description"`
 	LootProof       string          `json:"loot_proof,omitempty"`
 	ExfiltratedData json.RawMessage `json:"exfiltrated_data,omitempty"`
+	Source          string          `json:"source,omitempty"`
+	ProofLevel      string          `json:"proof_level,omitempty"`
 	DiscoveredAt    *time.Time      `json:"discovered_at,omitempty"`
 }
 
