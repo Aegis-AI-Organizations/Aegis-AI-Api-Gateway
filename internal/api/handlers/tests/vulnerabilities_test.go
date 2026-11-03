@@ -57,6 +57,8 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 				Description:     "Desc",
 				LootProof:       "aegis-flag-1234",
 				ExfiltratedData: `[{"email":"admin@example.test"}]`,
+				Source:          "worker-pentest",
+				ProofLevel:      "exploited",
 				DiscoveredAt:    timestamppb.New(time.Now()),
 			},
 		},
@@ -74,6 +76,8 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), `"loot_proof":"aegis-flag-1234"`)
 	assert.Contains(t, w.Body.String(), `"exfiltrated_data":[{"email":"admin@example.test"}]`)
+	assert.Contains(t, w.Body.String(), `"source":"worker-pentest"`)
+	assert.Contains(t, w.Body.String(), `"proof_level":"exploited"`)
 	mockService.AssertExpectations(t)
 }
 
