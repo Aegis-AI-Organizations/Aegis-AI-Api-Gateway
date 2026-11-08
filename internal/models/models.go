@@ -45,6 +45,7 @@ type Vulnerability struct {
 	ExfiltratedData json.RawMessage `json:"exfiltrated_data,omitempty"`
 	Source          string          `json:"source,omitempty"`
 	ProofLevel      string          `json:"proof_level,omitempty"`
+	Remediation     string          `json:"remediation,omitempty"`
 	DiscoveredAt    *time.Time      `json:"discovered_at,omitempty"`
 }
 

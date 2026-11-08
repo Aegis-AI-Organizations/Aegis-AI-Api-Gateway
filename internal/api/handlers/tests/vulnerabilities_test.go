@@ -59,6 +59,7 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 				ExfiltratedData: `[{"email":"admin@example.test"}]`,
 				Source:          "worker-pentest",
 				ProofLevel:      "exploited",
+				Remediation:     "Use parameterized queries.",
 				DiscoveredAt:    timestamppb.New(time.Now()),
 			},
 		},
@@ -78,6 +79,7 @@ func TestGetVulnerabilitiesHandler(t *testing.T) {
 	assert.Contains(t, w.Body.String(), `"exfiltrated_data":[{"email":"admin@example.test"}]`)
 	assert.Contains(t, w.Body.String(), `"source":"worker-pentest"`)
 	assert.Contains(t, w.Body.String(), `"proof_level":"exploited"`)
+	assert.Contains(t, w.Body.String(), `"remediation":"Use parameterized queries."`)
 	mockService.AssertExpectations(t)
 }
 

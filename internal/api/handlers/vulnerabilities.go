@@ -53,6 +53,7 @@ func (a *API) GetVulnerabilitiesHandler(c *gin.Context) {
 			ExfiltratedData: exfiltratedData,
 			Source:          v.Source,
 			ProofLevel:      v.ProofLevel,
+			Remediation:     v.Remediation,
 			DiscoveredAt:    discoTime,
 		})
 	}
